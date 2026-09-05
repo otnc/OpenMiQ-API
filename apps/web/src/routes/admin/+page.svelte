@@ -10,6 +10,9 @@
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   const tr = $derived(t(data.locale));
+  const usernameByUserId = $derived(
+    new Map(data.users.map((user) => [user.id, user.discordUsername])),
+  );
 </script>
 
 <div class="space-y-6">
@@ -57,6 +60,7 @@
           <Table.Row>
             <Table.Head>Discord</Table.Head>
             <Table.Head>Status</Table.Head>
+            <Table.Head>{tr.admin.maxApiKeysLabel}</Table.Head>
             <Table.Head></Table.Head>
           </Table.Row>
         </Table.Header>
@@ -69,6 +73,27 @@
                 {#if user.reconsentRequired}
                   <Badge variant="destructive">reconsent pending</Badge>
                 {/if}
+              </Table.Cell>
+              <Table.Cell>
+                <form
+                  method="POST"
+                  action="?/setMaxApiKeys"
+                  use:enhance
+                  class="flex items-center gap-1"
+                >
+                  <input type="hidden" name="id" value={user.id} />
+                  <Input
+                    type="number"
+                    min="0"
+                    name="maxApiKeys"
+                    value={user.maxApiKeys ?? ""}
+                    placeholder={tr.admin.maxApiKeysUnlimited}
+                    class="h-7 w-20 text-xs"
+                  />
+                  <Button type="submit" variant="link" size="sm"
+                    >{tr.admin.save}</Button
+                  >
+                </form>
               </Table.Cell>
               <Table.Cell class="flex flex-wrap gap-2">
                 <form method="POST" action="?/revoke" use:enhance>
@@ -97,6 +122,15 @@
                     class="text-destructive">{tr.admin.ban}</Button
                   >
                 </form>
+                <form method="POST" action="?/deleteAllApiKeys" use:enhance>
+                  <input type="hidden" name="userId" value={user.id} />
+                  <Button
+                    type="submit"
+                    variant="link"
+                    size="sm"
+                    class="text-destructive">{tr.admin.deleteAllKeys}</Button
+                  >
+                </form>
               </Table.Cell>
             </Table.Row>
           {/each}
@@ -123,6 +157,65 @@
           </form>
         </div>
       {/each}
+    </Card.Content>
+  </Card.Root>
+
+  <Card.Root>
+    <Card.Header>
+      <Card.Title>{tr.admin.apiKeys}</Card.Title>
+    </Card.Header>
+    <Card.Content>
+      <Table.Root>
+        <Table.Header>
+          <Table.Row>
+            <Table.Head>Discord</Table.Head>
+            <Table.Head>{tr.apiKeys.nameLabel}</Table.Head>
+            <Table.Head>Prefix</Table.Head>
+            <Table.Head>Requests</Table.Head>
+            <Table.Head>Remaining</Table.Head>
+            <Table.Head></Table.Head>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {#each data.apiKeys as key (key.id)}
+            <Table.Row>
+              <Table.Cell
+                >{usernameByUserId.get(key.userId) ?? key.userId}</Table.Cell
+              >
+              <Table.Cell>{key.name}</Table.Cell>
+              <Table.Cell class="font-mono text-xs">{key.keyPrefix}…</Table.Cell
+              >
+              <Table.Cell>{key.requestCount}</Table.Cell>
+              <Table.Cell>
+                {#if key.revokedAt}
+                  <Badge variant="destructive">revoked</Badge>
+                {:else}
+                  {key.remaining}/{key.limit}
+                {/if}
+              </Table.Cell>
+              <Table.Cell class="flex gap-2">
+                {#if !key.revokedAt}
+                  <form method="POST" action="?/revokeApiKey" use:enhance>
+                    <input type="hidden" name="id" value={key.id} />
+                    <Button type="submit" variant="link" size="sm"
+                      >{tr.admin.revokeKey}</Button
+                    >
+                  </form>
+                {/if}
+                <form method="POST" action="?/deleteApiKey" use:enhance>
+                  <input type="hidden" name="id" value={key.id} />
+                  <Button
+                    type="submit"
+                    variant="link"
+                    size="sm"
+                    class="text-destructive">{tr.admin.deleteKey}</Button
+                  >
+                </form>
+              </Table.Cell>
+            </Table.Row>
+          {/each}
+        </Table.Body>
+      </Table.Root>
     </Card.Content>
   </Card.Root>
 

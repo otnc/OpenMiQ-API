@@ -60,12 +60,19 @@ interface Translations {
     users: string;
     bans: string;
     auditLog: string;
+    apiKeys: string;
     approve: string;
     deny: string;
     revoke: string;
     ban: string;
     unban: string;
     reasonLabel: string;
+    maxApiKeysLabel: string;
+    maxApiKeysUnlimited: string;
+    save: string;
+    revokeKey: string;
+    deleteKey: string;
+    deleteAllKeys: string;
   };
 }
 
@@ -114,12 +121,19 @@ const en: Translations = {
     users: "Users",
     bans: "Bans",
     auditLog: "Audit log",
+    apiKeys: "API keys (all users)",
     approve: "Approve",
     deny: "Deny",
     revoke: "Revoke access",
     ban: "Ban",
     unban: "Unban",
     reasonLabel: "Reason",
+    maxApiKeysLabel: "Max keys",
+    maxApiKeysUnlimited: "Default",
+    save: "Save",
+    revokeKey: "Revoke",
+    deleteKey: "Delete",
+    deleteAllKeys: "Delete all",
   },
 };
 
@@ -165,12 +179,19 @@ const ja: Translations = {
     users: "ユーザー一覧",
     bans: "BANリスト",
     auditLog: "監査ログ",
+    apiKeys: "APIキー一覧（全ユーザー）",
     approve: "承認",
     deny: "却下",
     revoke: "アクセス取り消し",
     ban: "BAN",
     unban: "BAN解除",
     reasonLabel: "理由",
+    maxApiKeysLabel: "上限数",
+    maxApiKeysUnlimited: "既定値",
+    save: "保存",
+    revokeKey: "失効",
+    deleteKey: "削除",
+    deleteAllKeys: "すべて削除",
   },
 };
 

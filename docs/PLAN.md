@@ -55,7 +55,7 @@
 
 ## Phase 5: 管理画面（Admin UI）・i18n
 - Web ConsoleとAdmin UIをSvelteKit内で**別ルートグループ**（`(console)`/`(admin)`）としてページ分離（決定、DESIGN.md §7）
-- 審査中一覧・承認済み一覧（`maxApiKeys`個別上書き・同意待ちバッジ含む、§16.4）・拒否ユーザー一覧・BANリスト・APIキー一覧（全ユーザー横断、個別/一斉削除操作 + 使用状況表示つき）・監査ログ画面（SvelteKit + shadcn-svelte）
+- 審査中一覧・ユーザー一覧（`maxApiKeys`個別上書き・同意待ちバッジ含む、§16.4）・BANリスト・APIキー一覧（全ユーザー横断、個別/一斉削除操作 + 使用状況表示つき、実装済み・実機動作確認済み）・監査ログ画面（SvelteKit + shadcn-svelte）を単一の`/admin`ページにセクション分けして実装。ユーザー一覧はステータス問わず全件表示のため、拒否/取消/BAN済みユーザーもここからそのままBANできる
 - Revoke / Ban / Unban アクション実装（`ADMIN_ACTION`記録）
 - BAN済みdiscordId/email/ipのOAuth・申請提出時ブロック（再申請クールダウンより優先）
 - i18n実装: `apps/web/src/lib/i18n/`に`Translations`オブジェクト（EN/JA、外部ライブラリ非依存、決定）+ ロケール判定（保存済み選択→`Accept-Language`/`navigator.language`→既定`en`）+ 切替UI（DESIGN.md §17）
