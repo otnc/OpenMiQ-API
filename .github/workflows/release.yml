@@ -1,4 +1,4 @@
-name: openmiq-release
+name: release
 
 # Publishes @makeitaquote/openmiq to npm via OIDC (Trusted Publisher) — no
 # npm token stored in this repo. Requires configuring this repo/workflow as
