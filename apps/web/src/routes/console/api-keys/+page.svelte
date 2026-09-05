@@ -6,10 +6,24 @@
   import { Badge } from "$lib/components/ui/badge/index.ts";
   import * as Card from "$lib/components/ui/card/index.ts";
   import * as Table from "$lib/components/ui/table/index.ts";
+  import { Copy, Check } from "@lucide/svelte";
   import type { PageData, ActionData } from "./$types.ts";
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   const tr = $derived(t(data.locale));
+
+  let copied = $state(false);
+
+  async function copyCreatedKey(key: string) {
+    try {
+      await navigator.clipboard.writeText(key);
+      copied = true;
+      setTimeout(() => (copied = false), 2000);
+    } catch {
+      // Clipboard access denied/unavailable — the key is still selectable
+      // as plain text, so this is a lost convenience, not a lost key.
+    }
+  }
 </script>
 
 <Card.Root class="mx-auto max-w-2xl">
@@ -20,7 +34,24 @@
     {#if form?.created}
       <div class="bg-accent rounded-md p-3 text-sm">
         <p class="mb-1">{tr.apiKeys.copyNotice}</p>
-        <code class="break-all font-mono text-xs">{form.created}</code>
+        <div class="flex items-center gap-2">
+          <code class="break-all font-mono text-xs">{form.created}</code>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-sm"
+            class="shrink-0"
+            onclick={() => copyCreatedKey(form.created!)}
+            title={tr.apiKeys.copy}
+            aria-label={tr.apiKeys.copy}
+          >
+            {#if copied}
+              <Check />
+            {:else}
+              <Copy />
+            {/if}
+          </Button>
+        </div>
       </div>
     {/if}
     {#if form?.error}

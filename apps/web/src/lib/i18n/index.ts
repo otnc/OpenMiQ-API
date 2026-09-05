@@ -77,6 +77,7 @@ interface Translations {
     delete: string;
     deleteAll: string;
     copyNotice: string;
+    copy: string;
   };
   admin: {
     title: string;
@@ -172,6 +173,7 @@ const en: Translations = {
     delete: "Delete",
     deleteAll: "Delete all keys",
     copyNotice: "Copy this key now — it will not be shown again.",
+    copy: "Copy",
   },
   admin: {
     title: "Admin",
@@ -269,6 +271,7 @@ const ja: Translations = {
     delete: "削除",
     deleteAll: "すべて削除",
     copyNotice: "このキーは今だけ表示されます。必ずコピーしてください。",
+    copy: "コピー",
   },
   admin: {
     title: "管理画面",
