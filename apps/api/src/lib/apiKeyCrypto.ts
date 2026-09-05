@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { newSecretToken } from "./ids.ts";
 
-const KEY_PREFIX = "miq_live_";
+const KEY_PREFIX = "openmiq_";
 
 export function hashApiKey(plaintext: string): string {
   return createHash("sha256").update(plaintext).digest("hex");

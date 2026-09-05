@@ -6,7 +6,14 @@ if (!apiKey) {
   throw new Error("Set OPENMIQ_API_KEY to an API key from your Web Console");
 }
 
-const miq = new OpenMiQ({ apiKey });
+const baseUrl = process.env.OPENMIQ_BASE_URL;
+if (!baseUrl) {
+  throw new Error(
+    "Set OPENMIQ_BASE_URL to the OpenMiQ-API instance to talk to, e.g. https://miq.example.com",
+  );
+}
+
+const miq = new OpenMiQ({ apiKey, baseUrl });
 
 // One round trip, no image ever stored server-side.
 const buffer = await miq

@@ -4,7 +4,7 @@ import { generateApiKeySecret, hashApiKey } from "./apiKeyCrypto.ts";
 describe("apiKeyCrypto", () => {
   it("generates a plaintext key with the expected prefix", () => {
     const { plaintext, displayPrefix } = generateApiKeySecret();
-    expect(plaintext).toMatch(/^miq_live_/);
+    expect(plaintext).toMatch(/^openmiq_/);
     expect(plaintext.startsWith(displayPrefix)).toBe(true);
     expect(displayPrefix).toHaveLength(12);
   });

@@ -120,7 +120,7 @@ describe("apply -> approve -> issue key -> use API key", () => {
     });
     expect(res.status).toBe(201);
     const body = await res.json();
-    expect(body.plaintext).toMatch(/^miq_live_/);
+    expect(body.plaintext).toMatch(/^openmiq_/);
     plaintextApiKey = body.plaintext;
   });
 

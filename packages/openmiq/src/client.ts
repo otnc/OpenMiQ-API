@@ -5,9 +5,15 @@ import {
   type HttpClient,
   TimeoutError,
 } from "@makeitaquote/utils/http";
-import { DEFAULT_BASE_URL } from "./endpoints.ts";
+import { USAGE_PATH } from "./endpoints.ts";
 import { OpenMiQApiError } from "./errors.ts";
 import { fromNote } from "./note.ts";
+import {
+  buildPayload,
+  parseHostedResult,
+  parseUsageResult,
+  pathFor,
+} from "./payload.ts";
 import {
   applyInput,
   assertRenderable,
@@ -34,19 +40,15 @@ import type {
   TweetSourceOptions,
   UsageResult,
 } from "./types.ts";
-import {
-  buildPayload,
-  parseHostedResult,
-  parseUsageResult,
-  pathFor,
-  USAGE_PATH,
-} from "./v1.ts";
 
 /**
  * Builds a "Make it a Quote" image through an OpenMiQ-API instance.
  *
  * ```ts
- * const image = await new OpenMiQ({ apiKey: "sk_live_..." })
+ * const image = await new OpenMiQ({
+ *   apiKey: "openmiq_...",
+ *   baseUrl: "https://miq.example.com",
+ * })
  *   .setText("hello world")
  *   .setUsername("otoneko.")
  *   .setAvatar("https://example.com/avatar.png")
@@ -54,9 +56,8 @@ import {
  *   .toBuffer();
  * ```
  *
- * Note that the default `baseUrl` (`https://miq.otnc.dev`) is operated by
- * the copyright holder's own deployment — pass your own `baseUrl` to talk to
- * a self-hosted instance instead.
+ * `baseUrl` is required — OpenMiQ-API is meant to be self-hosted, so there is
+ * no single official instance this package could default to.
  */
 export class OpenMiQ {
   #data: QuoteData = emptyQuote();
@@ -69,8 +70,11 @@ export class OpenMiQ {
     if (typeof options?.apiKey !== "string" || options.apiKey.trim() === "") {
       throw new ValidationError("apiKey is required", { field: "apiKey" });
     }
+    if (typeof options?.baseUrl !== "string" || options.baseUrl.trim() === "") {
+      throw new ValidationError("baseUrl is required", { field: "baseUrl" });
+    }
     this.#apiKey = options.apiKey;
-    this.#baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
+    this.#baseUrl = options.baseUrl.replace(/\/+$/, "");
     this.#signal = options.signal;
     this.#http = createClient({
       timeout: options.timeout ?? 15_000,

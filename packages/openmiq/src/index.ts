@@ -5,12 +5,7 @@ export { resolveNoteText, stripMfm } from "@makeitaquote/utils/mfm";
 export { stripTwitterText } from "@makeitaquote/utils/twitter";
 
 export { OpenMiQ } from "./client.ts";
-export {
-  DEFAULT_BASE_URL,
-  FAKEQUOTE_PATH,
-  QUOTE_PATH,
-  USAGE_PATH,
-} from "./endpoints.ts";
+export { FAKEQUOTE_PATH, QUOTE_PATH, USAGE_PATH } from "./endpoints.ts";
 export { OpenMiQApiError, type OpenMiQApiErrorOptions } from "./errors.ts";
 export { fromNote } from "./note.ts";
 export { fromMessage } from "./source.ts";

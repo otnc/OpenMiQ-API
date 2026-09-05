@@ -803,12 +803,15 @@ sudo certbot --nginx -d miq.otnc.dev
 ## 15. npmラッパーパッケージ `@makeitaquote/openmiq`
 
 ### 15.1 目的・位置づけ
-モノレポ内 `packages/openmiq/` として実装し、npmに **`@makeitaquote/openmiq`** として公開する。第三者（あるいは自分自身の別プロジェクト）が `https://miq.otnc.dev`（または自前でセルフホストしたインスタンス）の `/api/*` を、生のHTTP呼び出しではなく型安全なクライアントとして叩けるようにするための薄いラッパー。
+モノレポ内 `packages/openmiq/` として実装し、npmに **`@makeitaquote/openmiq`** として公開する。第三者（あるいは自分自身の別プロジェクト）が、セルフホストされた任意のOpenMiQ-APIインスタンスの `/api/*` を、生のHTTP呼び出しではなく型安全なクライアントとして叩けるようにするための薄いラッパー。**実装時の補正**: 姉妹パッケージ（voids.top/miqx.jp）と異なり、本パッケージが対象とするOpenMiQ-APIには単一の「公式ホスト」という前提がない（各自がセルフホストする）ため、`baseUrl`にデフォルト値は持たせず必須パラメータとする（§15.3）。
 
 ```ts
 import { OpenMiQ } from "@makeitaquote/openmiq";
 
-const image = await new OpenMiQ({ apiKey: "sk_live_..." })
+const image = await new OpenMiQ({
+  apiKey: "openmiq_...",
+  baseUrl: "https://miq.example.com",
+})
   .setText("hello world")
   .setUsername("otoneko.")
   .setAvatar("https://example.com/avatar.png")
@@ -830,9 +833,9 @@ const image = await new OpenMiQ({ apiKey: "sk_live_..." })
 | ビルダーAPI | `set*()`がすべて`this`を返すFluentビルダー1クラス（`VoidsMiQ`/`MiQX`相当） + `MiQ`という短いエイリアスをexport |
 | 共有基盤 | `@makeitaquote/utils`（HTTPクライアント`createClient`/`HTTPError`/`TimeoutError`、バリデーション`normalizeString`/`normalizeAvatarSource`、エラー基底`MiQError`、Discord/MFM/Twitterのテキスト処理）に依存し、車輪の再発明をしない |
 | エラー設計 | `XxxApiError extends MiQError`（`status`/`body`/`endpoint`を保持）+ `ValidationError`（`@makeitaquote/utils/errors`から再export）の2階層 |
-| エンドポイント定義 | `endpoints.ts`にパスと`DEFAULT_BASE_URL`を集約し、コメントで各エンドポイントの違い（ラウンドトリップ数・返り値の形）を明記 |
+| エンドポイント定義 | `endpoints.ts`にパスを集約し、コメントで各エンドポイントの違い（ラウンドトリップ数・返り値の形）を明記。**実装時の補正**: voids/miqxの`endpoints.ts`はここに`DEFAULT_BASE_URL`も持つが、本パッケージには単一の既定ホストが無いため`DEFAULT_BASE_URL`自体を持たない（§15.1） |
 | ソースアダプタ | `setFromMessage()`(Discord) / `setFromNote()`(Misskey) / `setFromTweet()`(Twitter/X) を用意し、対象ライブラリ（discord.js等）への直接依存はせず**構造的型**（`MessageLike`/`NoteLike`/`TweetLike`）で受ける |
-| バージョニング | エンドポイント固有のリクエスト/レスポンス整形は`v1.ts`のような**バージョン別ファイル**に閉じ込め、`client.ts`はそのモジュールが export する契約（`PATH`/`buildForm()`/`parseResult()`等）にのみ依存する（miqxの`src/v1.ts`パターン） |
+| リクエスト/レスポンス整形の分離 | エンドポイント固有のリクエスト/レスポンス整形は`client.ts`から切り離した専用ファイルに閉じ込め、`client.ts`はそのモジュールが export する契約（`pathFor()`/`buildPayload()`/`parseHostedResult()`等）にのみ依存する。miqxの`src/v1.ts`と同じ分離パターンだが、**実装時の補正**: OpenMiQ-API自体にはAPIバージョンの概念が無い（miqxの`/v1/make`のような`/v1/`区切りが無い）ため、ファイル名は`v1.ts`ではなく`payload.ts`とした |
 | パッケージング | ESM+CJS両対応の`exports`マップ（`tsdown`ビルド、`dist/index.{mjs,cjs}` + `.d.mts`/`.d.cts`）、`"type": "module"` |
 | Lint/Format | **Biome**（`biome.json`、`check`/`ci`/`migrate`スクリプト）— ルート直下のOpenMiQ本家系ESLint/Prettier（§13）とは別系統。npm公開用の小さな単体パッケージは軽量なBiome、モノレポ本体のアプリ群はOpenMiQ本家踏襲のESLint/Prettierという**サブプロジェクトごとの使い分け**を、姉妹パッケージの実際の運用にならって踏襲する |
 | テスト | vitest。各モジュールに対応する`*.test.ts`をsrc直下に併置 |
@@ -853,25 +856,25 @@ packages/openmiq/
 └─ src/
    ├─ index.ts                  # export { OpenMiQ } ほか
    ├─ client.ts                 # OpenMiQ クラス本体（Fluentビルダー）
-   ├─ endpoints.ts              # DEFAULT_BASE_URL = "https://miq.otnc.dev", パス定義
+   ├─ endpoints.ts              # パス定義（DEFAULT_BASE_URLは持たない、下記参照）
    ├─ errors.ts                 # OpenMiQApiError extends MiQError, ValidationError re-export
-   ├─ types.ts                  # OpenMiQOptions, QuoteData, QuoteInput, OpenMiQPayload 等
+   ├─ types.ts                  # OpenMiQOptions, QuoteData, QuoteInput 等
    ├─ quote.ts                  # emptyQuote/applyInput/assertRenderable
    ├─ source.ts                 # fromMessage (Discord)
    ├─ note.ts                   # fromNote (Misskey)
    ├─ tweet.ts / tweetAdapters.ts  # fromTweet, fromTwitterApiV2Tweet, fromFxTwitterStatus
-   └─ v1.ts                     # /api/quote, /api/fakequote の実際のリクエスト/レスポンス整形
+   └─ payload.ts                 # /api/quote, /api/fakequote, /api/usage の実際のリクエスト/レスポンス整形
 ```
 
 - クラス名は**必ず `OpenMiQ`**（`import { OpenMiQ } from "@makeitaquote/openmiq"`）。voids/miqxの`MiQ`エイリアスに相当する短縮名は、他パッケージと衝突しやすいため本パッケージではエイリアスを設けず`OpenMiQ`一本にする。
-- `OpenMiQOptions`: `{ apiKey: string; baseUrl?: string /* 既定 DEFAULT_BASE_URL */; timeout?: number; retry?: number; signal?: AbortSignal }` — `apiKey`は必須（voids/miqxは無認証の第三者APIだが、本パッケージは自ホストのAPIキー認証必須エンドポイントを叩くため）。`baseUrl`を指定すれば自前セルフホストインスタンスにもそのまま向けられる。
+- `OpenMiQOptions`: `{ apiKey: string; baseUrl: string; timeout?: number; retry?: number; signal?: AbortSignal }` — `apiKey`・`baseUrl`ともに必須（`apiKey`は自ホストのAPIキー認証必須エンドポイントを叩くため。`baseUrl`はvoids/miqxと異なり既定値を持たない — OpenMiQ-APIは各自がセルフホストするものであり、本パッケージが前提とすべき単一の「公式ホスト」が存在しないため、§15.1参照）。
 - `set*()`群（実装済み）: `setText` / `setUsername`（`authorName`にマップ） / `setAvatar`（URL文字列のみ、画像バイト列は不可） / `setTheme` / `setFont` / `setColor` / `setBold` / `setLayout('side'|'new')` / `setFake()`（`/api/fakequote`への切り替え） — §8.5 の実際の`/api/quote`スキーマ（`packages/shared/src/quote.ts`）に1:1対応させる。実装時の補正: `setDisplayName`/`setFlip`/`setWatermark`に対応するフィールドは実際の`/api/quote`スキーマに存在しないため実装していない（`authorName`一本、fakequoteは別エンドポイント）。
 - 出力メソッド: `toBuffer()`（既定、1ラウンドトリップでバイナリ）/ `toURL()`（`hosted: true`で生成し`/api/images/:id`のURLを返す、§8.5参照）— Voidsの`toURL()`/`toBuffer({hosted})`と同じ非対称設計を踏襲。
 - エラー: `OpenMiQApiError extends MiQError`（`status`/`body`/`endpoint`）、`ValidationError`は`@makeitaquote/utils/errors`から再export。
 - `GET /api/usage`を叩く `getUsage()` メソッドも用意し、Web Console同様にライブラリ利用者もレート制限状況を取得できるようにする（§5.4との対応）。
 
 ### 15.4 ライセンスに関する補足（MIT採用の理由）
-`apps/api`・`apps/web`（サーバー本体）はOpenMiQの派生としてAGPL-3.0-or-later + `ADDITIONAL_TERMS.md`を継承するが、`packages/openmiq`はHTTP経由でそのAPIを叩くだけの薄いクライアントであり、OpenMiQ由来のコード（レンダリングロジック等）を一切含まない。姉妹パッケージ`@makeitaquote/voids`/`@makeitaquote/miqx`も同様に「対象APIのコードは含まない薄いクライアント」としてMITで公開されているため、同じ整理に倣いMITとする。ただし本パッケージの`DEFAULT_BASE_URL`が指す`miq.otnc.dev`自体はAGPL-3.0-or-later + 追加条項のもとで運用されるサービスである点に変わりはない。
+`apps/api`・`apps/web`（サーバー本体）はOpenMiQの派生としてAGPL-3.0-or-later + `ADDITIONAL_TERMS.md`を継承するが、`packages/openmiq`はHTTP経由でそのAPIを叩くだけの薄いクライアントであり、OpenMiQ由来のコード（レンダリングロジック等）を一切含まない。姉妹パッケージ`@makeitaquote/voids`/`@makeitaquote/miqx`も同様に「対象APIのコードは含まない薄いクライアント」としてMITで公開されているため、同じ整理に倣いMITとする。ただし利用者が`baseUrl`に指定する先のOpenMiQ-APIインスタンス自体は、いずれもAGPL-3.0-or-later + 追加条項のもとで運用されるソフトウェアである点に変わりはない。
 
 ---
 
