@@ -3,6 +3,7 @@ import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { loadEnv } from "./config/env.ts";
 import { aboutApp } from "./routes/about.ts";
+import { createBrandingApp } from "./routes/branding.ts";
 import { createAuthApp } from "./routes/auth.ts";
 import { createConsoleApp } from "./routes/console.ts";
 import { createApplicationsApp } from "./routes/applications.ts";
@@ -22,6 +23,7 @@ const app = new OpenAPIHono();
 app.use("*", sessionMiddleware(env));
 
 app.route("/", aboutApp);
+app.route("/", createBrandingApp(env));
 app.route("/", createAuthApp(env));
 app.route("/", createConsoleApp(env));
 app.route("/", createApplicationsApp(env));

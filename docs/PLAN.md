@@ -8,7 +8,7 @@
 - pnpmワークスペース初期化（`apps/api`(Hono), `apps/web`(SvelteKit), `packages/db`, `packages/shared`, `packages/openmiq`）+ **Turborepo** 導入（`turbo.json`、`build`/`lint`/`test`/`dev`パイプライン、DESIGN.md §3.1/§13.4）
 - `LICENSE` / `ADDITIONAL_TERMS.md` を OpenMiQ から無改変コピー
 - `.github/assets/icon.png` / `logo.png` を OpenMiQ から著作権者本人の許諾のもとそのままコピー（DESIGN.md §0.1）
-- `ICON_PATH`/`LOGO_PATH` 環境変数によるブランディング配信の仕組み（`GET /api/branding/icon`, `GET /api/branding/logo`）を実装。未設定時は `.github/assets/` の画像にフォールバックする
+- `ICON_PATH`/`LOGO_PATH` 環境変数によるブランディング配信の仕組み（`GET /api/branding/icon`, `GET /api/branding/logo`、実装済み）を実装。未設定時は `.github/assets/` の画像にフォールバックする（拡張子からContent-Typeを判定、実機動作確認済み）
 - ルートに `eslint.config.js` / `.prettierrc` / `.prettierignore` / `tsconfig.base.json`（**TypeScript `^6.0.3`**、DESIGN.md §3.1/§13.3）をOpenMiQ本家の設定を踏襲して用意し、`apps/web`向けに `eslint-plugin-svelte` / `svelte-eslint-parser` / `prettier-plugin-svelte` を追加（DESIGN.md §13）
 - **Node/pnpmバージョン固定（決定、DESIGN.md §13.4）**: `.nvmrc`に`24`、`.npmrc`に`engine-strict=true`と`manage-package-manager-versions=false`、`package.json`に固定バージョンの`packageManager`を設定
 - README作成（DESIGN.md §12の雛形どおり、OpenMiQ-misskeyに倣ったAuthor/Credits/Licenseの型 + 帰属表示3要素 + 改変明示文を含む）。**`README.md`（英語）と`README-ja.md`（日本語）の両方を作成**し、セットアップ手順（前提条件・クイックスタート・Discord設定・本番ビルド/デプロイ）を明確に記載する
