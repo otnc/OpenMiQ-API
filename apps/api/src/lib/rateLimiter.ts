@@ -52,3 +52,34 @@ export function checkAndIncrement(
     limit: max,
   };
 }
+
+// Read-only view of the current window, for usage-reporting endpoints that
+// must not themselves count as a consumed request (DESIGN.md §5.4).
+export function peek(
+  db: Db,
+  key: string,
+  windowMs: number,
+  max: number,
+): RateLimitResult {
+  const now = Date.now();
+  const windowStartMs = Math.floor(now / windowMs) * windowMs;
+  const resetAt = new Date(windowStartMs + windowMs);
+
+  const existing = db
+    .select()
+    .from(rateLimitCounters)
+    .where(eq(rateLimitCounters.key, key))
+    .get();
+
+  const count =
+    existing && existing.windowStart.getTime() === windowStartMs
+      ? existing.count
+      : 0;
+
+  return {
+    allowed: count <= max,
+    remaining: Math.max(0, max - count),
+    resetAt,
+    limit: max,
+  };
+}

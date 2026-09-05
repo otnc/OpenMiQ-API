@@ -8,6 +8,9 @@ import { createConsoleApp } from "./routes/console.ts";
 import { createApplicationsApp } from "./routes/applications.ts";
 import { createLegalApp } from "./routes/legal.ts";
 import { createDiscordInteractionsApp } from "./routes/discordInteractions.ts";
+import { createApiKeysConsoleApp } from "./routes/apiKeysConsole.ts";
+import { createApiKeysAdminApp } from "./routes/apiKeysAdmin.ts";
+import { createUsageApp } from "./routes/usage.ts";
 import { sessionMiddleware } from "./middleware/session.ts";
 
 const env = loadEnv();
@@ -22,6 +25,9 @@ app.route("/", createConsoleApp(env));
 app.route("/", createApplicationsApp(env));
 app.route("/", createLegalApp(env));
 app.route("/", createDiscordInteractionsApp(env));
+app.route("/", createApiKeysConsoleApp(env));
+app.route("/", createApiKeysAdminApp(env));
+app.route("/", createUsageApp(env));
 
 app.doc("/api/docs/openapi.json", {
   openapi: "3.1.0",
