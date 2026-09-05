@@ -6,6 +6,8 @@ coverage/
 data/
 .env
 .env.local
+.env.*
+!.env.example
 /deploy/
 .turbo/
 *.log
