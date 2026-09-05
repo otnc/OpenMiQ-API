@@ -6,12 +6,51 @@
   import { Badge } from "$lib/components/ui/badge/index.ts";
   import * as Card from "$lib/components/ui/card/index.ts";
   import * as Table from "$lib/components/ui/table/index.ts";
+  import Pagination from "$lib/components/Pagination.svelte";
+  import ConfirmDialog from "$lib/components/ConfirmDialog.svelte";
+  import { defaultDiscordAvatarUrl } from "$lib/discordAvatar.ts";
+  import { Inbox, Users, Ban, ScrollText, KeyRound } from "@lucide/svelte";
   import type { PageData, ActionData } from "./$types.ts";
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   const tr = $derived(t(data.locale));
   const usernameByUserId = $derived(
     new Map(data.users.map((user) => [user.id, user.discordUsername])),
+  );
+
+  // A single shared confirm dialog for every destructive action on this
+  // page (revoke/ban/delete-all) — opened with the form that should
+  // actually submit once the admin confirms, rather than one dialog
+  // instance per row.
+  let confirmOpen = $state(false);
+  let pendingForm: HTMLFormElement | null = $state(null);
+
+  function confirmThen(formEl: HTMLFormElement) {
+    pendingForm = formEl;
+    confirmOpen = true;
+  }
+
+  function submitPending() {
+    pendingForm?.requestSubmit();
+    pendingForm = null;
+  }
+
+  const PAGE_SIZE = 10;
+
+  let usersPage = $state(1);
+  const usersTotalPages = $derived(
+    Math.max(1, Math.ceil(data.users.length / PAGE_SIZE)),
+  );
+  const pagedUsers = $derived(
+    data.users.slice((usersPage - 1) * PAGE_SIZE, usersPage * PAGE_SIZE),
+  );
+
+  let apiKeysPage = $state(1);
+  const apiKeysTotalPages = $derived(
+    Math.max(1, Math.ceil(data.apiKeys.length / PAGE_SIZE)),
+  );
+  const pagedApiKeys = $derived(
+    data.apiKeys.slice((apiKeysPage - 1) * PAGE_SIZE, apiKeysPage * PAGE_SIZE),
   );
 </script>
 
@@ -26,7 +65,10 @@
 
   <Card.Root>
     <Card.Header>
-      <Card.Title>{tr.admin.applications}</Card.Title>
+      <Card.Title class="flex items-center gap-2"
+        ><Inbox class="text-muted-foreground size-4" />{tr.admin
+          .applications}</Card.Title
+      >
     </Card.Header>
     <Card.Content class="space-y-3">
       {#each data.applications as app (app.id)}
@@ -52,7 +94,10 @@
 
   <Card.Root>
     <Card.Header>
-      <Card.Title>{tr.admin.users}</Card.Title>
+      <Card.Title class="flex items-center gap-2"
+        ><Users class="text-muted-foreground size-4" />{tr.admin
+          .users}</Card.Title
+      >
     </Card.Header>
     <Card.Content>
       <Table.Root>
@@ -65,14 +110,32 @@
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {#each data.users as user (user.id)}
+          {#each pagedUsers as user (user.id)}
             <Table.Row>
-              <Table.Cell>{user.discordUsername}</Table.Cell>
-              <Table.Cell class="flex gap-1">
-                <Badge variant="outline">{user.status}</Badge>
-                {#if user.reconsentRequired}
-                  <Badge variant="destructive">reconsent pending</Badge>
-                {/if}
+              <Table.Cell>
+                <div class="flex items-center gap-2">
+                  <img
+                    src={defaultDiscordAvatarUrl(user.discordId)}
+                    alt=""
+                    class="size-6 shrink-0 rounded-full"
+                    loading="lazy"
+                  />
+                  <div class="flex flex-col">
+                    <span>{user.discordUsername}</span>
+                    <span
+                      class="text-muted-foreground font-mono text-[0.7rem]"
+                      title={tr.admin.discordIdLabel}>{user.discordId}</span
+                    >
+                  </div>
+                </div>
+              </Table.Cell>
+              <Table.Cell>
+                <div class="flex flex-wrap items-center gap-1">
+                  <Badge variant="outline">{user.status}</Badge>
+                  {#if user.reconsentRequired}
+                    <Badge variant="destructive">reconsent pending</Badge>
+                  {/if}
+                </div>
               </Table.Cell>
               <Table.Cell>
                 <form
@@ -95,53 +158,78 @@
                   >
                 </form>
               </Table.Cell>
-              <Table.Cell class="flex flex-wrap gap-2">
-                <form method="POST" action="?/revoke" use:enhance>
-                  <input type="hidden" name="id" value={user.id} />
-                  <Button type="submit" variant="link" size="sm"
-                    >{tr.admin.revoke}</Button
+              <Table.Cell>
+                <div class="flex flex-wrap items-center gap-2">
+                  <form method="POST" action="?/revoke" use:enhance>
+                    <input type="hidden" name="id" value={user.id} />
+                    <Button
+                      type="button"
+                      variant="link"
+                      size="sm"
+                      onclick={(event) =>
+                        confirmThen(
+                          (event.currentTarget as HTMLButtonElement).form!,
+                        )}>{tr.admin.revoke}</Button
+                    >
+                  </form>
+                  <form
+                    method="POST"
+                    action="?/ban"
+                    use:enhance
+                    class="flex items-center gap-1"
                   >
-                </form>
-                <form
-                  method="POST"
-                  action="?/ban"
-                  use:enhance
-                  class="flex items-center gap-1"
-                >
-                  <input type="hidden" name="id" value={user.id} />
-                  <Input
-                    type="text"
-                    name="reason"
-                    placeholder={tr.admin.reasonLabel}
-                    class="h-7 w-32 text-xs"
-                  />
-                  <Button
-                    type="submit"
-                    variant="link"
-                    size="sm"
-                    class="text-destructive">{tr.admin.ban}</Button
-                  >
-                </form>
-                <form method="POST" action="?/deleteAllApiKeys" use:enhance>
-                  <input type="hidden" name="userId" value={user.id} />
-                  <Button
-                    type="submit"
-                    variant="link"
-                    size="sm"
-                    class="text-destructive">{tr.admin.deleteAllKeys}</Button
-                  >
-                </form>
+                    <input type="hidden" name="id" value={user.id} />
+                    <Input
+                      type="text"
+                      name="reason"
+                      placeholder={tr.admin.reasonLabel}
+                      class="h-7 w-32 text-xs"
+                    />
+                    <Button
+                      type="button"
+                      variant="link"
+                      size="sm"
+                      class="text-destructive"
+                      onclick={(event) =>
+                        confirmThen(
+                          (event.currentTarget as HTMLButtonElement).form!,
+                        )}>{tr.admin.ban}</Button
+                    >
+                  </form>
+                  <form method="POST" action="?/deleteAllApiKeys" use:enhance>
+                    <input type="hidden" name="userId" value={user.id} />
+                    <Button
+                      type="button"
+                      variant="link"
+                      size="sm"
+                      class="text-destructive"
+                      onclick={(event) =>
+                        confirmThen(
+                          (event.currentTarget as HTMLButtonElement).form!,
+                        )}>{tr.admin.deleteAllKeys}</Button
+                    >
+                  </form>
+                </div>
               </Table.Cell>
             </Table.Row>
           {/each}
         </Table.Body>
       </Table.Root>
+      <Pagination
+        bind:page={usersPage}
+        totalPages={usersTotalPages}
+        previousLabel={tr.pagination.previous}
+        nextLabel={tr.pagination.next}
+        pageOfLabel={tr.pagination.pageOf}
+      />
     </Card.Content>
   </Card.Root>
 
   <Card.Root>
     <Card.Header>
-      <Card.Title>{tr.admin.bans}</Card.Title>
+      <Card.Title class="flex items-center gap-2"
+        ><Ban class="text-muted-foreground size-4" />{tr.admin.bans}</Card.Title
+      >
     </Card.Header>
     <Card.Content class="space-y-2">
       {#each data.bans as ban (ban.id)}
@@ -162,7 +250,10 @@
 
   <Card.Root>
     <Card.Header>
-      <Card.Title>{tr.admin.apiKeys}</Card.Title>
+      <Card.Title class="flex items-center gap-2"
+        ><KeyRound class="text-muted-foreground size-4" />{tr.admin
+          .apiKeys}</Card.Title
+      >
     </Card.Header>
     <Card.Content>
       <Table.Root>
@@ -177,7 +268,7 @@
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {#each data.apiKeys as key (key.id)}
+          {#each pagedApiKeys as key (key.id)}
             <Table.Row>
               <Table.Cell
                 >{usernameByUserId.get(key.userId) ?? key.userId}</Table.Cell
@@ -193,35 +284,47 @@
                   {key.remaining}/{key.limit}
                 {/if}
               </Table.Cell>
-              <Table.Cell class="flex gap-2">
-                {#if !key.revokedAt}
-                  <form method="POST" action="?/revokeApiKey" use:enhance>
+              <Table.Cell>
+                <div class="flex flex-wrap items-center gap-2">
+                  {#if !key.revokedAt}
+                    <form method="POST" action="?/revokeApiKey" use:enhance>
+                      <input type="hidden" name="id" value={key.id} />
+                      <Button type="submit" variant="link" size="sm"
+                        >{tr.admin.revokeKey}</Button
+                      >
+                    </form>
+                  {/if}
+                  <form method="POST" action="?/deleteApiKey" use:enhance>
                     <input type="hidden" name="id" value={key.id} />
-                    <Button type="submit" variant="link" size="sm"
-                      >{tr.admin.revokeKey}</Button
+                    <Button
+                      type="submit"
+                      variant="link"
+                      size="sm"
+                      class="text-destructive">{tr.admin.deleteKey}</Button
                     >
                   </form>
-                {/if}
-                <form method="POST" action="?/deleteApiKey" use:enhance>
-                  <input type="hidden" name="id" value={key.id} />
-                  <Button
-                    type="submit"
-                    variant="link"
-                    size="sm"
-                    class="text-destructive">{tr.admin.deleteKey}</Button
-                  >
-                </form>
+                </div>
               </Table.Cell>
             </Table.Row>
           {/each}
         </Table.Body>
       </Table.Root>
+      <Pagination
+        bind:page={apiKeysPage}
+        totalPages={apiKeysTotalPages}
+        previousLabel={tr.pagination.previous}
+        nextLabel={tr.pagination.next}
+        pageOfLabel={tr.pagination.pageOf}
+      />
     </Card.Content>
   </Card.Root>
 
   <Card.Root>
     <Card.Header>
-      <Card.Title>{tr.admin.auditLog}</Card.Title>
+      <Card.Title class="flex items-center gap-2"
+        ><ScrollText class="text-muted-foreground size-4" />{tr.admin
+          .auditLog}</Card.Title
+      >
     </Card.Header>
     <Card.Content>
       <ul class="text-muted-foreground space-y-1 text-xs">
@@ -236,3 +339,12 @@
     </Card.Content>
   </Card.Root>
 </div>
+
+<ConfirmDialog
+  bind:open={confirmOpen}
+  title={tr.admin.confirmTitle}
+  description={tr.admin.confirmMessage}
+  confirmLabel={tr.admin.confirmYes}
+  cancelLabel={tr.admin.confirmCancel}
+  onConfirm={submitPending}
+/>
