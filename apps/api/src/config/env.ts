@@ -7,6 +7,12 @@ const envSchema = z.object({
   DISCORD_CLIENT_SECRET: z.string().min(1),
   DISCORD_PUBLIC_KEY: z.string().min(1),
   DISCORD_REVIEW_WEBHOOK_URL: z.url(),
+  // Optional — only used to fetch an arbitrary Discord user's profile (the
+  // first ADMIN_DISCORD_IDS entry's avatar, for the homepage sample quote)
+  // without requiring that user to have logged in first. Everything else in
+  // this app avoids a bot on purpose (HTTP Interactions instead of a
+  // Gateway connection); this is the one feature that genuinely needs one.
+  DISCORD_BOT_TOKEN: z.string().optional(),
   ADMIN_DISCORD_IDS: z
     .string()
     .default("")

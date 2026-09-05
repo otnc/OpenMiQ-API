@@ -370,7 +370,8 @@ Swagger UI: `GET /api/docs`（`@hono/swagger-ui`、`@hono/zod-openapi` が生成
 ### 8.1 公開情報
 - `GET /api/about` — 帰属表示（ソフトウェア名/著作者/リポジトリURL）、バージョン、ソース入手先（AGPL §13対応）
 - `GET /api/branding/icon`, `GET /api/branding/logo` — `ICON_PATH`/`LOGO_PATH`（§0.1, §11）が指すローカル画像を配信。**未設定時は404**（本家アセットへのフォールバックは無し、§0.1参照）。Web UIはこれをそのまま `<img>`/favicon に埋め込む
-- `GET /api/legal/terms`, `GET /api/legal/privacy` — 現行バージョンの利用規約・プライバシーポリシー本文をEN/JA両方（`?lang=ja`等）で返す（§16）。Web UI（`/legal/terms`, `/legal/privacy`ページ、§17のi18nでUI言語と連動）はこれを表示する
+- `GET /api/legal/terms`, `GET /api/legal/privacy` — 現行バージョンの利用規約・プライバシーポリシー本文をEN/JA両方（`?lang=ja`等）で返す（§16）。Web UI（`/legal/terms`, `/legal/privacy`ページ、§17のi18nでUI言語と連動、実装済み）はこれを表示する
+- `GET /api/sample-quote`（実装済み）— トップページ用のサンプルクォート画像。プロセス起動時に一度だけ、`ADMIN_DISCORD_IDS`の先頭ユーザーのアバターを`DISCORD_BOT_TOKEN`（任意）経由でDiscord REST APIから取得し`renderQuote()`で生成、以後はメモリにキャッシュしたものをそのまま返す（毎リクエスト生成しない、タイマー更新もしない）。`DISCORD_BOT_TOKEN`未設定または`ADMIN_DISCORD_IDS`が空なら404を返し続ける（Web UIはトップページでこの画像取得に失敗したら単に非表示にする）。**このエンドポイントのためだけに`DISCORD_BOT_TOKEN`（Botトークン）を任意で導入**——本サービスの他の部分は一貫してGateway非常駐・HTTP Interactions方式だが、ログイン前の任意ユーザーのアバターを取得する手段がOAuth2には無いため、この1機能に限りBotトークンを許容する（`apps/api/src/services/discordBotService.ts`）
 
 ### 8.2 Console API（セッションJWT必須）
 - `GET /api/console/me` — 自分のステータス取得
@@ -506,9 +507,10 @@ OpenMiQ-misskey の `## Configuration` 節に倣い、Markdownテーブル形式
 | `DATABASE_URL` | SQLiteのファイルパス（既定 `file:./data/db.sqlite`）。Drizzle+`better-sqlite3`が読む |
 | `SESSION_JWT_SECRET` | セッションJWTの署名鍵 |
 | `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET` | Discord OAuth2アプリの認証情報 |
-| `DISCORD_PUBLIC_KEY` | Interactions Endpointの署名検証用（Botを常駐させないHTTP Interactions方式のため、Botトークンは不要 — メッセージ編集もWebhook自体のURL経由で行う） |
+| `DISCORD_PUBLIC_KEY` | Interactions Endpointの署名検証用（Botを常駐させないHTTP Interactions方式のため、この署名検証自体にBotトークンは不要 — メッセージ編集もWebhook自体のURL経由で行う） |
 | `DISCORD_REVIEW_WEBHOOK_URL` | 審査用埋め込みの送信先Webhook URL |
 | `ADMIN_DISCORD_IDS` | 管理画面/管理操作を許可するDiscordユーザーIDのカンマ区切りリスト |
+| `DISCORD_BOT_TOKEN` | 任意。`GET /api/sample-quote`（§8.1）専用 — `ADMIN_DISCORD_IDS`の先頭ユーザーのアバターをログイン前に取得するためだけにBotトークンを使う。未設定ならそのエンドポイントが404を返し続けるだけで、他機能への影響は無い |
 | `APP_BASE_URL` | OAuthコールバック等に使う自ホストの公開URL |
 | `RATE_LIMIT_WINDOW_MS` | `hono-rate-limiter` のデフォルトウィンドウ（既定 `60000`） |
 | `RATE_LIMIT_MAX` | ウィンドウあたりのデフォルト上限リクエスト数（既定 `60`。キー単位で個別上書きしたい場合はAPIKEYテーブルに拡張列を追加） |

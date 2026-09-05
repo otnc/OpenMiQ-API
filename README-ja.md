@@ -47,6 +47,7 @@ pnpm run dev           # Turborepo経由でapps/apiとapps/webを同時起動
 3. General InformationタブでPublic Key（Interactionsリクエストの署名検証に使用）を確認します。
 4. Interactions Endpoint URLに`<APP_BASE_URL>/api/discord/interactions`を設定します — これはHTTPSで到達可能である必要があるため、デプロイ後に行ってください（[Deployment](#deployment)参照）。
 5. 審査結果を投稿したいDiscordチャンネルにWebhookを作成し、そのURLを`DISCORD_REVIEW_WEBHOOK_URL`に設定します。
+6. （任意）トップページのサンプルクォート画像を使いたい場合のみ、**Bot**タブでBotユーザーを追加し、そのトークンを`DISCORD_BOT_TOKEN`に設定します。この機能でのみBotが必要です。
 
 ### 本番ビルド・デプロイ
 
@@ -93,6 +94,7 @@ pnpm run pm2:stop
 | `DISCORD_PUBLIC_KEY` | 受信したDiscord Interactionsリクエストの署名検証に使用 |
 | `DISCORD_REVIEW_WEBHOOK_URL` | 審査用メッセージ（Approve/Deniedボタン付き）の投稿先Webhook URL |
 | `ADMIN_DISCORD_IDS` | Adminダッシュボード/管理エンドポイントの利用を許可するDiscordユーザーIDのカンマ区切りリスト |
+| `DISCORD_BOT_TOKEN` | 任意。OAuth2アプリのシークレットではなくBotトークン。`ADMIN_DISCORD_IDS`の先頭ユーザーのアバターを取得し、トップページのサンプルクォート画像を起動時に1度だけ生成するためだけに使用する。未設定ならその画像を省略するだけ |
 | `APP_BASE_URL` | 本サービス自身の公開URL。OAuth2コールバックとInteractions Endpointに使用 |
 | `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | APIキーごとの既定レート制限のウィンドウ（ms）と上限リクエスト数（既定 `60000`/`60`） |
 | `ICON_PATH` / `LOGO_PATH` | `GET /api/branding/icon`/`logo`が配信するローカル画像パス。相対パスは`.env`自体と同じくプロジェクトルート基準で解決される。**未設定時は本家デプロイも含めて全デプロイで404**になる — 同梱の`.github/assets/icon.png`/`logo.png`への自動フォールバックは無い（これらの資産は本家OpenMiQプロジェクト・著作者を特定するものであるため。再利用に関する制約は[License](#license)参照）。アイコン・ロゴを表示したい場合は、同じパス（`ICON_PATH=.github/assets/icon.png`）を指すとしても明示的にこの変数を設定すること |

@@ -47,6 +47,7 @@ pnpm run dev           # runs apps/api and apps/web together via Turborepo
 3. Under General Information, note the **Public Key** (used to verify Interactions requests).
 4. Set the Interactions Endpoint URL to `<APP_BASE_URL>/api/discord/interactions` — this requires the app to already be reachable over HTTPS, so do this after deploying (see [Deployment](#deployment)).
 5. Create a Webhook in the Discord channel you want application reviews posted to, and put its URL in `DISCORD_REVIEW_WEBHOOK_URL`.
+6. (Optional) For the homepage's sample quote image, add a bot user under the **Bot** tab and copy its token into `DISCORD_BOT_TOKEN`. This is the only feature that needs one.
 
 ### Production build & deploy
 
@@ -93,6 +94,7 @@ Both apps read from a single `.env` at the project root (see `.env.example`) —
 | `DISCORD_PUBLIC_KEY` | Verifies signatures on incoming Discord Interactions requests |
 | `DISCORD_REVIEW_WEBHOOK_URL` | Webhook URL that application-review messages (with Approve/Deny buttons) are posted to |
 | `ADMIN_DISCORD_IDS` | Comma-separated Discord user IDs allowed to use the Admin dashboard/endpoints |
+| `DISCORD_BOT_TOKEN` | Optional. A bot token (not an OAuth2 app secret) — only used to fetch the first `ADMIN_DISCORD_IDS` entry's avatar for the homepage's sample quote image, generated once at startup. Unset = the homepage just omits that image |
 | `APP_BASE_URL` | This service's own public URL, used for the OAuth2 callback and Interactions Endpoint |
 | `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | Default per-API-key rate limit window (ms) and request cap (default `60000`/`60`) |
 | `ICON_PATH` / `LOGO_PATH` | Local image paths served by `GET /api/branding/icon`/`logo` — a relative path is resolved against the project root, same as `.env` itself. **Unset = 404, on every deployment including the original one** — there's no fallback to the bundled `.github/assets/icon.png`/`logo.png`, since those identify the original OpenMiQ project and author specifically (see [License](#license) for the reuse restrictions on those files). Set these explicitly, even to that same path (`ICON_PATH=.github/assets/icon.png`), if you want an icon/logo served |

@@ -26,7 +26,7 @@
 - `USER.agreedTermsVersion`/`agreedPrivacyVersion`/`agreedAt`/`maxApiKeys`列を`drizzle/schema.ts`に追加（DESIGN.md §4, §16.4）
 
 ## Phase 2: 申請〜審査フロー
-- 利用規約・プライバシーポリシー（EN/JA）を作成し `GET /api/legal/terms`,`GET /api/legal/privacy` で配信、Web UIに `/legal/terms`,`/legal/privacy` ページを実装（DESIGN.md §16）。`hosted: true`時のサーバー保存に関する明記を含める
+- 利用規約・プライバシーポリシー（EN/JA）を作成し `GET /api/legal/terms`,`GET /api/legal/privacy` で配信（DESIGN.md §16）。`hosted: true`時のサーバー保存に関する明記を含める。**実装時の補正**: このドキュメントには当初から「Web UIに`/legal/terms`,`/legal/privacy`ページを実装」と書かれていたが、実際には`console/apply`・`console/reconsent`ページ内に本文を埋め込んで表示するのみで、単独の`/legal/terms`,`/legal/privacy`ページ自体は長らく作られていなかった。フッター整備（Phase 5関連、後述）の際に気づいて実装した
 - 申請フォームAPI `POST /api/console/applications`（20〜500字バリデーション(Zod)、IP取得、fingerprint受領、`agreedTermsVersion`/`agreedPrivacyVersion`必須チェック）。同意チェックボックス無しでは送信不可なフォームをWeb側にも実装。承認時に`USER.agreedTermsVersion`/`agreedPrivacyVersion`/`agreedAt`へ反映
 - 再同意フロー（DESIGN.md §16.4、実装済み）: `POST /api/console/consent`、`GET /api/console/me`の`reconsentRequired`フラグ、APIキー認証ミドルウェアでの`reconsent_required`(403)判定（§5.3）、Web側の再同意バナー・`/console/reconsent`ページ、Admin一覧の「reconsent pending」バッジまで実装・実機動作確認済み。同意しない/放置した場合はAPIキーが一時凍結されるが`status`は変更せず再申請も不要。法的文書のバージョン別本文履歴（`apps/api/src/legal/content.ts`）と`diff`パッケージによる差分生成（`apps/api/src/legal/diff.ts`、`GET /api/legal/{terms,privacy}/diff`）も実装済みで、再同意画面は既定で差分表示、トグルで全文表示に切り替え可能（実機動作確認済み）
 - 再申請クールダウン判定（`REAPPLY_COOLDOWN_DAYS`、DESIGN.md §6.6）: `denied`は直近Applicationの`reviewedAt`、`revoked`は`ADMIN_ACTION`の該当`revoke`の`createdAt`を起点に経過日数を検証し、未経過ならエラーで残り日数を返す。BANは常に優先して即拒否
@@ -59,6 +59,12 @@
 - Revoke / Ban / Unban アクション実装（`ADMIN_ACTION`記録）
 - BAN済みdiscordId/email/ipのOAuth・申請提出時ブロック（再申請クールダウンより優先）
 - i18n実装: `apps/web/src/lib/i18n/`に`Translations`オブジェクト（EN/JA、外部ライブラリ非依存、決定）+ ロケール判定（保存済み選択→`Accept-Language`/`navigator.language`→既定`en`）+ 切替UI（DESIGN.md §17）
+- トップページ・共通レイアウトの整備（実装済み・ユーザーからの指摘を受けて実施）:
+  - ヘッダーのページ名表示を、`LOGO_PATH`設定時は`GET /api/branding/logo`のロゴ画像に、未設定（404）時はテキストにフォールバックする形に変更（`<img>`の`onerror`でクライアント側フォールバック）
+  - トップページに`GET /api/sample-quote`（新規実装、上記Phase 4関連参照）のサンプル画像とCredits（OpenMiQ/makeitaquote/Make it a Quote各リンク）を追加。画像取得に失敗（未生成/未設定）した場合は単に非表示にする
+  - 共通フッターを追加: 利用規約・プライバシーポリシーへのリンク、ソースコードへのリンク、帰属表示文。**このフッターのリンク先として`/legal/terms`・`/legal/privacy`の単独ページを新規実装**（上記の補正参照）
+  - Adminリンクを未ログイン時は表示しないよう修正（Consoleリンクは既に同様の条件分岐があったが、Adminには無かった）
+  - レスポンシブ対応の確認: ヘッダー/フッターに`flex-wrap`を追加、shadcn-svelteの`Table`は元々`overflow-x-auto`のラッパーを持つため管理画面の横長テーブルは対応済みと確認
 
 ## Phase 6: セキュリティ強化・仕上げ
 - 監査ログ整備（`GET /api/admin/audit-log`・Admin UI、実装済み）
