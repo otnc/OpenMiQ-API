@@ -9,7 +9,8 @@
     "build": "tsdown",
     "start": "node --env-file-if-exists=../../.env --env-file-if-exists=../../.env.local dist/index.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "reset-users": "tsx --env-file-if-exists=../../.env --env-file-if-exists=../../.env.local scripts/reset-users.ts"
   },
   "dependencies": {
     "@badgateway/oauth2-client": "^3.3.1",
