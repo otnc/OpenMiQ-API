@@ -42,12 +42,23 @@ pnpm run dev           # runs apps/api and apps/web together via Turborepo
 
 ### Discord setup
 
-1. Create an Application at the [Discord Developer Portal](https://discord.com/developers/applications). No bot user is required — this service uses Discord only for OAuth2 login and an HTTP Interactions Endpoint, never a Gateway bot connection.
+1. Create an Application at the [Discord Developer Portal](https://discord.com/developers/applications). No Gateway bot connection is ever run by this service — Discord is used only for OAuth2 login, an HTTP Interactions Endpoint, and (see step 5) a single one-time REST call, never a persistent bot process.
 2. Under OAuth2, note the **Client ID** / **Client Secret**, and add a redirect URI: `<APP_BASE_URL>/api/auth/discord/callback`.
 3. Under General Information, note the **Public Key** (used to verify Interactions requests).
 4. Set the Interactions Endpoint URL to `<APP_BASE_URL>/api/discord/interactions` — this requires the app to already be reachable over HTTPS, so do this after deploying (see [Deployment](#deployment)).
-5. Create a Webhook in the Discord channel you want application reviews posted to, and put its URL in `DISCORD_REVIEW_WEBHOOK_URL`.
-6. (Optional) For the homepage's sample quote image, add a bot user under the **Bot** tab and copy its token into `DISCORD_BOT_TOKEN`. This is the only feature that needs one — and even then, **the bot never needs to be invited to a server**: `DISCORD_BOT_TOKEN` is only used to call Discord's `GET /users/{id}` (a global endpoint that works for any user ID regardless of shared servers), never anything guild-scoped.
+5. Create the review webhook — the one application reviews (with Approve/Deny buttons) get posted to:
+   1. Under the **Bot** tab, add a bot user and copy its token into `DISCORD_BOT_TOKEN`.
+   2. Invite that bot to the server with your review channel, granting it **Manage Webhooks** (invite link: `https://discord.com/oauth2/authorize?client_id=<CLIENT_ID>&scope=bot&permissions=536870912`).
+   3. Create the webhook **via the bot itself**, not through the channel's Integrations → Webhooks UI:
+      ```bash
+      curl -X POST "https://discord.com/api/v10/channels/<CHANNEL_ID>/webhooks" \
+        -H "Authorization: Bot <DISCORD_BOT_TOKEN>" \
+        -H "Content-Type: application/json" \
+        -d '{"name": "OpenMiQ-API Review"}'
+      ```
+      Put the response's `url` field in `DISCORD_REVIEW_WEBHOOK_URL`. **This step matters**: a webhook created through the Integrations UI is not "application-owned," and Discord silently drops Approve/Deny buttons from every message sent through it — the embed still posts, just with no buttons and no error to indicate why. Only a webhook created by the bot's own API call can carry working interactive buttons ([Discord docs](https://docs.discord.com/developers/resources/webhook)).
+   4. Once the webhook exists, the bot's guild membership isn't needed for anything else at runtime — Approve/Deny is handled entirely through the webhook's own token and the Interactions Endpoint from step 4, not the bot.
+6. (Optional) The same `DISCORD_BOT_TOKEN` also powers the homepage's sample quote image, fetching the first `ADMIN_DISCORD_IDS` entry's avatar via Discord's `GET /users/{id}` (a global endpoint, unrelated to the webhook/guild setup above).
 
 ### Production build & deploy
 
@@ -94,7 +105,7 @@ Both apps read from a single `.env` at the project root (see `.env.example`) —
 | `DISCORD_PUBLIC_KEY` | Verifies signatures on incoming Discord Interactions requests |
 | `DISCORD_REVIEW_WEBHOOK_URL` | Webhook URL that application-review messages (with Approve/Deny buttons) are posted to |
 | `ADMIN_DISCORD_IDS` | Comma-separated Discord user IDs allowed to use the Admin dashboard/endpoints |
-| `DISCORD_BOT_TOKEN` | Optional. A bot token (not an OAuth2 app secret) — only used to fetch the first `ADMIN_DISCORD_IDS` entry's avatar for the homepage's sample quote image, generated once at startup. Unset = the homepage just omits that image |
+| `DISCORD_BOT_TOKEN` | Optional at runtime — not read by the running server except for the homepage's sample quote image (fetches the first `ADMIN_DISCORD_IDS` entry's avatar once at startup; unset = the homepage just omits that image). Still needed once during setup to create an application-owned `DISCORD_REVIEW_WEBHOOK_URL` (see [Discord setup](#discord-setup) step 5) — without that, Approve/Deny buttons silently don't appear |
 | `APP_BASE_URL` | This service's own public URL, used for the OAuth2 callback and Interactions Endpoint |
 | `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | Default per-API-key rate limit window (ms) and request cap (default `60000`/`60`) |
 | `ICON_PATH` / `LOGO_PATH` | Local image paths served by `GET /api/branding/icon`/`logo` — a relative path is resolved against the project root, same as `.env` itself. **Unset = 404, on every deployment including the original one** — there's no fallback to the bundled `.github/assets/icon.png`/`logo.png`, since those identify the original OpenMiQ project and author specifically (see [License](#license) for the reuse restrictions on those files). Set these explicitly, even to that same path (`ICON_PATH=.github/assets/icon.png`), if you want an icon/logo served. `LOGO_PATH` is also drawn as the default watermark on generated quotes (matching OpenMiQ and OpenMiQ-misskey's own convention) unless a request's own `watermark` field overrides it — see `GET /api/docs` for the full `POST /api/quote` schema |

@@ -95,7 +95,7 @@ flowchart LR
 - Discordとのボタン連携は **Gateway Bot（常駐接続）ではなく Discord の HTTP Interactions Endpoint** を採用する。
   - Discord Developer Portal でアプリケーションに「Interactions Endpoint URL」を1つ登録すると、ボタン押下は毎回 HTTPS POST として飛んでくる（Ed25519署名付き）。
   - 判定に必要な状態は全てDBに保持し、プロセス内メモリに一切依存しないため、**サーバー再起動後もボタンは常に有効**（「再起動後にも読み込み、いつでも押せる」という要件を自然に満たす）。
-  - Webhook自体はボタン付き埋め込みの「送信」にのみ使う（`POST /webhooks/{id}/{token}` は components 付きメッセージ送信に対応）。押下時の応答は Webhook ではなく上記 Interactions Endpoint が受ける。
+  - Webhook自体はボタン付き埋め込みの「送信」にのみ使う（`POST /webhooks/{id}/{token}` は components 付きメッセージ送信に対応）。押下時の応答は Webhook ではなく上記 Interactions Endpoint が受ける。**実装時の補正（重要）**: components付き送信に対応するのは「application-owned」なWebhookに限られる。Botの`POST /channels/{channel.id}/webhooks`で作成したWebhookはapplication-owned（`application_id`がそのBotのアプリケーションIDになる）だが、チャンネル設定のIntegrations UIから手動作成したWebhookはapplication-owned**ではなく**、そこに送る`components`フィールドはDiscord側でエラー無く黙って無視される（`with_components=true`クエリパラメータを付けてもリンクボタンのみ許可、`custom_id`を持つインタラクティブボタンは依然不可）。このため`DISCORD_REVIEW_WEBHOOK_URL`は必ずBotのAPI呼び出しで作成する必要があり、結果として`DISCORD_BOT_TOKEN`は「トップページのサンプルクォート画像用の完全な任意機能」ではなく「セットアップ時に一度、審査Webhookを作成するために必要」という位置づけに変わる（README.md/README-ja.mdのDiscord setup手順5参照）。Bot自体はこの1回のREST呼び出しにのみ使われ、作成後はギルドに常駐する必要もWebhook実行自体にBotトークンを使う必要もない。
 
 ---
 
@@ -371,7 +371,7 @@ Swagger UI: `GET /api/docs`（`@hono/swagger-ui`、`@hono/zod-openapi` が生成
 - `GET /api/about` — 帰属表示（ソフトウェア名/著作者/リポジトリURL）、バージョン、ソース入手先（AGPL §13対応）
 - `GET /api/branding/icon`, `GET /api/branding/logo` — `ICON_PATH`/`LOGO_PATH`（§0.1, §11）が指すローカル画像を配信。**未設定時は404**（本家アセットへのフォールバックは無し、§0.1参照）。Web UIはこれをそのまま `<img>`/favicon に埋め込む
 - `GET /api/legal/terms`, `GET /api/legal/privacy` — 現行バージョンの利用規約・プライバシーポリシー本文をEN/JA両方（`?lang=ja`等）で返す（§16）。Web UI（`/legal/terms`, `/legal/privacy`ページ、§17のi18nでUI言語と連動、実装済み）はこれを表示する
-- `GET /api/sample-quote`（実装済み）— トップページ用のサンプルクォート画像。プロセス起動時に一度だけ、`ADMIN_DISCORD_IDS`の先頭ユーザーのアバターを`DISCORD_BOT_TOKEN`（任意）経由でDiscord REST APIから取得し`renderQuote()`で生成、以後はメモリにキャッシュしたものをそのまま返す（毎リクエスト生成しない、タイマー更新もしない）。`DISCORD_BOT_TOKEN`未設定または`ADMIN_DISCORD_IDS`が空なら404を返し続ける（Web UIはトップページでこの画像取得に失敗したら単に非表示にする）。**このエンドポイントのためだけに`DISCORD_BOT_TOKEN`（Botトークン）を任意で導入**——本サービスの他の部分は一貫してGateway非常駐・HTTP Interactions方式だが、ログイン前の任意ユーザーのアバターを取得する手段がOAuth2には無いため、この1機能に限りBotトークンを許容する（`apps/api/src/services/discordBotService.ts`）
+- `GET /api/sample-quote`（実装済み）— トップページ用のサンプルクォート画像。プロセス起動時に一度だけ、`ADMIN_DISCORD_IDS`の先頭ユーザーのアバターを`DISCORD_BOT_TOKEN`（任意）経由でDiscord REST APIから取得し`renderQuote()`で生成、以後はメモリにキャッシュしたものをそのまま返す（毎リクエスト生成しない、タイマー更新もしない）。`DISCORD_BOT_TOKEN`未設定または`ADMIN_DISCORD_IDS`が空なら404を返し続ける（Web UIはトップページでこの画像取得に失敗したら単に非表示にする）。このエンドポイント自体は`DISCORD_BOT_TOKEN`が無くても404を返すだけで動く——本サービスの他の部分は一貫してGateway非常駐・HTTP Interactions方式だが、ログイン前の任意ユーザーのアバターを取得する手段がOAuth2には無いため、この1機能に限りBotトークンを許容する（`apps/api/src/services/discordBotService.ts`）。なお`DISCORD_BOT_TOKEN`自体はこのサンプル画像専用というわけではなく、審査Webhook（§6.1・§0.1）をapplication-ownedとして作成するセットアップ手順でも1回限り必要になる。
 
 ### 8.2 Console API（セッションJWT必須）
 - `GET /api/console/me` — 自分のステータス取得
@@ -512,7 +512,7 @@ OpenMiQ-misskey の `## Configuration` 節に倣い、Markdownテーブル形式
 | `DISCORD_PUBLIC_KEY` | Interactions Endpointの署名検証用（Botを常駐させないHTTP Interactions方式のため、この署名検証自体にBotトークンは不要 — メッセージ編集もWebhook自体のURL経由で行う） |
 | `DISCORD_REVIEW_WEBHOOK_URL` | 審査用埋め込みの送信先Webhook URL |
 | `ADMIN_DISCORD_IDS` | 管理画面/管理操作を許可するDiscordユーザーIDのカンマ区切りリスト |
-| `DISCORD_BOT_TOKEN` | 任意。`GET /api/sample-quote`（§8.1）専用 — `ADMIN_DISCORD_IDS`の先頭ユーザーのアバターをログイン前に取得するためだけにBotトークンを使う。未設定ならそのエンドポイントが404を返し続けるだけで、他機能への影響は無い |
+| `DISCORD_BOT_TOKEN` | 実行時は任意 — サーバーが読むのは`GET /api/sample-quote`（§8.1、`ADMIN_DISCORD_IDS`の先頭ユーザーのアバター取得）のみで、未設定ならそのエンドポイントが404を返し続けるだけ。ただしセットアップ時には1回必要 — application-ownedな`DISCORD_REVIEW_WEBHOOK_URL`（§6.1）を`POST /channels/{channel.id}/webhooks`で作成するため。これを怠るとApprove/Denyボタンが送信されず（Discordが黙って無視する）、埋め込みだけが届く |
 | `APP_BASE_URL` | OAuthコールバック等に使う自ホストの公開URL |
 | `RATE_LIMIT_WINDOW_MS` | `hono-rate-limiter` のデフォルトウィンドウ（既定 `60000`） |
 | `RATE_LIMIT_MAX` | ウィンドウあたりのデフォルト上限リクエスト数（既定 `60`。キー単位で個別上書きしたい場合はAPIKEYテーブルに拡張列を追加） |
@@ -576,7 +576,7 @@ pnpm run dev           # runs apps/api and apps/web together via Turborepo
 1. Create an Application at the [Discord Developer Portal](https://discord.com/developers/applications).
 2. Add an OAuth2 redirect URI: `<APP_BASE_URL>/api/auth/discord/callback`.
 3. Set the Interactions Endpoint URL to `<APP_BASE_URL>/api/discord/interactions` (requires the app to already be reachable over HTTPS — do this after deploying, see [Deployment](#deployment)).
-4. Create a Webhook in the Discord channel you want application reviews posted to, and put its URL in `DISCORD_REVIEW_WEBHOOK_URL`.
+4. Create the review webhook via the bot's own `POST /channels/{channel.id}/webhooks` call (not the channel's Integrations UI — that produces a non-application-owned webhook whose Approve/Deny buttons Discord silently drops), and put the result's `url` in `DISCORD_REVIEW_WEBHOOK_URL`. See README.md's Discord setup for the full steps.
 
 ### Production build & deploy
 ```bash

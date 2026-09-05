@@ -103,12 +103,12 @@ pm2 save
 
 1. [Discord Developer Portal](https://discord.com/developers/applications)で対象のアプリケーションを開く
 2. **General Information** → Interactions Endpoint URLに `https://miq.example.com/api/discord/interactions` を設定して保存する。Discordはこの時点で実際にPINGインタラクションを送って検証するため、`apps/api`が起動済みで`DISCORD_PUBLIC_KEY`が正しく設定されている必要がある（保存が失敗する場合はpm2のログでエラーを確認）
-3. **OAuth2** → Redirectsに `https://miq.example.com/api/auth/discord/callback` を追加して保存する
-4. まだ済んでいなければ、審査結果を投稿するDiscordチャンネルでWebhookを作成し（チャンネル設定 → Integrations → Webhooks → New Webhook）、そのURLを`.env`の`DISCORD_REVIEW_WEBHOOK_URL`に設定してpm2を再起動する（[README.mdのDiscord setup](../README.md#discord-setup)手順1〜5と同じ内容）
+3. **OAuth2** → Redirectsに `https://miq.example.com/api/auth/discord/callback` を追加して保存する。**`miq.example.com`は必ず自分の実際のドメイン（`APP_BASE_URL`の値）に読み替えること** — サーバーは`redirect_uri`として`${APP_BASE_URL}/api/auth/discord/callback`を1文字違わず送るため、`.env`の`APP_BASE_URL`とここに登録するURLのプロトコル・ドメイン・パス・末尾スラッシュが完全一致していないと、Discordが`OAuth2 redirect_uri is invalid`で拒否する
+4. まだ済んでいなければ、審査用Webhookを作成し、そのURLを`.env`の`DISCORD_REVIEW_WEBHOOK_URL`に設定してpm2を再起動する（[README.mdのDiscord setup](../README.md#discord-setup)手順1〜5と同じ内容）。**チャンネル設定のIntegrations → Webhooksから作成しないこと** — その方法で作ったWebhookは「application-owned」にならず、Approve/DenyボタンをDiscordが黙って無視する（メッセージ自体はエラー無く届くため気づきにくい）。必ずBotトークンで`POST /channels/{channel.id}/webhooks`を叩いて作成する（README手順5参照）
 
 ## 7. 動作確認
 
 - `https://miq.example.com/api/about` — 帰属表示が返ることを確認
 - `https://miq.example.com/` — Web Consoleのトップページが表示されることを確認
 - `https://miq.example.com/api/docs` — Swagger UIが表示されることを確認
-- Discordアカウントでログイン → 申請提出 → 審査用Webhookにメッセージが届き、Approve/Denyボタンが機能することを確認（実機確認済みの導線、PLAN.md Phase 6参照）
+- Discordアカウントでログイン → 申請提出 → 審査用Webhookにメッセージが届き、Approve/Denyボタンが**実際に表示され**機能することを確認（PLAN.md Phase 6参照）。ボタンが表示されない場合は上記手順4の「application-ownedなWebhookか」を再確認する
