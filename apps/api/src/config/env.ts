@@ -5,7 +5,6 @@ const envSchema = z.object({
   SESSION_JWT_SECRET: z.string().min(1),
   DISCORD_CLIENT_ID: z.string().min(1),
   DISCORD_CLIENT_SECRET: z.string().min(1),
-  DISCORD_BOT_TOKEN: z.string().min(1),
   DISCORD_PUBLIC_KEY: z.string().min(1),
   DISCORD_REVIEW_WEBHOOK_URL: z.url(),
   ADMIN_DISCORD_IDS: z

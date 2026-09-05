@@ -11,7 +11,7 @@
 - `ICON_PATH`/`LOGO_PATH` 環境変数によるブランディング配信の仕組み（`GET /api/branding/icon`, `GET /api/branding/logo`、実装済み）を実装。未設定時は `.github/assets/` の画像にフォールバックする（拡張子からContent-Typeを判定、実機動作確認済み）
 - ルートに `eslint.config.js` / `.prettierrc` / `.prettierignore` / `tsconfig.base.json`（**TypeScript `^6.0.3`**、DESIGN.md §3.1/§13.3）をOpenMiQ本家の設定を踏襲して用意し、`apps/web`向けに `eslint-plugin-svelte` / `svelte-eslint-parser` / `prettier-plugin-svelte` を追加（DESIGN.md §13）
 - **Node/pnpmバージョン固定（決定、DESIGN.md §13.4）**: `.nvmrc`に`24`、`.npmrc`に`engine-strict=true`と`manage-package-manager-versions=false`、`package.json`に固定バージョンの`packageManager`を設定
-- README作成（DESIGN.md §12の雛形どおり、OpenMiQ-misskeyに倣ったAuthor/Credits/Licenseの型 + 帰属表示3要素 + 改変明示文を含む）。**`README.md`（英語）と`README-ja.md`（日本語）の両方を作成**し、セットアップ手順（前提条件・クイックスタート・Discord設定・本番ビルド/デプロイ）を明確に記載する
+- README作成（実装済み）: DESIGN.md §12の雛形どおり、OpenMiQ-misskeyに倣ったAuthor/Credits/Licenseの型 + 帰属表示3要素 + 改変明示文を含む`README.md`（英語）・`README-ja.md`（日本語）を作成。前提条件・クイックスタート・Discord設定・本番ビルド/デプロイ・Configuration（全環境変数）・Known v1 limitationsを記載。作成時に`DISCORD_BOT_TOKEN`が実装のどこからも参照されていない（設計時点の想定と異なりWebhook自体のURL経由でメッセージ編集しておりBotトークン不要）ことに気づき、必須環境変数から削除した（`apps/api/src/config/env.ts`・`.env.example`・DESIGN.md §11/§12を修正）
 - コーディング規約（コメント最小限、ドキュメント/コメント内で不自然な改行をしない、DESIGN.md §13.5）をCONTRIBUTING.md等に明記
 - `docs/LIBRARIES.md` を実装しながら随時更新（確定バージョンの追記）
 - Drizzle + **`better-sqlite3`**（決定: SQLite、`drizzle-kit`）導入、DESIGN.md §4のモデル（`rate_limit_counters`/`hosted_images`含む）を `drizzle/schema.ts` に反映、マイグレーション作成

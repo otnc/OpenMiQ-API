@@ -506,8 +506,7 @@ OpenMiQ-misskey の `## Configuration` 節に倣い、Markdownテーブル形式
 | `DATABASE_URL` | SQLiteのファイルパス（既定 `file:./data/db.sqlite`）。Drizzle+`better-sqlite3`が読む |
 | `SESSION_JWT_SECRET` | セッションJWTの署名鍵 |
 | `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET` | Discord OAuth2アプリの認証情報 |
-| `DISCORD_BOT_TOKEN` | Webhook実行/メッセージ編集のREST呼び出しに使用（Bot常駐はしない） |
-| `DISCORD_PUBLIC_KEY` | Interactions Endpointの署名検証用 |
+| `DISCORD_PUBLIC_KEY` | Interactions Endpointの署名検証用（Botを常駐させないHTTP Interactions方式のため、Botトークンは不要 — メッセージ編集もWebhook自体のURL経由で行う） |
 | `DISCORD_REVIEW_WEBHOOK_URL` | 審査用埋め込みの送信先Webhook URL |
 | `ADMIN_DISCORD_IDS` | 管理画面/管理操作を許可するDiscordユーザーIDのカンマ区切りリスト |
 | `APP_BASE_URL` | OAuthコールバック等に使う自ホストの公開URL |
@@ -523,6 +522,8 @@ OpenMiQ-misskey の `## Configuration` 節に倣い、Markdownテーブル形式
 | `HOSTED_IMAGE_TTL_HOURS` | hosted画像の保存期間。**既定は未設定＝無期限**（自動削除しない）。設定した場合、期限切れ後に`GET /api/images/:id`が404を返し、実体はR2バケットのライフサイクルルールにより自動削除される（`local`選択時のみアプリ側の削除ジョブにフォールバック、§8.6） |
 | `TERMS_VERSION` / `PRIVACY_VERSION` | 現在有効な利用規約・プライバシーポリシーのバージョン識別子（§16）。更新の都度インクリメントし、`USER.agreedTermsVersion`/`agreedPrivacyVersion`と不一致のユーザーは再同意するまでAPIキーが凍結される（§16.4） |
 | `DEFAULT_LOCALE` | Web UIの既定表示言語。**既定 `en`**（§17） |
+| `PORT` | `apps/api`（Hono）が待ち受けるポート番号（既定 `9413`） |
+| `API_BASE_URL` | `apps/web`（SvelteKit）がサーバーサイドから`apps/api`に到達するためのURL（既定 `http://localhost:9413`） |
 
 ---
 
@@ -553,7 +554,7 @@ Based on [OpenMiQ](https://github.com/otnc/OpenMiQ) (a Discord bot), with modifi
 
 ### Prerequisites
 - Node.js `24` (see `.nvmrc`) and `pnpm` (version pinned via `packageManager` in `package.json`)
-- A Discord Application (OAuth2 Client ID/Secret, Bot Token, Public Key) — see [Discord setup](#discord-setup) below
+- A Discord Application (OAuth2 Client ID/Secret, Public Key) — no bot user needed, see [Discord setup](#discord-setup) below
 - (Optional but recommended) A Cloudflare R2 bucket, if you want `hosted: true` image URLs — otherwise set `STORAGE_DRIVER=local`
 
 ### Quick start
