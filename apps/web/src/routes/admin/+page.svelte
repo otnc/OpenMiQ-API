@@ -21,16 +21,32 @@
   // A single shared confirm dialog for every destructive action on this
   // page (revoke/ban/delete-all) — opened with the form that should
   // actually submit once the admin confirms, rather than one dialog
-  // instance per row.
+  // instance per row. Ban also collects its (required) reason in the
+  // dialog itself instead of a separate table input — the confirm step
+  // reads it back out of `reasonValue` and writes it onto the form's own
+  // hidden "reason" field just before submitting.
   let confirmOpen = $state(false);
   let pendingForm: HTMLFormElement | null = $state(null);
+  let confirmReasonLabel: string | null = $state(null);
+  let reasonValue = $state("");
 
-  function confirmThen(formEl: HTMLFormElement) {
+  function confirmThen(
+    formEl: HTMLFormElement,
+    reasonLabel: string | null = null,
+  ) {
     pendingForm = formEl;
+    confirmReasonLabel = reasonLabel;
+    reasonValue = "";
     confirmOpen = true;
   }
 
   function submitPending() {
+    if (confirmReasonLabel !== null) {
+      const reasonInput = pendingForm?.elements.namedItem(
+        "reason",
+      ) as HTMLInputElement | null;
+      if (reasonInput) reasonInput.value = reasonValue;
+    }
     pendingForm?.requestSubmit();
     pendingForm = null;
   }
@@ -211,19 +227,9 @@
                         )}>{tr.admin.revoke}</Button
                     >
                   </form>
-                  <form
-                    method="POST"
-                    action="?/ban"
-                    use:enhance
-                    class="flex items-center gap-1"
-                  >
+                  <form method="POST" action="?/ban" use:enhance>
                     <input type="hidden" name="id" value={user.id} />
-                    <Input
-                      type="text"
-                      name="reason"
-                      placeholder={tr.admin.reasonLabel}
-                      class="h-7 w-32 text-xs"
-                    />
+                    <input type="hidden" name="reason" />
                     <Button
                       type="button"
                       variant="link"
@@ -232,6 +238,7 @@
                       onclick={(event) =>
                         confirmThen(
                           (event.currentTarget as HTMLButtonElement).form!,
+                          tr.admin.reasonLabel,
                         )}>{tr.admin.ban}</Button
                     >
                   </form>
@@ -385,5 +392,7 @@
   description={tr.admin.confirmMessage}
   confirmLabel={tr.admin.confirmYes}
   cancelLabel={tr.admin.confirmCancel}
+  reasonLabel={confirmReasonLabel}
+  bind:reasonValue
   onConfirm={submitPending}
 />

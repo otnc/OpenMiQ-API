@@ -1,5 +1,7 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button/index.ts";
+  import { Input } from "$lib/components/ui/input/index.ts";
+  import { Label } from "$lib/components/ui/label/index.ts";
 
   let {
     open = $bindable(false),
@@ -7,6 +9,8 @@
     description,
     confirmLabel,
     cancelLabel,
+    reasonLabel = null,
+    reasonValue = $bindable(""),
     onConfirm,
   }: {
     open: boolean;
@@ -14,10 +18,16 @@
     description: string;
     confirmLabel: string;
     cancelLabel: string;
+    /** When set, shows a required text field (e.g. a ban reason) above the buttons. */
+    reasonLabel?: string | null;
+    reasonValue?: string;
     onConfirm: () => void;
   } = $props();
 
   let dialogEl: HTMLDialogElement | undefined = $state();
+  const reasonRequired = $derived(
+    reasonLabel !== null && reasonValue.trim().length === 0,
+  );
 
   // The <dialog> element (not open state) is the source of truth for
   // showModal()/close() — this effect just keeps it in sync with `open`
@@ -38,6 +48,12 @@
 >
   <h2 class="text-base font-semibold">{title}</h2>
   <p class="text-muted-foreground mt-2 text-sm">{description}</p>
+  {#if reasonLabel !== null}
+    <div class="mt-3 space-y-1">
+      <Label for="confirm-dialog-reason">{reasonLabel}</Label>
+      <Input id="confirm-dialog-reason" type="text" bind:value={reasonValue} />
+    </div>
+  {/if}
   <div class="mt-4 flex justify-end gap-2">
     <Button
       type="button"
@@ -49,6 +65,7 @@
       type="button"
       variant="destructive"
       size="sm"
+      disabled={reasonRequired}
       onclick={() => {
         dialogEl?.close();
         onConfirm();
