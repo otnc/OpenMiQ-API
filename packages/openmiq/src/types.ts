@@ -39,8 +39,9 @@ export interface OpenMiQOptions {
    * `"https://miq.example.com"` or `"http://localhost:9413"` for a local
    * instance. Required — OpenMiQ-API is meant to be self-hosted, so this
    * package has no single default host to fall back to.
+   * @default "https://miq.otnc.dev"
    */
-  baseUrl: string;
+  baseUrl?: string;
   /** Request timeout in ms, default 15000. */
   timeout?: number;
   /** Retry attempts for transient failures, default 2. */

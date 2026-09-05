@@ -71,11 +71,8 @@ export class OpenMiQ {
     if (typeof options?.apiKey !== "string" || options.apiKey.trim() === "") {
       throw new ValidationError("apiKey is required", { field: "apiKey" });
     }
-    if (typeof options?.baseUrl !== "string" || options.baseUrl.trim() === "") {
-      throw new ValidationError("baseUrl is required", { field: "baseUrl" });
-    }
     this.#apiKey = options.apiKey;
-    this.#baseUrl = options.baseUrl.replace(/\/+$/, "");
+    this.#baseUrl = options.baseUrl?.replace(/\/+$/, "") ?? "https://miq.otnc.dev";
     this.#signal = options.signal;
     this.#http = createClient({
       timeout: options.timeout ?? 15_000,
