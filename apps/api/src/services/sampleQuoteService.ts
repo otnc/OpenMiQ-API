@@ -3,8 +3,10 @@ import type { Env } from "../config/env.ts";
 import { fetchDiscordUserById } from "./discordBotService.ts";
 import { renderQuote } from "./renderService.ts";
 
-const SAMPLE_TEXT =
-  "This is a sample quote, generated automatically for this page.";
+// The opening line of Natsume Sōseki's "Wagahai wa Neko de Aru" (I Am a
+// Cat, 1905) — public domain (Sōseki died in 1916). Used verbatim
+// regardless of DEFAULT_LOCALE, by request.
+const SAMPLE_TEXT = "吾輩は猫である。名前はまだ無い。";
 
 // Generated once at startup (not per-request, not on a timer) from the
 // first ADMIN_DISCORD_IDS entry's own Discord avatar, then served as-is on

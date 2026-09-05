@@ -47,7 +47,7 @@ pnpm run dev           # runs apps/api and apps/web together via Turborepo
 3. Under General Information, note the **Public Key** (used to verify Interactions requests).
 4. Set the Interactions Endpoint URL to `<APP_BASE_URL>/api/discord/interactions` — this requires the app to already be reachable over HTTPS, so do this after deploying (see [Deployment](#deployment)).
 5. Create a Webhook in the Discord channel you want application reviews posted to, and put its URL in `DISCORD_REVIEW_WEBHOOK_URL`.
-6. (Optional) For the homepage's sample quote image, add a bot user under the **Bot** tab and copy its token into `DISCORD_BOT_TOKEN`. This is the only feature that needs one.
+6. (Optional) For the homepage's sample quote image, add a bot user under the **Bot** tab and copy its token into `DISCORD_BOT_TOKEN`. This is the only feature that needs one — and even then, **the bot never needs to be invited to a server**: `DISCORD_BOT_TOKEN` is only used to call Discord's `GET /users/{id}` (a global endpoint that works for any user ID regardless of shared servers), never anything guild-scoped.
 
 ### Production build & deploy
 

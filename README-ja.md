@@ -47,7 +47,7 @@ pnpm run dev           # Turborepo経由でapps/apiとapps/webを同時起動
 3. General InformationタブでPublic Key（Interactionsリクエストの署名検証に使用）を確認します。
 4. Interactions Endpoint URLに`<APP_BASE_URL>/api/discord/interactions`を設定します — これはHTTPSで到達可能である必要があるため、デプロイ後に行ってください（[Deployment](#deployment)参照）。
 5. 審査結果を投稿したいDiscordチャンネルにWebhookを作成し、そのURLを`DISCORD_REVIEW_WEBHOOK_URL`に設定します。
-6. （任意）トップページのサンプルクォート画像を使いたい場合のみ、**Bot**タブでBotユーザーを追加し、そのトークンを`DISCORD_BOT_TOKEN`に設定します。この機能でのみBotが必要です。
+6. （任意）トップページのサンプルクォート画像を使いたい場合のみ、**Bot**タブでBotユーザーを追加し、そのトークンを`DISCORD_BOT_TOKEN`に設定します。この機能でのみBotが必要です。**この場合もBotをどこかのサーバーに招待する必要はありません** — `DISCORD_BOT_TOKEN`はDiscordの`GET /users/{id}`（サーバー共有の有無に関わらず任意のユーザーIDを取得できるグローバルなエンドポイント）を呼ぶためだけに使い、ギルド（サーバー）に紐づく操作は一切行いません。
 
 ### 本番ビルド・デプロイ
 
