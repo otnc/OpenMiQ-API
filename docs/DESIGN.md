@@ -698,7 +698,7 @@ OpenMiQ本家の `tsconfig.json`（`target: ES2025`, `module/moduleResolution: N
 
 ## 14. デプロイ構成（ドメイン・nginx・pm2・Let's Encrypt）
 
-実際にデプロイする際に上から実行できる形にまとめたチェックリストは [docs/DEPLOYMENT.md](./DEPLOYMENT.md)、そのままコピーできるnginx設定は [deploy/nginx/openmiq-api.conf](../deploy/nginx/openmiq-api.conf) を参照（実装済み、PLAN.md Phase 8）。
+実際にデプロイする際に上から実行できる形にまとめたチェックリストは [docs/DEPLOYMENT.md](./DEPLOYMENT.md)、そのままコピーできるnginx設定は [deploy-example/nginx/openmiq-api.conf](../deploy-example/nginx/openmiq-api.conf) を参照（実装済み、PLAN.md Phase 8）。
 
 ### 14.1 前提
 - ドメイン: **`miq.otnc.dev`**（1ドメインでWeb Console/Admin + API を配信、nginxのパスルーティングで`apps/web`と`apps/api`に振り分け）

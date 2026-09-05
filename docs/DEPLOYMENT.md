@@ -51,13 +51,15 @@ pnpm run build
 
 ## 4. nginx + certbot
 
-1. [`deploy/nginx/openmiq-api.conf`](../deploy/nginx/openmiq-api.conf)を配置する（自分のドメインでセルフホストする場合はファイル内の`miq.example.com`をすべて置き換える）:
+1. `.env`と同じパターンで、[`deploy-example/`](../deploy-example/)（gitコミット済みの雛形）を`deploy/`（gitignore対象、実際の設定を書き込む場所）にコピーしてから編集する:
    ```bash
+   cp -r deploy-example deploy
+   $EDITOR deploy/nginx/openmiq-api.conf   # miq.example.com を自分のドメインに置き換える
    sudo cp deploy/nginx/openmiq-api.conf /etc/nginx/sites-available/openmiq-api
    sudo ln -s /etc/nginx/sites-available/openmiq-api /etc/nginx/sites-enabled/
    sudo nginx -t && sudo systemctl reload nginx
    ```
-   このファイルは意図的に80番ポートの`server`ブロックのみを持つ（`/api/`・`/`のプロキシ設定込み）。443ブロックを手書きする必要はない — 次のcertbotが自動生成する。
+   `deploy-example/nginx/openmiq-api.conf`は意図的に80番ポートの`server`ブロックのみを持つ（`/api/`・`/`のプロキシ設定込み）。443ブロックを手書きする必要はない — 次のcertbotが自動生成する。
 2. 証明書取得:
    ```bash
    sudo certbot --nginx -d miq.example.com

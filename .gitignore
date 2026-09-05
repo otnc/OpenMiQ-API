@@ -6,6 +6,7 @@ coverage/
 data/
 .env
 .env.local
+/deploy/
 .turbo/
 *.log
 .makeitaquote/

@@ -68,7 +68,7 @@ This is written for a single VPS running both `apps/api` and `apps/web` behind n
 4. Run `pnpm run build && pnpm run pm2:start` to start both processes under pm2.
 5. Finish the [Discord setup](#discord-setup) steps that require HTTPS (Interactions Endpoint URL, OAuth2 redirect URI) now that the domain resolves.
 
-See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for the full runbook and a ready-to-copy nginx config at [deploy/nginx/openmiq-api.conf](./deploy/nginx/openmiq-api.conf).
+See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for the full runbook and a ready-to-copy nginx config at [deploy-example/nginx/openmiq-api.conf](./deploy-example/nginx/openmiq-api.conf).
 
 ## Running with pm2
 
