@@ -61,7 +61,8 @@
 - i18n実装: `apps/web/src/lib/i18n/`に`Translations`オブジェクト（EN/JA、外部ライブラリ非依存、決定）+ ロケール判定（保存済み選択→`Accept-Language`/`navigator.language`→既定`en`）+ 切替UI（DESIGN.md §17）
 
 ## Phase 6: セキュリティ強化・仕上げ
-- 監査ログ整備、ログのマスキング確認
+- 監査ログ整備（`GET /api/admin/audit-log`・Admin UI、実装済み）
+- **ログのマスキング確認（実施済み・実際に不具合を発見して修正）**: `apps/api/src`内の`console.*`呼び出しを全数調査したところ、`discordInteractions.ts`の`console.error("Failed to update Discord review message", error)`が1件のみ存在し、この`error`が`discordWebhookService.ts`内で`ofetch`が投げる生の`FetchError`だった。`ofetch`のエラーメッセージにはリクエストURLがそのまま含まれ、`DISCORD_REVIEW_WEBHOOK_URL`はDiscordのWebhookトークンをパスに含む秘匿URL（`https://discord.com/api/webhooks/<id>/<token>`）であるため、Webhook呼び出し失敗時にトークンがそのままログに出力される実害を実機検証で確認した（`node --input-type=module`でofetch単体を実行し、`console.error`出力にトークン文字列が含まれることを確認）。`requestWithRetry`のリトライ打ち切り時の`throw error`を、ステータスコードのみを含むサニタイズ済みメッセージの新規`Error`を投げる形に修正（`cause`は付けない — Node の`console.error`は`Error.cause`も出力するため、`cause`に元の`error`を入れると同じ経路で漏洩する）。回帰テスト`apps/api/src/services/discordWebhookService.test.ts`で、失敗時のエラーメッセージにWebhookトークンが含まれないことを固定化
 - テストスイート（実装済み・実機動作確認済み）: `apps/api`に`vitest`導入。`packages/db/src/testDb.ts`（インメモリDB+マイグレーション適用）、`apps/api/tests/helpers/`（`buildTestEnv`・ファイルDB版`createTestDbFile`・セッションCookie生成・Discord Ed25519署名生成）を整備し、単体テスト（`apiKeyCrypto`/`rateLimiter`/`legal diff`/`consentService`/`banService`/`applicationService`）と、実際にHTTPリクエストを`app.request()`で送るE2E/結合テスト（申請→承認→キー発行→API利用の一連の導線、`GET /api/legal/*`、`GET /api/branding/*`）を実装。`apps/api/src/index.ts`から`createApp(env)`を`apps/api/src/app.ts`に分離し、テストが本番と同一のルーティング構成を`.request()`で直接叩けるようにした
 - Discordボタンの再起動後動作（実装済み・実機動作確認済み）: `apps/api/tests/discordInteractions.test.ts`で、`createApp(env)`を2回呼び出して「再起動」を模擬し、1回目のプロセスで作成した申請に対し2回目の（＝別インスタンスの）appから送ったボタン操作が正しく処理されることを確認。Interactionsエンドポイントがプロセス内状態を一切持たずDBのみに依存している設計（HTTP Interactions方式）を裏付ける
 - READMEに帰属表示・利用規約・セットアップ手順を整理（実装済み、`README.md`/`README-ja.md`）

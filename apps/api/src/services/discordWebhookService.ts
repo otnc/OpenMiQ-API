@@ -34,6 +34,11 @@ export interface SentDiscordMessage {
 
 const MAX_RETRIES = 2;
 
+// A Discord webhook URL embeds its secret token in the path
+// (.../webhooks/<id>/<token>/...). ofetch's own error puts the full request
+// URL in `.message` (and Node's console.error prints an Error's message and
+// stack), so anything caught here must be re-thrown without that token
+// before it can reach a log line — never rethrow the original error as-is.
 async function requestWithRetry<T>(
   url: string,
   options: FetchOptions<"json">,
@@ -58,7 +63,13 @@ async function requestWithRetry<T>(
         );
         continue;
       }
-      throw error;
+      // No `cause: error` here (despite preserve-caught-error) — the
+      // original error's message/URL is exactly what must not reach a log
+      // line, and Node's console.error prints an Error's `.cause` too.
+      // eslint-disable-next-line preserve-caught-error
+      throw new Error(
+        `Discord webhook request failed${status ? ` (status ${status})` : ""}`,
+      );
     }
   }
 }
