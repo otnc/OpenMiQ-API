@@ -12,6 +12,7 @@ import { createApiKeysConsoleApp } from "./routes/apiKeysConsole.ts";
 import { createApiKeysAdminApp } from "./routes/apiKeysAdmin.ts";
 import { createUsageApp } from "./routes/usage.ts";
 import { createQuoteApp } from "./routes/quote.ts";
+import { createAdminApp } from "./routes/admin.ts";
 import { sessionMiddleware } from "./middleware/session.ts";
 
 const env = loadEnv();
@@ -30,6 +31,7 @@ app.route("/", createApiKeysConsoleApp(env));
 app.route("/", createApiKeysAdminApp(env));
 app.route("/", createUsageApp(env));
 app.route("/", createQuoteApp(env));
+app.route("/", createAdminApp(env));
 
 app.doc("/api/docs/openapi.json", {
   openapi: "3.1.0",
