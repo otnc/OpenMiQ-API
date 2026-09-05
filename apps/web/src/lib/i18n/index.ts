@@ -22,6 +22,8 @@ export function localeFromAcceptLanguage(header: string | null): Locale {
 
 interface Translations {
   nav: { console: string; admin: string; logout: string };
+  theme: { system: string; light: string; dark: string };
+  pagination: { previous: string; next: string; pageOf: string };
   home: {
     unlinked: string;
     unlinkedCta: string;
@@ -85,11 +87,22 @@ interface Translations {
     revokeKey: string;
     deleteKey: string;
     deleteAllKeys: string;
+    discordIdLabel: string;
+    confirmTitle: string;
+    confirmMessage: string;
+    confirmYes: string;
+    confirmCancel: string;
   };
 }
 
 const en: Translations = {
   nav: { console: "Console", admin: "Admin", logout: "Log out" },
+  theme: { system: "System theme", light: "Light theme", dark: "Dark theme" },
+  pagination: {
+    previous: "Previous",
+    next: "Next",
+    pageOf: "Page {page} of {total}",
+  },
   home: {
     unlinked: "Link your Discord account to request API access.",
     unlinkedCta: "Sign in with Discord",
@@ -159,11 +172,26 @@ const en: Translations = {
     revokeKey: "Revoke",
     deleteKey: "Delete",
     deleteAllKeys: "Delete all",
+    discordIdLabel: "Discord ID",
+    confirmTitle: "Are you sure?",
+    confirmMessage: "This action cannot be undone.",
+    confirmYes: "Yes",
+    confirmCancel: "Cancel",
   },
 };
 
 const ja: Translations = {
   nav: { console: "コンソール", admin: "管理", logout: "ログアウト" },
+  theme: {
+    system: "システム設定に従う",
+    light: "ライトテーマ",
+    dark: "ダークテーマ",
+  },
+  pagination: {
+    previous: "前へ",
+    next: "次へ",
+    pageOf: "{page} / {total}ページ",
+  },
   home: {
     unlinked: "Discordアカウントを連携してAPI利用を申請してください。",
     unlinkedCta: "Discordでログイン",
@@ -230,6 +258,11 @@ const ja: Translations = {
     revokeKey: "失効",
     deleteKey: "削除",
     deleteAllKeys: "すべて削除",
+    discordIdLabel: "Discord ID",
+    confirmTitle: "本当によろしいですか？",
+    confirmMessage: "この操作は取り消せません。",
+    confirmYes: "はい",
+    confirmCancel: "キャンセル",
   },
 };
 
