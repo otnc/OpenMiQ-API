@@ -18,10 +18,12 @@
     "@hono/zod-openapi": "^1.6.3",
     "@openmiq/db": "workspace:*",
     "@openmiq/shared": "workspace:*",
+    "aws4fetch": "^1.0.20",
     "discord-interactions": "^4.4.0",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.13.7",
     "hono-rate-limiter": "^0.5.3",
+    "makeitaquote": "^12.1.2",
     "ofetch": "^1.5.1",
     "ransu": "^0.1.1",
     "zod": "^4.5.4"

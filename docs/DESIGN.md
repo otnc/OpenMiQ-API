@@ -412,6 +412,8 @@ Swagger UI: `GET /api/docs`（`@hono/swagger-ui`、`@hono/zod-openapi` が生成
 - `GET /api/images/:id` — `hosted: true`で生成された画像の取得（有効期限切れ後は404）
 - `GET /api/usage` — APIキー自身の現在のレート制限状況・生涯リクエスト数を取得（`GET /api/console/api-keys/:id/usage`のAPIキー認証版、§5.4）
 
+**実装時のスコープ調整（`theme`/`font`パラメータ）**: 本家Discord Botが持つ39種の命名済みカラーテーマ（`sunset`等）カタログはBot側の独自マッピングテーブルであり、`makeitaquote`本体のAPIではない。`makeitaquote` v12は`.setTheme({ background, avatar: { grayscale }, text: { weight, font }, layout })`という汎用オブジェクト形式（`background`はCSS色表記/hexを直接受け付ける）で表現するため、本APIの`theme`パラメータは**第一段階では任意のCSS色文字列（背景色）を直接渡す方式**とし、本家の39色ネームドカタログの移植（名前→色のマッピングテーブル）は別タスクとする。`font`パラメータは`makeitaquote`の`FONT_ALIASES`（`pop`, `sans`等）がそのまま使えるため追加実装不要。`options.color`は`avatar.grayscale`の反転、`options.bold`は`text.weight`にマッピングする。
+
 ### 8.6 画像ストレージ（`hosted: true`モード）
 
 - **永続保存を保証しない**: `hosted: true`で生成された画像を恒久的な画像配信サービスとしては設計・提供しない。既定では`HOSTED_IMAGE_TTL_HOURS`が未設定＝無期限（自動削除しない、§11）だが、これは運用ポリシー上「保証された永続ホスティング」を意味するものではなく、ディスク/ストレージ事情や規約変更により将来削除され得る旨をSwagger UIの当該エンドポイント説明・Web Console・利用規約（§16）すべてに明記する。

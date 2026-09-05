@@ -40,7 +40,14 @@ const envSchema = z.object({
 export type Env = z.infer<typeof envSchema>;
 
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
-  const parsed = envSchema.safeParse(source);
+  // A key present in .env but left blank (e.g. `HOSTED_IMAGE_TTL_HOURS=`)
+  // means "unset", not the empty string — without this, z.coerce.number()
+  // would turn "" into 0 and fail validation instead of falling through to
+  // the field's own default/optional handling.
+  const normalized = Object.fromEntries(
+    Object.entries(source).filter(([, value]) => value !== ""),
+  );
+  const parsed = envSchema.safeParse(normalized);
   if (!parsed.success) {
     throw new Error(`Invalid environment: ${parsed.error.message}`);
   }
