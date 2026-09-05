@@ -34,7 +34,7 @@ const envSchema = z.object({
   TERMS_VERSION: z.string().default("1"),
   PRIVACY_VERSION: z.string().default("1"),
   DEFAULT_LOCALE: z.enum(["en", "ja"]).default("en"),
-  PORT: z.coerce.number().int().positive().default(3001),
+  PORT: z.coerce.number().int().positive().default(9413),
 });
 
 export type Env = z.infer<typeof envSchema>;

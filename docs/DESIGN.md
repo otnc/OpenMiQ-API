@@ -709,7 +709,7 @@ module.exports = {
       name: process.env.PM2_APP_NAME_API || "openmiq-api",
       cwd: "./apps/api",
       script: "dist/index.js",     // tsdownビルド成果物、@hono/node-serverで起動
-      env: { PORT: 3001, HOST: "127.0.0.1" },
+      env: { PORT: 9413, HOST: "127.0.0.1" },
     },
     {
       name: process.env.PM2_APP_NAME_WEB || "openmiq-web",
@@ -749,7 +749,7 @@ server {
 
     # apps/api（Hono）: /api/* をそのまま透過（パスの書き換えなし）
     location /api/ {
-        proxy_pass http://127.0.0.1:3001;
+        proxy_pass http://127.0.0.1:9413;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
