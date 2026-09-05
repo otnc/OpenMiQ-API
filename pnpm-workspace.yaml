@@ -10,3 +10,4 @@ minimumReleaseAgeExclude:
   - '@hono/zod-openapi@1.6.3'
   - eslint@10.10.0
   - hono@4.13.7
+  - '@lucide/svelte@1.41.0'

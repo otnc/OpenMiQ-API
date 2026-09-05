@@ -42,8 +42,13 @@
 | `svelte-check` | Svelteコンポーネント込みの型検査 | `tsc`だけでは`.svelte`ファイルを検査できないため |
 | `@fingerprintjs/fingerprintjs`（OSS版） | クライアント側フィンガープリント取得 | 申請フォームで`visitorId`を送信 |
 | （追加ライブラリなし） | i18n（EN/JA） | 外部ライブラリを導入せず、OpenMiQ本家と同じ手法の自前`Translations`オブジェクトで実装（決定、DESIGN.md §17） |
+| `bits-ui` | ヘッドレスUIプリミティブ | shadcn-svelteのコンポーネントが内部で使用 |
+| `tailwind-variants` | コンポーネントのバリアント別クラス管理 | shadcn-svelteのコンポーネントが内部で使用 |
+| `clsx` / `tailwind-merge` | クラス名結合・重複解決（`$lib/utils.ts`の`cn()`ヘルパー） | shadcn-svelteの標準ユーティリティ |
+| `tw-animate-css` | Tailwind v4向けアニメーションユーティリティ | shadcn-svelteのCSSテーマが前提とする |
+| `@lucide/svelte` | アイコンライブラリ | `components.json`の`iconLibrary: "lucide"`に対応 |
 
-**実装時のスコープ調整（UIコンポーネント）**: 当初`shadcn-svelte`の導入を予定していたが、初期スキャフォールド段階ではTailwindのユーティリティクラスを直接書く最小実装とした（フォーム・テーブル・ボタン等）。`shadcn-svelte`のCLIによるコンポーネント追加は、実際の画面デザインに着手するタイミングでの導入とする（見た目の作り込みは別タスク）。`zod`はサーバー側`apps/api`のバリデーションに一本化し、`apps/web`側はSvelteKitの`FormData`をそのまま扱う設計にしたため、`apps/web`自体は`zod`に直接依存しない。
+**`shadcn-svelte`導入時の実装メモ**: CLI(`shadcn-svelte@1.6.1`)の`init`は、テーマ・フォント・アイコン等を組み合わせた「プリセット」をshadcn-svelte.com上のビジュアルエディタで生成し文字列として渡すことを前提とした対話フローになっており、`--preset`フラグに直接名前を渡す旧来の使い方（`default`/`new-york`等のstyle名）は通らず、ブラウザの無いノンインタラクティブ環境では自動化できなかった。CLIのバンドル（`node_modules/shadcn-svelte/dist/schema-*.mjs`）からデフォルトの`components.json`の実体（style: `nova`, baseColor: `neutral`, iconLibrary: `lucide`等）を確認し、その内容で`components.json`を直接作成した上で`shadcn-svelte add <component>`を実行することで、対話フローを経ずに個々のコンポーネントを取得できた。`add`は`init`が本来生成する`$lib/utils.ts`（`cn()`ヘルパー）とテーマCSS変数を生成しないため、これらは`https://shadcn-svelte.com/registry/styles/nova/utils.json`・`https://shadcn-svelte.com/registry/colors/neutral.json`から実際のレジストリ応答を取得し、その内容をそのまま反映した。`zod`はサーバー側`apps/api`のバリデーションに一本化し、`apps/web`側はSvelteKitの`FormData`をそのまま扱う設計にしたため、`apps/web`自体は`zod`に直接依存しない。
 
 ## packages/db
 

@@ -1,80 +1,100 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
   import { t } from "$lib/i18n/index.ts";
+  import { Button } from "$lib/components/ui/button/index.ts";
+  import { Input } from "$lib/components/ui/input/index.ts";
+  import { Badge } from "$lib/components/ui/badge/index.ts";
+  import * as Card from "$lib/components/ui/card/index.ts";
+  import * as Table from "$lib/components/ui/table/index.ts";
   import type { PageData, ActionData } from "./$types.ts";
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   const tr = $derived(t(data.locale));
 </script>
 
-<h1 class="mb-4 text-xl font-semibold">{tr.apiKeys.title}</h1>
+<Card.Root class="mx-auto max-w-2xl">
+  <Card.Header>
+    <Card.Title>{tr.apiKeys.title}</Card.Title>
+  </Card.Header>
+  <Card.Content class="space-y-6">
+    {#if form?.created}
+      <div class="bg-accent rounded-md p-3 text-sm">
+        <p class="mb-1">{tr.apiKeys.copyNotice}</p>
+        <code class="break-all font-mono text-xs">{form.created}</code>
+      </div>
+    {/if}
+    {#if form?.error}
+      <p class="text-destructive text-sm">{form.error}</p>
+    {/if}
 
-{#if form?.created}
-  <p class="mb-4 rounded bg-amber-50 px-3 py-2 text-sm text-amber-800">
-    {tr.apiKeys.copyNotice}<br />
-    <code class="break-all font-mono">{form.created}</code>
-  </p>
-{/if}
-{#if form?.error}
-  <p class="mb-4 rounded bg-red-50 px-3 py-2 text-red-700">{form.error}</p>
-{/if}
+    <form method="POST" action="?/create" use:enhance class="flex gap-2">
+      <Input
+        type="text"
+        name="name"
+        required
+        placeholder={tr.apiKeys.nameLabel}
+      />
+      <Button type="submit">{tr.apiKeys.create}</Button>
+    </form>
 
-<form method="POST" action="?/create" use:enhance class="mb-6 flex gap-2">
-  <input
-    type="text"
-    name="name"
-    required
-    placeholder={tr.apiKeys.nameLabel}
-    class="flex-1 rounded border border-neutral-300 px-3 py-2"
-  />
-  <button
-    type="submit"
-    class="rounded bg-neutral-900 px-4 py-2 text-white hover:bg-neutral-700"
-  >
-    {tr.apiKeys.create}
-  </button>
-</form>
+    <Table.Root>
+      <Table.Header>
+        <Table.Row>
+          <Table.Head>{tr.apiKeys.nameLabel}</Table.Head>
+          <Table.Head>Prefix</Table.Head>
+          <Table.Head>{tr.apiKeys.expiresAtLabel}</Table.Head>
+          <Table.Head>Requests</Table.Head>
+          <Table.Head></Table.Head>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {#each data.keys as key (key.id)}
+          <Table.Row>
+            <Table.Cell>{key.name}</Table.Cell>
+            <Table.Cell class="font-mono text-xs">{key.keyPrefix}…</Table.Cell>
+            <Table.Cell>
+              {#if key.expiresAt}
+                {key.expiresAt}
+              {:else}
+                <Badge variant="secondary">{tr.apiKeys.noExpiry}</Badge>
+              {/if}
+            </Table.Cell>
+            <Table.Cell>{key.requestCount}</Table.Cell>
+            <Table.Cell class="flex gap-2">
+              <form method="POST" action="?/regenerate" use:enhance>
+                <input type="hidden" name="id" value={key.id} />
+                <Button type="submit" variant="link" size="sm"
+                  >{tr.apiKeys.regenerate}</Button
+                >
+              </form>
+              <form method="POST" action="?/delete" use:enhance>
+                <input type="hidden" name="id" value={key.id} />
+                <Button
+                  type="submit"
+                  variant="link"
+                  size="sm"
+                  class="text-destructive"
+                >
+                  {tr.apiKeys.delete}
+                </Button>
+              </form>
+            </Table.Cell>
+          </Table.Row>
+        {/each}
+      </Table.Body>
+    </Table.Root>
 
-<table class="w-full text-left text-sm">
-  <thead>
-    <tr class="border-b border-neutral-200">
-      <th class="py-2">{tr.apiKeys.nameLabel}</th>
-      <th>Prefix</th>
-      <th>{tr.apiKeys.expiresAtLabel}</th>
-      <th>Requests</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    {#each data.keys as key (key.id)}
-      <tr class="border-b border-neutral-100">
-        <td class="py-2">{key.name}</td>
-        <td class="font-mono text-xs">{key.keyPrefix}…</td>
-        <td>{key.expiresAt ?? tr.apiKeys.noExpiry}</td>
-        <td>{key.requestCount}</td>
-        <td class="flex gap-2 py-2">
-          <form method="POST" action="?/regenerate" use:enhance>
-            <input type="hidden" name="id" value={key.id} />
-            <button type="submit" class="text-blue-600 hover:underline"
-              >{tr.apiKeys.regenerate}</button
-            >
-          </form>
-          <form method="POST" action="?/delete" use:enhance>
-            <input type="hidden" name="id" value={key.id} />
-            <button type="submit" class="text-red-600 hover:underline"
-              >{tr.apiKeys.delete}</button
-            >
-          </form>
-        </td>
-      </tr>
-    {/each}
-  </tbody>
-</table>
-
-{#if data.keys.length > 0}
-  <form method="POST" action="?/deleteAll" use:enhance class="mt-4">
-    <button type="submit" class="text-sm text-red-600 hover:underline"
-      >{tr.apiKeys.deleteAll}</button
-    >
-  </form>
-{/if}
+    {#if data.keys.length > 0}
+      <form method="POST" action="?/deleteAll" use:enhance>
+        <Button
+          type="submit"
+          variant="outline"
+          size="sm"
+          class="text-destructive"
+        >
+          {tr.apiKeys.deleteAll}
+        </Button>
+      </form>
+    {/if}
+  </Card.Content>
+</Card.Root>

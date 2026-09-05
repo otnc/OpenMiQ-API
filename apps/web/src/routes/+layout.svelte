@@ -6,17 +6,17 @@
   const tr = $derived(t(data.locale));
 </script>
 
-<div class="min-h-screen bg-neutral-50 text-neutral-900">
-  <header class="border-b border-neutral-200 bg-white">
+<div class="bg-background text-foreground min-h-screen">
+  <header class="border-border bg-card border-b">
     <div class="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
       <a href="/" class="font-semibold">OpenMiQ-API</a>
-      <nav class="flex items-center gap-4 text-sm">
+      <nav class="text-muted-foreground flex items-center gap-4 text-sm">
         {#if data.me?.status === "approved"}
-          <a href="/console/api-keys" class="hover:underline"
+          <a href="/console/api-keys" class="hover:text-foreground"
             >{tr.nav.console}</a
           >
         {/if}
-        <a href="/admin" class="hover:underline">{tr.nav.admin}</a>
+        <a href="/admin" class="hover:text-foreground">{tr.nav.admin}</a>
       </nav>
     </div>
   </header>
