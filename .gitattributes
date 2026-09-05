@@ -1,0 +1,6 @@
+* text=auto eol=lf
+
+*.sql linguist-language=SQL
+*.png binary
+*.jpg binary
+*.ico binary

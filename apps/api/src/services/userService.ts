@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { users, type Db } from "@openmiq-api/db";
+import { users, type Db } from "@openmiq/db";
 import type { SessionIdentity } from "./sessionService.ts";
 
 export async function findUserByDiscordId(db: Db, discordId: string) {
