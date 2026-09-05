@@ -11,6 +11,7 @@ import {
 } from "../services/applicationService.ts";
 import {
   listUsers,
+  findUserById,
   revokeUser,
   banUser,
   unbanByBanId,
@@ -53,7 +54,26 @@ export function createAdminApp(env: Env) {
           .from(applications)
           .where(eq(applications.status, status))
       : await db.select().from(applications);
-    return c.json(rows);
+    // Same fields as the Discord review embed (reviewEmbed(), §6.1) — the
+    // Web UI shows the same applicant identity there does.
+    const withApplicant = await Promise.all(
+      rows.map(async (application) => {
+        const user = await findUserById(db, application.userId);
+        const avatarUrl = user
+          ? await fetchDiscordUserById(env.DISCORD_BOT_TOKEN, user.discordId)
+              .then((discordUser) => discordUser.avatarUrl)
+              .catch(() => null)
+          : null;
+        return {
+          ...application,
+          discordId: user?.discordId ?? null,
+          discordUsername: user?.discordUsername ?? null,
+          email: user?.email ?? null,
+          avatarUrl,
+        };
+      }),
+    );
+    return c.json(withApplicant);
   });
 
   app.post("/api/admin/applications/:id/approve", async (c) => {

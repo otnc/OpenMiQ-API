@@ -116,6 +116,14 @@ describe("apply -> approve -> issue key -> use API key", () => {
       { headers: { cookie: await sessionCookieHeader(env, admin) } },
     );
     const [application] = await listRes.json();
+    expect(application.discordId).toBe(applicant.discordId);
+    expect(application.discordUsername).toBe(applicant.discordUsername);
+    expect(application.email).toBe(applicant.email);
+    expect(application.ip).toBe("203.0.113.1");
+    expect(application.fingerprint).toBe("fp-1");
+    expect(application.avatarUrl).toBe(
+      "https://cdn.discordapp.com/embed/avatars/0.png",
+    );
 
     const res = await app.request(
       `/api/admin/applications/${application.id}/approve`,

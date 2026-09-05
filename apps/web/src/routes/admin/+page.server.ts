@@ -5,6 +5,12 @@ import { apiJson } from "$lib/server/api.ts";
 export interface AdminApplication {
   id: string;
   userId: string;
+  discordId: string | null;
+  discordUsername: string | null;
+  avatarUrl: string | null;
+  email: string | null;
+  ip: string;
+  fingerprint: string;
   message: string;
   createdAt: string;
 }

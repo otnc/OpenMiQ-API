@@ -387,7 +387,7 @@ Swagger UI: `GET /api/docs`（`@hono/swagger-ui`、`@hono/zod-openapi` が生成
 - `POST /api/console/consent` — 利用規約・プライバシーポリシーへの（再）同意（`{ agree: boolean, termsVersion: string, privacyVersion: string }`）。`agree: true`かつバージョンが現行の`TERMS_VERSION`/`PRIVACY_VERSION`と一致すれば`USER.agreedTermsVersion`/`agreedPrivacyVersion`/`agreedAt`を更新しAPIキー凍結を解除。`agree: false`（明示的な非同意）の場合は何も更新せず凍結状態を維持（§16.4）
 
 ### 8.3 Admin API（Admin権限必須）
-- `GET /api/admin/applications?status=pending`
+- `GET /api/admin/applications?status=pending` — 各要素に`discordId`/`discordUsername`/`email`/`avatarUrl`（申請者の`users`テーブル行から結合、退会等で見つからない場合は`null`）を含む——審査用Discord Webhook（§6.1の`reviewEmbed()`）と同じ情報をWeb UIの申請一覧にも表示するため。`ip`/`fingerprint`は元々`applications`テーブル自体の列
 - `POST /api/admin/applications/:id/approve`
 - `POST /api/admin/applications/:id/deny`
 - `GET /api/admin/users?status=approved|denied` — 各要素に`avatarUrl`（`DISCORD_BOT_TOKEN`経由で取得したDiscordアバター、失敗時は`null`）を含む — Web UIのユーザー一覧でアイコン表示に使う
