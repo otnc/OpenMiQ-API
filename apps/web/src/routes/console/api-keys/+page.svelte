@@ -7,11 +7,13 @@
   import * as Card from "$lib/components/ui/card/index.ts";
   import * as Table from "$lib/components/ui/table/index.ts";
   import { Copy, Check } from "@lucide/svelte";
+  import DatePicker from "$lib/components/DatePicker.svelte";
   import type { PageData, ActionData } from "./$types.ts";
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   const tr = $derived(t(data.locale));
 
+  let expiresAt: string | null = $state(null);
   let copied = $state(false);
 
   async function copyCreatedKey(key: string) {
@@ -58,12 +60,23 @@
       <p class="text-destructive text-sm">{form.error}</p>
     {/if}
 
-    <form method="POST" action="?/create" use:enhance class="flex gap-2">
+    <form
+      method="POST"
+      action="?/create"
+      use:enhance
+      class="flex flex-wrap gap-2"
+    >
       <Input
         type="text"
         name="name"
         required
         placeholder={tr.apiKeys.nameLabel}
+        class="min-w-40 flex-1"
+      />
+      <DatePicker
+        bind:value={expiresAt}
+        name="expiresAt"
+        placeholder={tr.apiKeys.noExpiry}
       />
       <Button type="submit">{tr.apiKeys.create}</Button>
     </form>

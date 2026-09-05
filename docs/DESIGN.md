@@ -220,7 +220,7 @@ erDiagram
 - `APPLICATION.agreedTermsVersion`/`agreedPrivacyVersion`/`agreedAt`: 申請提出時点で同意した利用規約・プライバシーポリシーのバージョンを記録する（§16）。同意なしでは`POST /api/console/applications`を受け付けない。
 - APIキーは平文を保存しない。発行時に一度だけ平文を表示し、以降は `keyHash`（SHA-256、§3.1参照）と `keyPrefix`（一覧表示用）のみ保持。
 - **1ユーザーにつき複数のAPIキーを作成可能**。ただし**上限を設ける（決定）**: 既定は環境変数`MAX_API_KEYS_PER_USER`（§11）によるグローバル上限、`USER.maxApiKeys`が設定されていればユーザー個別にそれを優先する（管理画面から個別上書き可能）。作成時に有効なキー数（`revokedAt IS NULL`）が上限に達していれば`409`で拒否する。
-- **有効期限は作成時に自由に設定可能**（`expiresAt = null` で無期限）。認証ミドルウェアで `expiresAt` が過去の場合は無効として扱う。
+- **有効期限は作成時に自由に設定可能**（`expiresAt = null` で無期限）。認証ミドルウェアで `expiresAt` が過去の場合は無効として扱う。**実装時の補正**: `POST /api/console/api-keys`自体は当初から`expiresAt`を受け付けていたが、Web UI（`/console/api-keys`）の作成フォームが`expiresAt: null`を決め打ちで送っており、実質選べなかった。カレンダー形式の日付選択（`DatePicker.svelte`、bits-uiの`Calendar`/`Popover`を利用、`apps/web/src/lib/components/ui/calendar`・`ui/popover`）を追加し、選択した日の23:59:59 UTCを`expiresAt`として送るようにした。日付選択後に無期限へ戻す手段（ポップオーバー下部の「無期限にする」ボタン、`value`を`null`に戻す）も用意する
 - **再発行（regenerate）**: 同じレコード（`id`/`name`/`expiresAt`は保持）の `keyHash`/`keyPrefix` のみを新しいシークレットで置き換える。旧シークレットは即座に失効。
 - **削除**: 本人がいつでもキーを完全削除可能。**個別削除と一斉削除の両方を用意（決定）**: `DELETE /api/console/api-keys/:id`（個別）と `DELETE /api/console/api-keys`（自分の全キーを一括削除）。管理者側も同様に `DELETE /api/admin/api-keys/:id`（個別）と `DELETE /api/admin/api-keys?userId=`（指定ユーザーの全キーを一括削除）を用意する。
 - **管理者による取り消し**: `revokedAt`/`revokedBy` を設定するソフト取消と、`admin`権限での完全削除の両方をサポートし、管理画面のAPIキー一覧からユーザーを問わずどのキーでも即時無効化できる。
