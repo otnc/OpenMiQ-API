@@ -21,6 +21,7 @@ export function localeFromAcceptLanguage(header: string | null): Locale {
 }
 
 interface Translations {
+  meta: { description: string };
   nav: { console: string; admin: string; logout: string };
   theme: { system: string; light: string; dark: string };
   pagination: { previous: string; next: string; pageOf: string };
@@ -110,6 +111,10 @@ interface Translations {
 }
 
 const en: Translations = {
+  meta: {
+    description:
+      "A self-hosted Web API that turns a message into a quote image over HTTP.",
+  },
   nav: { console: "Console", admin: "Admin", logout: "Log out" },
   theme: { system: "System theme", light: "Light theme", dark: "Dark theme" },
   pagination: {
@@ -209,6 +214,10 @@ const en: Translations = {
 };
 
 const ja: Translations = {
+  meta: {
+    description:
+      "メッセージをクォート画像に変換する、セルフホスト型のWeb APIです。",
+  },
   nav: { console: "コンソール", admin: "管理", logout: "ログアウト" },
   theme: {
     system: "システム設定に従う",

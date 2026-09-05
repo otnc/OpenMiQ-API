@@ -1,5 +1,6 @@
 <script lang="ts">
   import "../app.css";
+  import { page } from "$app/state";
   import { t } from "$lib/i18n/index.ts";
   import ThemeToggle from "$lib/components/ThemeToggle.svelte";
   import LanguageMenu from "$lib/components/LanguageMenu.svelte";
@@ -8,7 +9,30 @@
   let { data, children } = $props();
   const tr = $derived(t(data.locale));
   let logoFailed = $state(false);
+
+  // The sample quote (generated once at startup from the first
+  // ADMIN_DISCORD_IDS entry's avatar, GET /api/sample-quote) doubles as the
+  // OGP image — link previews (Discord, Slack, X/Twitter, etc.) show it
+  // instead of a generic favicon. Falls through to a 404 with no image if
+  // generation never ran (no admin configured); nothing else here degrades.
+  const ogImageUrl = $derived(`${data.siteUrl}/api/sample-quote`);
+  const ogUrl = $derived(`${data.siteUrl}${page.url.pathname}`);
 </script>
+
+<svelte:head>
+  <title>OpenMiQ-API</title>
+  <meta name="description" content={tr.meta.description} />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="OpenMiQ-API" />
+  <meta property="og:title" content="OpenMiQ-API" />
+  <meta property="og:description" content={tr.meta.description} />
+  <meta property="og:url" content={ogUrl} />
+  <meta property="og:image" content={ogImageUrl} />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="OpenMiQ-API" />
+  <meta name="twitter:description" content={tr.meta.description} />
+  <meta name="twitter:image" content={ogImageUrl} />
+</svelte:head>
 
 <div class="bg-background text-foreground flex min-h-screen flex-col">
   <header

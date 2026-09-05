@@ -19,5 +19,9 @@ export const load: LayoutServerLoad = async (event) => {
   return {
     locale: event.locals.locale,
     me: status === 200 ? data : null,
+    // Absolute, not relative — og:image/og:url need a full URL for link
+    // previews to resolve it. event.url.origin reflects the real public
+    // domain here since nginx forwards the original Host header (§14.3).
+    siteUrl: event.url.origin,
   };
 };
