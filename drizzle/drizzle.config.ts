@@ -1,3 +1,4 @@
+import { mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { defineConfig } from "drizzle-kit";
@@ -10,12 +11,18 @@ import { defineConfig } from "drizzle-kit";
 const raw = process.env.DATABASE_URL ?? "file:./data/db.sqlite";
 const relativePath = raw.startsWith("file:") ? raw.slice("file:".length) : raw;
 const apiDir = resolve(dirname(fileURLToPath(import.meta.url)), "../apps/api");
+const dbPath = resolve(apiDir, relativePath);
+
+// better-sqlite3 (via drizzle-kit) won't create the parent directory itself
+// — on a fresh clone, ./data doesn't exist yet, so `pnpm run db:migrate`
+// would otherwise fail before ever creating the database.
+mkdirSync(dirname(dbPath), { recursive: true });
 
 export default defineConfig({
   dialect: "sqlite",
   schema: "packages/db/src/schema.ts",
   out: "drizzle/migrations",
   dbCredentials: {
-    url: resolve(apiDir, relativePath),
+    url: dbPath,
   },
 });
