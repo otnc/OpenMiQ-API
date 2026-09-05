@@ -107,7 +107,7 @@ const en: Translations = {
     unlinked: "Link your Discord account to request API access.",
     unlinkedCta: "Sign in with Discord",
     pending:
-      "Your application is under review. We'll notify you once an admin makes a decision.",
+      "Your application is under review. There's no notification when a decision is made — check back here to see your status.",
     approved: "Your account is approved. You can manage your API keys below.",
     approvedCta: "Go to API keys",
     denied:
@@ -195,7 +195,8 @@ const ja: Translations = {
   home: {
     unlinked: "Discordアカウントを連携してAPI利用を申請してください。",
     unlinkedCta: "Discordでログイン",
-    pending: "審査中です。管理者が判断した後にお知らせします。",
+    pending:
+      "審査中です。判断後の通知はありません — このページで状況をご確認ください。",
     approved: "アカウントは承認済みです。以下からAPIキーを管理できます。",
     approvedCta: "APIキー管理へ",
     denied: "申請は却下されました。クールダウン期間経過後に再申請できます。",
