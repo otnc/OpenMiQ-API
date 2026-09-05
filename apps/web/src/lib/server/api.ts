@@ -8,7 +8,10 @@ function baseUrl(): string {
 // Server-side calls to apps/api forward the browser's own Cookie header,
 // since in production nginx puts both apps on the same origin (DESIGN.md
 // §14.3) and the session cookie set by apps/api is otherwise invisible to
-// SvelteKit's own fetch.
+// SvelteKit's own fetch. Also forwards the browser's real IP the same way —
+// this call is apps/web's own server talking to apps/api over loopback, so
+// without this apps/api's getClientIp() would see 127.0.0.1 (apps/web's own
+// address) for every application submitted through it, never the applicant's.
 export async function apiFetch(
   event: Pick<RequestEvent, "locals" | "fetch">,
   path: string,
@@ -16,6 +19,9 @@ export async function apiFetch(
 ): Promise<Response> {
   const headers = new Headers(init.headers);
   if (event.locals.cookie) headers.set("cookie", event.locals.cookie);
+  if (event.locals.clientIp) {
+    headers.set("x-forwarded-for", event.locals.clientIp);
+  }
   if (init.body && !headers.has("content-type")) {
     headers.set("content-type", "application/json");
   }

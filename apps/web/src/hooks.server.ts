@@ -16,6 +16,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   event.locals.locale = locale ?? DEFAULT_LOCALE;
   event.locals.cookie = event.request.headers.get("cookie");
+  event.locals.clientIp = event.request.headers.get("x-forwarded-for");
 
   return resolve(event, {
     transformPageChunk: ({ html }) =>

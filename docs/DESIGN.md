@@ -431,7 +431,7 @@ Swagger UI: `GET /api/docs`（`@hono/swagger-ui`、`@hono/zod-openapi` が生成
 ## 9. セキュリティ設計
 
 - APIキーは発行後平文再表示不可（紛失時は失効→再発行のみ）
-- 申請時IPは `X-Forwarded-For`（信頼できるプロキシ経由時のみ）またはリクエスト元IPをそのまま記録
+- 申請時IPは `X-Forwarded-For`（信頼できるプロキシ経由時のみ）またはリクエスト元IPをそのまま記録。**実装時の補正（重要）**: `POST /api/console/applications`はブラウザから`apps/api`へ直接ではなく、`apps/web`自身のサーバー（`+page.server.ts`の`apiJson()`/`apiFetch()`、`apps/web/src/lib/server/api.ts`）経由でPOSTされるため、`apps/api`が素朴に`X-Forwarded-For`ヘッダまたは接続元アドレスを見るだけでは常に`apps/web`自身のループバックアドレス（`127.0.0.1`）が記録されてしまうバグがあった。修正: `apps/web`の`hooks.server.ts`がブラウザからの生の`X-Forwarded-For`（nginx §14.3が設定）を`event.locals.clientIp`に保持し、`apiFetch()`がそれを`apps/api`への内部リクエストにも同じヘッダ名で転送する——Cookie転送（同ファイル、セッション用）と全く同じパターン
 - Fingerprintは改ざん耐性が完全ではない前提で「参考情報」として扱い、BAN判定はDiscordID/Email/IPの組合せで一次判断
 - Discord Interactions Endpointは署名検証必須（`DISCORD_PUBLIC_KEY`環境変数）
 - 管理者権限は環境変数 `ADMIN_DISCORD_IDS`（カンマ区切り）または特定ギルド+ロールIDで判定し、Web/Discord両方で同一ロジックを共有

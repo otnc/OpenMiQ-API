@@ -5,6 +5,7 @@ declare global {
     interface Locals {
       locale: Locale;
       cookie: string | null;
+      clientIp: string | null;
     }
   }
 }
