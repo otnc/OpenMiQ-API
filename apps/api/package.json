@@ -1,0 +1,34 @@
+{
+  "name": "@openmiq-api/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=.env --env-file-if-exists=.env.local src/index.ts",
+    "build": "tsdown",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.0",
+    "@hono/swagger-ui": "^0.5.0",
+    "@hono/zod-openapi": "^0.19.0",
+    "@openmiq-api/db": "workspace:*",
+    "@openmiq-api/shared": "workspace:*",
+    "discord-interactions": "^4.1.0",
+    "drizzle-orm": "^0.44.6",
+    "hono": "^4.6.14",
+    "hono-rate-limiter": "^0.4.2",
+    "ofetch": "^1.4.1",
+    "ransu": "^0.1.1",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "tsdown": "^0.22.14",
+    "tsx": "^4.23.12",
+    "vitest": "^4.1.11"
+  }
+}
