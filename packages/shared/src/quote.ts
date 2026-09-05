@@ -13,6 +13,10 @@ export const quoteRequestSchema = z.object({
   text: z.string().min(1).max(4000),
   theme: z.string().optional(),
   font: z.string().optional(),
+  // Drawn in place of the usual attribution watermark. Defaults to the
+  // server's LOGO_PATH image when set and this is omitted — pass a string
+  // here (including "") to override that default with your own text.
+  watermark: z.string().optional(),
   options: quoteOptionsSchema.optional(),
 });
 

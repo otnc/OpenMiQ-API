@@ -52,6 +52,7 @@ describe("generateSampleQuote", () => {
         authorName: "alice",
         authorAvatarUrl: "https://cdn.discordapp.com/avatars/1/x.png",
       }),
+      expect.anything(),
     );
     expect(getSampleQuote()).toBe(buffer);
   });

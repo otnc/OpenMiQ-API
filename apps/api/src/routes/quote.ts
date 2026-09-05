@@ -9,7 +9,7 @@ import { renderQuote, renderFakeQuote } from "../services/renderService.ts";
 import { createImageStore } from "../services/imageStore/index.ts";
 import { newSecretToken } from "../lib/ids.ts";
 
-type RenderFn = (input: QuoteRequest) => Promise<Buffer>;
+type RenderFn = (input: QuoteRequest, env: Env) => Promise<Buffer>;
 
 export function createQuoteApp(env: Env) {
   const app = new Hono();
@@ -26,7 +26,7 @@ export function createQuoteApp(env: Env) {
       );
     }
 
-    const png = await render(parsed.data);
+    const png = await render(parsed.data, env);
 
     if (parsed.data.options?.hosted) {
       const id = newSecretToken();

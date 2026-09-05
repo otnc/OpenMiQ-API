@@ -1,5 +1,7 @@
 import { MiQ } from "makeitaquote";
 import type { QuoteRequest } from "@openmiq/shared";
+import type { Env } from "../config/env.ts";
+import { getLogoWatermark } from "./logoWatermark.ts";
 
 function buildTheme(input: QuoteRequest): Record<string, unknown> {
   const theme: Record<string, unknown> = { extends: "dark" };
@@ -17,23 +19,46 @@ function buildTheme(input: QuoteRequest): Record<string, unknown> {
   return theme;
 }
 
-export async function renderQuote(input: QuoteRequest): Promise<Buffer> {
+// The caller's own `watermark` wins when given, even an empty string (an
+// explicit "no watermark"). Otherwise the LOGO_PATH image, matching OpenMiQ
+// and OpenMiQ-misskey's own convention of drawing the configured logo in
+// place of the usual attribution. `undefined` when neither applies, leaving
+// makeitaquote's own default in place.
+function resolveWatermark(
+  input: QuoteRequest,
+  env: Env,
+): string | Buffer | undefined {
+  if (input.watermark !== undefined) return input.watermark;
+  return getLogoWatermark(env);
+}
+
+export async function renderQuote(
+  input: QuoteRequest,
+  env: Env,
+): Promise<Buffer> {
   const miq = new MiQ();
   miq.setText(input.text);
   miq.setUsername(input.authorName);
   if (input.authorAvatarUrl) miq.setAvatar(input.authorAvatarUrl);
   miq.setTheme(buildTheme(input));
+  const watermark = resolveWatermark(input, env);
+  if (watermark !== undefined) miq.setWatermark(watermark);
   return miq.toBuffer("png");
 }
 
 // Matches OpenMiQ's /fakequote: same rendering, but the name is marked as
 // fabricated so a generated quote is never mistaken for a real one.
-export async function renderFakeQuote(input: QuoteRequest): Promise<Buffer> {
+export async function renderFakeQuote(
+  input: QuoteRequest,
+  env: Env,
+): Promise<Buffer> {
   const miq = new MiQ();
   miq.setText(input.text);
   miq.setDisplayName(`(fake) ${input.authorName}`);
   miq.setUsername(input.authorName);
   if (input.authorAvatarUrl) miq.setAvatar(input.authorAvatarUrl);
   miq.setTheme(buildTheme(input));
+  const watermark = resolveWatermark(input, env);
+  if (watermark !== undefined) miq.setWatermark(watermark);
   return miq.toBuffer("png");
 }

@@ -31,7 +31,7 @@ export async function generateSampleQuote(env: Env): Promise<void> {
       authorAvatarUrl: admin.avatarUrl,
       text: SAMPLE_TEXT,
     };
-    cached = await renderQuote(input);
+    cached = await renderQuote(input, env);
   } catch (error) {
     console.error("Failed to generate the homepage sample quote", error);
   }
