@@ -38,8 +38,23 @@ pnpm run db:migrate
 | `APP_BASE_URL` | `https://miq.example.com`（自分のドメインの場合は読み替え） |
 | `API_BASE_URL` | `APP_BASE_URL`と同じ値でよい（`apps/web`から`apps/api`への到達に使う。同一サーバー上でnginxが両方を配信するため） |
 | `API_HOST` / `HOST` | **`127.0.0.1`に設定する**（既定`0.0.0.0`は開発時の利便性のためのものなので、本番では必ず変更し、nginx以外から両プロセスに直接到達できないようにする。DESIGN.md §14.2） |
-| `STORAGE_DRIVER` / `R2_*` | `hosted: true`の画像URL機能を使うならCloudflare R2の接続情報を設定（既定`r2`のまま使うなら必須）。使わないなら`STORAGE_DRIVER=local`に変更 |
+| `STORAGE_DRIVER` / `R2_*` | `hosted: true`の画像URL機能を使うならCloudflare R2の接続情報を設定（既定`r2`のまま使うなら必須。取得方法は下記2.1）。使わないなら`STORAGE_DRIVER=local`に変更 |
 | `ICON_PATH` / `LOGO_PATH` | 著作権者本人（otoneko.）自身がデプロイする場合は設定不要 — 未設定時のフォールバック先である`.github/assets/icon.png`/`logo.png`自体が既にOpenMiQ本家の正規アセットのため。それ以外の人が自分のブランドとしてセルフホストする場合は、自分の画像に差し替えるためにこの2変数を設定すること（`ADDITIONAL_TERMS.md` §4の制約に従うこと） |
+
+### 2.1 Cloudflare R2の準備（`STORAGE_DRIVER=r2`を使う場合）
+
+`hosted: true`で生成した画像の保存先。無料枠が大きくエグレス課金が無いためこれを既定にしている（DESIGN.md §8.6）。まだCloudflareアカウントを持っていない場合は先に[cloudflare.com](https://dash.cloudflare.com/sign-up)で作成しておく。
+
+1. **`R2_ACCOUNT_ID`の確認**: Cloudflareダッシュボード → 左メニュー **R2 Object Storage** を開く。右側のサイドバーに表示される「Account ID」をコピーする（ダッシュボードのトップページ右側にも同じIDが表示されている）。
+2. **バケットの作成**: R2の画面で **Create bucket** → バケット名を入力（例: `openmiq-api`）→ ロケーションは既定（Automatic）のままで作成する。このバケット名がそのまま`R2_BUCKET`の値になる。
+3. **APIトークンの発行**: R2の画面右上（または左メニュー）の **Manage API Tokens** → **Create API Token** を開く。
+   - Token名は任意（例: `openmiq-api`）
+   - Permissions: **Object Read & Write**
+   - **Specify bucket(s)** で手順2のバケットのみに絞る（アカウント全体への権限は不要 — 最小権限にする）
+   - **Create API Token** を押すと、この画面でのみ**Access Key ID**と**Secret Access Key**が表示される。閉じると二度と表示されないので、この場でコピーして`.env`に貼り付ける（`R2_ACCESS_KEY_ID`・`R2_SECRET_ACCESS_KEY`）
+4. **（任意）自動削除の設定**: `.env`の`HOSTED_IMAGE_TTL_HOURS`を設定して画像を自動削除したい場合は、R2バケットの **Settings** → **Object lifecycle rules** で同じ日数のルールを追加しておく（実際の削除はR2側のライフサイクルルールに任せる設計、DESIGN.md §8.6）。`HOSTED_IMAGE_TTL_HOURS`を未設定のままにする場合はこの手順は不要（無期限保持）。
+
+バケットの公開アクセス（Public Development URLやカスタムドメイン）は**設定不要** — 画像は`apps/api`が署名付きリクエストで取得し`GET /api/images/:id`経由で配信するため、R2バケット自体を外部に公開する必要はない。
 
 ## 3. ビルド
 
