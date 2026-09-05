@@ -12,3 +12,4 @@ data/
 .turbo/
 *.log
 .makeitaquote/
+.private/
