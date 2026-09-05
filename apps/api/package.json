@@ -19,6 +19,7 @@
     "@openmiq/db": "workspace:*",
     "@openmiq/shared": "workspace:*",
     "aws4fetch": "^1.0.20",
+    "diff": "^9.0.0",
     "discord-interactions": "^4.4.0",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.13.7",

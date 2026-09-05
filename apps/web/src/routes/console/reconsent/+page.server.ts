@@ -7,13 +7,48 @@ interface LegalDoc {
   content: string;
 }
 
+interface LegalDiffPart {
+  value: string;
+  added: boolean;
+  removed: boolean;
+}
+
+interface LegalDiff {
+  fromVersion: string;
+  toVersion: string;
+  available: boolean;
+  parts: LegalDiffPart[];
+}
+
 export const load: PageServerLoad = async (event) => {
   const lang = event.locals.locale;
-  const [terms, privacy] = await Promise.all([
+  const parentData = await event.parent();
+  const agreedTermsVersion = parentData.me?.agreedTermsVersion ?? null;
+  const agreedPrivacyVersion = parentData.me?.agreedPrivacyVersion ?? null;
+
+  const [terms, privacy, termsDiff, privacyDiff] = await Promise.all([
     apiJson<LegalDoc>(event, `/api/legal/terms?lang=${lang}`),
     apiJson<LegalDoc>(event, `/api/legal/privacy?lang=${lang}`),
+    agreedTermsVersion
+      ? apiJson<LegalDiff>(
+          event,
+          `/api/legal/terms/diff?from=${agreedTermsVersion}&lang=${lang}`,
+        )
+      : null,
+    agreedPrivacyVersion
+      ? apiJson<LegalDiff>(
+          event,
+          `/api/legal/privacy/diff?from=${agreedPrivacyVersion}&lang=${lang}`,
+        )
+      : null,
   ]);
-  return { terms: terms.data, privacy: privacy.data };
+
+  return {
+    terms: terms.data,
+    privacy: privacy.data,
+    termsDiff: termsDiff?.data.available ? termsDiff.data : null,
+    privacyDiff: privacyDiff?.data.available ? privacyDiff.data : null,
+  };
 };
 
 export const actions: Actions = {

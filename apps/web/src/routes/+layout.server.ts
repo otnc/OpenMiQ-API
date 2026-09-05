@@ -9,6 +9,8 @@ export interface ConsoleMe {
   reconsentRequired: boolean;
   termsVersion: string;
   privacyVersion: string;
+  agreedTermsVersion: string | null;
+  agreedPrivacyVersion: string | null;
 }
 
 export const load: LayoutServerLoad = async (event) => {

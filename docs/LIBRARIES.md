@@ -29,6 +29,7 @@
 | `ransu` / `ransu/secure`（決定） | DB主キー生成(`uuid.v7()`)、APIキー・セッション等の秘匿トークン生成(`token()`) | `@makeitaquote/utils`と同じ著者(otoneko.)によるゼロ依存乱数/ID生成ライブラリ。`node:crypto`の`randomUUID`/`randomBytes`直書きから置き換え（DESIGN.md §3.1） |
 | `aws4fetch`（既定、決定） | Cloudflare R2（S3互換）への画像アップロード/取得/削除 | `hosted: true`モード用（DESIGN.md §8.6）。`@aws-sdk/client-s3`のフル依存を避けるためゼロ依存の軽量SigV4クライアントを採用。`STORAGE_DRIVER=local`選択時は不要 |
 | `pino`（または `hono`組込みログ） | 構造化ログ | 機密情報マスキング設定込みで採用予定 |
+| `diff`（決定） | 法的文書（利用規約/プライバシーポリシー）のバージョン間差分生成 | `diffWords()`で単語単位の差分を計算し、再同意画面（DESIGN.md §16.4）の変更点サマリ表示に使用。ゼロ依存・型定義同梱(`@types/diff`不要)。jsdiffプロジェクト本体で、他候補（自前実装、行単位diffのみのツール）より単語単位の粒度が文章の差分表示に適するため採用 |
 
 **採用しなかった主な代替とその理由**は DESIGN.md §3.1 の比較表を参照（Fastify/Express, Prisma, PostgreSQL, discord.js, argon2/bcrypt, Redis, `@aws-sdk/client-s3`, Backblaze B2 等）。
 

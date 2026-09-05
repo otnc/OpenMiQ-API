@@ -31,6 +31,8 @@ export function createConsoleApp(env: Env) {
       reconsentRequired: user ? needsReconsent(env, user) : false,
       termsVersion: env.TERMS_VERSION,
       privacyVersion: env.PRIVACY_VERSION,
+      agreedTermsVersion: user?.agreedTermsVersion ?? null,
+      agreedPrivacyVersion: user?.agreedPrivacyVersion ?? null,
     });
   });
 
