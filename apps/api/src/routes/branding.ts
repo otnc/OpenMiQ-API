@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { extname } from "node:path";
+import { extname, isAbsolute, resolve } from "node:path";
 import { Hono } from "hono";
 import type { Env } from "../config/env.ts";
 
@@ -21,10 +21,19 @@ const MIME_TYPES: Record<string, string> = {
 // included, sets ICON_PATH/LOGO_PATH explicitly if it wants an icon/logo served.
 function serveAsset(configuredPath: string | undefined) {
   if (!configuredPath) return null;
+  // A relative value is resolved against the repo root, not apps/api's own
+  // cwd — the shared .env these come from lives at the repo root (README.md
+  // "Configuration"), so `ICON_PATH=.github/assets/icon.png` is what someone
+  // reading that file would actually write. process.cwd() is apps/api
+  // (repo_root/apps/api) in every way this server is ever started (dev,
+  // `pnpm run start`, pm2 — see ecosystem.config.cjs), so going up two
+  // levels reliably lands on the repo root.
+  const path = isAbsolute(configuredPath)
+    ? configuredPath
+    : resolve(process.cwd(), "../..", configuredPath);
   const mimeType =
-    MIME_TYPES[extname(configuredPath).toLowerCase()] ??
-    "application/octet-stream";
-  const buffer = readFileSync(configuredPath);
+    MIME_TYPES[extname(path).toLowerCase()] ?? "application/octet-stream";
+  const buffer = readFileSync(path);
   return { buffer, mimeType };
 }
 

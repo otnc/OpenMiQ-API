@@ -39,7 +39,7 @@ pnpm run db:migrate
 | `API_BASE_URL` | `APP_BASE_URL`と同じ値でよい（`apps/web`から`apps/api`への到達に使う。同一サーバー上でnginxが両方を配信するため） |
 | `API_HOST` / `HOST` | **`127.0.0.1`に設定する**（既定`0.0.0.0`は開発時の利便性のためのものなので、本番では必ず変更し、nginx以外から両プロセスに直接到達できないようにする。DESIGN.md §14.2） |
 | `STORAGE_DRIVER` / `R2_*` | `hosted: true`の画像URL機能を使うならCloudflare R2の接続情報を設定（既定`r2`のまま使うなら必須。取得方法は下記2.1）。使わないなら`STORAGE_DRIVER=local`に変更 |
-| `ICON_PATH` / `LOGO_PATH` | **未設定だと`GET /api/branding/icon`/`logo`が404を返す**（自動フォールバックは無い）。著作権者本人（otoneko.）自身のデプロイでアイコン・ロゴを表示したい場合も、`ICON_PATH=/path/to/OpenMiQ-API/.github/assets/icon.png`のように明示的に設定すること。それ以外の人が自分のブランドとしてセルフホストする場合は、自分の画像のパスをこの2変数に設定する（`ADDITIONAL_TERMS.md` §4の制約に従うこと） |
+| `ICON_PATH` / `LOGO_PATH` | **未設定だと`GET /api/branding/icon`/`logo`が404を返す**（自動フォールバックは無い）。著作権者本人（otoneko.）自身のデプロイでアイコン・ロゴを表示したい場合も、`ICON_PATH=.github/assets/icon.png`のように明示的に設定すること（相対パスは`.env`と同じくリポジトリルート基準）。それ以外の人が自分のブランドとしてセルフホストする場合は、自分の画像のパスをこの2変数に設定する（`ADDITIONAL_TERMS.md` §4の制約に従うこと） |
 
 ### 2.1 Cloudflare R2の準備（`STORAGE_DRIVER=r2`を使う場合）
 

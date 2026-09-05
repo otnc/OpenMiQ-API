@@ -38,4 +38,20 @@ describe("branding endpoints", () => {
 
     rmSync(dir, { recursive: true, force: true });
   });
+
+  it("resolves a relative ICON_PATH against the repo root, not apps/api's own cwd", async () => {
+    // The shared .env these come from lives at the repo root (not
+    // apps/api/), so a relative value should be written and resolved as if
+    // relative to there — this is the exact value someone reading
+    // README.md's Configuration table would write.
+    const app = createApp(
+      buildTestEnv({
+        DATABASE_URL,
+        ICON_PATH: ".github/assets/icon.png",
+      }),
+    );
+    const res = await app.request("/api/branding/icon");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toBe("image/png");
+  });
 });
