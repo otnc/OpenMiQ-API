@@ -2,6 +2,8 @@
   import "../app.css";
   import { t } from "$lib/i18n/index.ts";
   import ThemeToggle from "$lib/components/ThemeToggle.svelte";
+  import LanguageMenu from "$lib/components/LanguageMenu.svelte";
+  import UserMenu from "$lib/components/UserMenu.svelte";
 
   let { data, children } = $props();
   const tr = $derived(t(data.locale));
@@ -30,15 +32,16 @@
       <nav
         class="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-sm"
       >
-        {#if data.me?.status === "approved"}
-          <a href="/console/api-keys" class="hover:text-foreground"
-            >{tr.nav.console}</a
-          >
-        {/if}
-        {#if data.me}
-          <a href="/admin" class="hover:text-foreground">{tr.nav.admin}</a>
-        {/if}
         <ThemeToggle labels={tr.theme} />
+        <LanguageMenu current={data.locale} label={tr.language.label} />
+        {#if data.me}
+          <UserMenu
+            me={data.me}
+            consoleLabel={tr.nav.console}
+            adminLabel={tr.nav.admin}
+            logoutLabel={tr.nav.logout}
+          />
+        {/if}
       </nav>
     </div>
   </header>

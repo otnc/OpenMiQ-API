@@ -24,6 +24,16 @@ interface Translations {
   nav: { console: string; admin: string; logout: string };
   theme: { system: string; light: string; dark: string };
   pagination: { previous: string; next: string; pageOf: string };
+  language: { label: string };
+  common: {
+    discord: string;
+    status: string;
+    prefix: string;
+    requests: string;
+    remaining: string;
+    revoked: string;
+    reconsentPending: string;
+  };
   home: {
     unlinked: string;
     unlinkedCta: string;
@@ -102,6 +112,16 @@ const en: Translations = {
     previous: "Previous",
     next: "Next",
     pageOf: "Page {page} of {total}",
+  },
+  language: { label: "Language" },
+  common: {
+    discord: "Discord",
+    status: "Status",
+    prefix: "Prefix",
+    requests: "Requests",
+    remaining: "Remaining",
+    revoked: "Revoked",
+    reconsentPending: "Reconsent pending",
   },
   home: {
     unlinked: "Link your Discord account to request API access.",
@@ -191,6 +211,16 @@ const ja: Translations = {
     previous: "前へ",
     next: "次へ",
     pageOf: "{page} / {total}ページ",
+  },
+  language: { label: "言語" },
+  common: {
+    discord: "Discord",
+    status: "ステータス",
+    prefix: "プレフィックス",
+    requests: "リクエスト数",
+    remaining: "残り",
+    revoked: "失効済み",
+    reconsentPending: "再同意待ち",
   },
   home: {
     unlinked: "Discordアカウントを連携してAPI利用を申請してください。",

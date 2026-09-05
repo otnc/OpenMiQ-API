@@ -921,7 +921,7 @@ packages/openmiq/
 ## 17. 国際化（i18n）
 
 - **対応言語**: 英語(en) / 日本語(ja) の2言語。**デフォルトは英語**。
-- **判定順序**: ①Cookie等に保存済みのユーザーの明示的な選択 → ②ブラウザの`Accept-Language`ヘッダ（SSR時）/ `navigator.language`（CSR時）に`ja`系ロケールが含まれるか → ③既定の`en`にフォールバック。切り替えUIも用意し、選択結果はCookie（またはlocalStorage）に保存して次回以降も維持する。
+- **判定順序**: ①Cookie等に保存済みのユーザーの明示的な選択 → ②ブラウザの`Accept-Language`ヘッダ（SSR時）/ `navigator.language`（CSR時）に`ja`系ロケールが含まれるか → ③既定の`en`にフォールバック。切り替えUIも用意し、選択結果はCookie（またはlocalStorage）に保存して次回以降も維持する。**実装済み**: ヘッダーの言語メニュー（テーマ切替の隣、ログイン有無に関わらず常時表示）から選択する。`GET /locale/:code`（`apps/web`側の素の`+server.ts`、APIサーバーではなくWeb側）が`openmiq_locale`Cookieを設定し、`redirect`クエリで渡された元のページへ303リダイレクトする——ログイン/ログアウトと同じ「素のリンク/フォームによるフルページ遷移」方式で、クライアント側JSのfetch呼び出しには依存しない。
 - **実装方式（決定）**: 外部i18nライブラリは導入せず、OpenMiQ/OpenMiQ-misskey本家の`src/i18n/index.ts`と同じ手法——**コードにコロケートした`Translations`オブジェクト**（`{ en: {...}, ja: {...} }`）を`apps/web/src/lib/i18n/`にまとめ、Svelteの`writable`ストアで現在ロケールを保持する——を踏襲する（§3.1参照）。2言語のみであれば十分に薄く、本家との開発体験も統一できるため。
 - **サーバー側**: `GET /api/legal/terms`等、言語別コンテンツを返すAPIは`?lang=en|ja`クエリ（省略時`en`）で切り替える。Discord埋め込み（§6.1）は運用者（管理者）向けなので日本語固定でよい。
 
