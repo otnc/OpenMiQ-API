@@ -68,6 +68,8 @@ pnpm run pm2:start      # pm2で両プロセスを起動（ecosystem.config.cjs�
 4. `pnpm run build && pnpm run pm2:start`で両プロセスを起動します。
 5. ドメインが疎通するようになったら、HTTPSが前提の[Discordの設定](#discordの設定)手順（Interactions Endpoint URL、OAuth2リダイレクトURI）を完了させます。
 
+詳しい手順は[docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)を、そのままコピーして使えるnginx設定は[deploy/nginx/openmiq-api.conf](./deploy/nginx/openmiq-api.conf)を参照してください。
+
 ## pm2での運用
 
 ```bash

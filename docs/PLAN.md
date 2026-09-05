@@ -83,14 +83,14 @@
 - **副次的に発見・修正したバグ**: `drizzle/drizzle.config.ts`が`DATABASE_URL`の相対パスをdrizzle-kitの実行時cwd（リポジトリルート、`pnpm run db:migrate`実行時）基準で解決していた一方、`apps/api`自身は常に`apps/api`をcwdとして起動する（pm2・`pnpm run dev`/`start`いずれも）ため、`DATABASE_URL=file:./data/db.sqlite`のような相対パスが両者で異なるファイルを指してしまい、マイグレーションが実際にアプリが読むDBに適用されない不具合があった。`drizzle.config.ts`側で明示的に`apps/api`ディレクトリを基準に解決するよう修正し、実際にサーバーを起動・マイグレーション適用・本パッケージからの実リクエストが同一DBに対して機能することを確認して発見した
 
 ## Phase 8: 本番デプロイ（miq.otnc.dev）
-- VPS等にNode.js(`>=24`)・pnpm・nginx・certbotをセットアップ
-- DNS: `miq.otnc.dev` のAレコードをサーバーに向ける
-- `certbot --nginx -d miq.otnc.dev` で証明書取得、自動更新（`certbot.timer`）を確認（DESIGN.md §14.4）
-- nginx設定（`/api/` → apps/api、`/` → apps/web）を投入、80番はACMEチャレンジ経路+443へのリダイレクトのみ（DESIGN.md §14.3）
-- `ecosystem.config.cjs` で `apps/api`/`apps/web` の2プロセスをpm2起動（127.0.0.1バインドのみ、外部非公開）
-- Discord Developer Portalに本番URL（Interactions Endpoint URL・OAuth2 Redirect URI）を登録（DESIGN.md §14.5）
-- 本番環境の`.env`（非コミット）に `ICON_PATH`/`LOGO_PATH` をOpenMiQ本家アセットのパスに設定（著作権者本人のデプロイのため、DESIGN.md §0.1）
-- デプロイ手順書として上記を`docs/`配下に整理（Interactions Endpoint URL登録手順、Webhook作成手順を含む）
+- デプロイ手順書 [`docs/DEPLOYMENT.md`](./DEPLOYMENT.md) を作成済み（実装済み）: 以下の各項目を上から実行できる形にまとめ、[`deploy/nginx/openmiq-api.conf`](../deploy/nginx/openmiq-api.conf)（実装済み・コピー可能な設定ファイル）も用意した。**実際のVPS/DNS/Discord Developer Portalへの操作自体は著作権者本人の環境で行う必要があるため未実施**（このドキュメントとエージェントには実サーバーへのアクセス権限が無い）
+  - VPS等にNode.js(`>=24`)・pnpm・nginx・certbotをセットアップ
+  - DNS: `miq.otnc.dev` のAレコードをサーバーに向ける
+  - `certbot --nginx -d miq.otnc.dev` で証明書取得、自動更新（`certbot.timer`）を確認（DESIGN.md §14.4）
+  - nginx設定（`/api/` → apps/api、`/` → apps/web）を投入、80番はACMEチャレンジ経路+443へのリダイレクトのみ（DESIGN.md §14.3、`deploy/nginx/openmiq-api.conf`）
+  - `ecosystem.config.cjs` で `apps/api`/`apps/web` の2プロセスをpm2起動。`.env`の`API_HOST`/`HOST`を`127.0.0.1`に設定して外部非公開にする（既定`0.0.0.0`は開発時の利便性のためのものなので、本番では明示的に変更が必要。DESIGN.md §14.2）
+  - Discord Developer Portalに本番URL（Interactions Endpoint URL・OAuth2 Redirect URI）を登録（DESIGN.md §14.5）
+  - **実装時の補正**: 本番環境の`.env`に`ICON_PATH`/`LOGO_PATH`を明示的に設定する必要は無いと判明した — 未設定時のフォールバック先である`.github/assets/icon.png`/`logo.png`自体が既にOpenMiQ本家の正規アセット（著作権者本人の許諾のもと同梱、§0.1）であるため、著作権者本人によるmiq.otnc.devデプロイではこの2変数を空のまま（デフォルト）にしておけば意図通りに動作する
 
 ## 未確定事項（要ユーザー判断）
 現時点で残っている大きな未確定事項はなし。細部の値・文言は実装時に随時`docs/`を更新する。
