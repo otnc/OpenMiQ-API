@@ -317,7 +317,7 @@ sequenceDiagram
 - `MESSAGE_COMPONENT`(type3) で `custom_id` を `":"` で分割し `action / applicationId` を取得
 - 押下者がAdmin権限を持つか検証（`ADMIN_DISCORD_IDS` or ギルドロール）。権限がなければ `type4` の ephemeralメッセージで「権限がありません」を返し、Applicationは変更しない
 - DBトランザクションで `UPDATE application SET status=? WHERE id=? AND status='pending'` を実行し、影響行数0なら「既に処理済み」として現在の状態でボタンをdisabledのまま返す（多重クリック対策）
-- 成功時は `type: 7 (UPDATE_MESSAGE)` を返し、`components` を disabled 状態のボタン配列に差し替え、embedのfooterに「承認済み by {admin} at {time}」等を追記
+- 成功時はDiscordの3秒応答制限内に収めるため、まず `type: 6 (DEFERRED_UPDATE_MESSAGE)` を即座に返す。メッセージ本体の更新（`components`をdisabled状態のボタン配列に差し替え、embedのfooterに「Approved by {admin} at {time}」等を追記）は、この応答を返した**後**に同じWebhook（`PATCH /webhooks/{id}/{token}/messages/{message_id}`）で非同期に行う（実装時の決定・変更: 当初案の同期的な`type: 7`一発応答は、Webhook側の429リトライ待ちが3秒を超えるリスクがあるため採用しなかった）。Web管理画面からのApprove/Deny（§7）も同じ関数を通るため、同一のPATCH経路でメッセージが更新される
 
 ### 6.3 再起動後もボタンが有効である根拠
 - 上記の通り状態は全てDB管理、Interactions EndpointはステートレスなHTTP POSTハンドラであるため、プロセス再起動・複数インスタンス展開のいずれでも常に最新状態から判定・応答できる（本家Botの「再生成ボタンはメモリ依存で再起動後は無効」という制約とは異なる設計）。

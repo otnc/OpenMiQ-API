@@ -5,6 +5,9 @@ import { loadEnv } from "./config/env.ts";
 import { aboutApp } from "./routes/about.ts";
 import { createAuthApp } from "./routes/auth.ts";
 import { createConsoleApp } from "./routes/console.ts";
+import { createApplicationsApp } from "./routes/applications.ts";
+import { createLegalApp } from "./routes/legal.ts";
+import { createDiscordInteractionsApp } from "./routes/discordInteractions.ts";
 import { sessionMiddleware } from "./middleware/session.ts";
 
 const env = loadEnv();
@@ -16,6 +19,9 @@ app.use("*", sessionMiddleware(env));
 app.route("/", aboutApp);
 app.route("/", createAuthApp(env));
 app.route("/", createConsoleApp(env));
+app.route("/", createApplicationsApp(env));
+app.route("/", createLegalApp(env));
+app.route("/", createDiscordInteractionsApp(env));
 
 app.doc("/api/docs/openapi.json", {
   openapi: "3.1.0",
