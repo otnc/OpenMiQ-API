@@ -19,7 +19,7 @@
 - Discord Developer PortalでApplication作成（OAuth2 Client、Botトークン、Public Key取得。Interactions Endpoint URL / OAuth2 Redirect URIはドメイン確定済みのため`https://miq.otnc.dev/api/discord/interactions`・`https://miq.otnc.dev/api/auth/discord/callback`をPhase 8のデプロイ完了後に登録、DESIGN.md §14.5）
 
 ## Phase 1: 認証基盤
-- Discord OAuth2ログイン（Arctic利用、`GET /api/auth/discord`, `GET /api/auth/discord/callback`）
+- Discord OAuth2ログイン（`ofetch`による自前実装、`GET /api/auth/discord`, `GET /api/auth/discord/callback`。DESIGN.md §3.1で`arctic`からの変更を決定——実装着手時点でdeprecated判明のため）
 - セッションJWT発行（`hono/jwt`）・httpOnly Cookie設定・検証ミドルウェア（DBステータス再取得込み）
 - `USER` テーブルとの紐付け、`GET /api/console/me` 実装
 - Admin判定ミドルウェア（`ADMIN_DISCORD_IDS`）
