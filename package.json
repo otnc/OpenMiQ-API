@@ -28,6 +28,8 @@
     "test": "turbo run test",
     "db:generate": "drizzle-kit generate --config drizzle/drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config drizzle/drizzle.config.ts",
+    "invite": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/invite.mjs",
+    "webhook": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/webhook.mjs",
     "pm2:start": "pm2 start ecosystem.config.cjs",
     "pm2:stop": "pm2 stop ecosystem.config.cjs",
     "pm2:restart": "pm2 restart ecosystem.config.cjs",
