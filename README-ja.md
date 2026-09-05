@@ -97,7 +97,7 @@ pnpm run pm2:stop
 | `DISCORD_BOT_TOKEN` | 任意。OAuth2アプリのシークレットではなくBotトークン。`ADMIN_DISCORD_IDS`の先頭ユーザーのアバターを取得し、トップページのサンプルクォート画像を起動時に1度だけ生成するためだけに使用する。未設定ならその画像を省略するだけ |
 | `APP_BASE_URL` | 本サービス自身の公開URL。OAuth2コールバックとInteractions Endpointに使用 |
 | `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | APIキーごとの既定レート制限のウィンドウ（ms）と上限リクエスト数（既定 `60000`/`60`） |
-| `ICON_PATH` / `LOGO_PATH` | `GET /api/branding/icon`/`logo`が配信するローカル画像パス。相対パスは`.env`自体と同じくプロジェクトルート基準で解決される。**未設定時は本家デプロイも含めて全デプロイで404**になる — 同梱の`.github/assets/icon.png`/`logo.png`への自動フォールバックは無い（これらの資産は本家OpenMiQプロジェクト・著作者を特定するものであるため。再利用に関する制約は[License](#license)参照）。アイコン・ロゴを表示したい場合は、同じパス（`ICON_PATH=.github/assets/icon.png`）を指すとしても明示的にこの変数を設定すること |
+| `ICON_PATH` / `LOGO_PATH` | `GET /api/branding/icon`/`logo`が配信するローカル画像パス。相対パスは`.env`自体と同じくプロジェクトルート基準で解決される。**未設定時は本家デプロイも含めて全デプロイで404**になる — 同梱の`.github/assets/icon.png`/`logo.png`への自動フォールバックは無い（これらの資産は本家OpenMiQプロジェクト・著作者を特定するものであるため。再利用に関する制約は[License](#license)参照）。アイコン・ロゴを表示したい場合は、同じパス（`ICON_PATH=.github/assets/icon.png`）を指すとしても明示的にこの変数を設定すること。`LOGO_PATH`は生成されるクォート画像の既定watermarkとしても使われる（OpenMiQ本体・OpenMiQ-misskeyと同じ慣習）。リクエスト自体で`watermark`フィールドを指定した場合はそちらが優先される — `POST /api/quote`の詳細なスキーマは`GET /api/docs`参照 |
 | `REAPPLY_COOLDOWN_DAYS` | 却下/取消されたユーザーが再申請できるようになるまでの日数（既定 `1`） |
 | `MAX_API_KEYS_PER_USER` | 1ユーザーが保持できる有効なAPIキー数の既定上限。管理者がユーザー個別に上書き可能（既定 `10`） |
 | `STORAGE_DRIVER` | `hosted: true`時の画像保存先: `r2`（既定）または`local` |

@@ -406,7 +406,7 @@ Swagger UI: `GET /api/docs`（`@hono/swagger-ui`、`@hono/zod-openapi` が生成
 
 ### 8.5 本体機能（クォート画像生成、APIキー必須）
 - `POST /api/quote` — クォート画像生成
-  - body例: `{ "authorName": "...", "authorAvatarUrl": "...", "text": "...", "theme": "sunset", "font": "pop", "options": { "color": true, "bold": false, "layout": "new", "hosted": false } }`
+  - body例: `{ "authorName": "...", "authorAvatarUrl": "...", "text": "...", "theme": "sunset", "font": "pop", "watermark": "...", "options": { "color": true, "bold": false, "layout": "new", "hosted": false } }`
   - **応答形式（決定）**: 既定 (`hosted: false` または未指定) は **`image/png` バイナリを1リクエストで直接返す**（`@makeitaquote/voids`の`/fakequotebeta`同様、ラウンドトリップ最小・何も保存しない方針）。`hosted: true` を指定した場合のみ、生成画像をサーバー側の一時ストレージ（`SAVE_IMAGES_DIR`相当、一定時間後に自動削除）に保存し `{ "url": "https://miq.otnc.dev/api/images/:id" }` をJSONで返す。`@makeitaquote/openmiq`（§15）の `toBuffer()`/`toURL()` はこの2パスにそれぞれ対応する
   - 応答ヘッダに `RateLimit-Limit` / `RateLimit-Remaining` / `RateLimit-Reset` を付与（§5.4）
 - `POST /api/fakequote` — 任意の名義でのクォート画像生成（本家の`/fakequote`相当、"(fake)"表記オプション対応。応答形式は`/api/quote`と同様）
@@ -414,6 +414,8 @@ Swagger UI: `GET /api/docs`（`@hono/swagger-ui`、`@hono/zod-openapi` が生成
 - `GET /api/usage` — APIキー自身の現在のレート制限状況・生涯リクエスト数を取得（`GET /api/console/api-keys/:id/usage`のAPIキー認証版、§5.4）
 
 **実装時のスコープ調整（`theme`/`font`パラメータ）**: 本家Discord Botが持つ39種の命名済みカラーテーマ（`sunset`等）カタログはBot側の独自マッピングテーブルであり、`makeitaquote`本体のAPIではない。`makeitaquote` v12は`.setTheme({ background, avatar: { grayscale }, text: { weight, font }, layout })`という汎用オブジェクト形式（`background`はCSS色表記/hexを直接受け付ける）で表現するため、本APIの`theme`パラメータは**第一段階では任意のCSS色文字列（背景色）を直接渡す方式**とし、本家の39色ネームドカタログの移植（名前→色のマッピングテーブル）は別タスクとする。`font`パラメータは`makeitaquote`の`FONT_ALIASES`（`pop`, `sans`等）がそのまま使えるため追加実装不要。`options.color`は`avatar.grayscale`の反転、`options.bold`は`text.weight`にマッピングする。
+
+**`watermark`パラメータ（実装済み）**: OpenMiQ（Discordボット）・OpenMiQ-misskeyの両方が持つ「`LOGO_PATH`を設定していればそのロゴ画像をwatermarkとして描画する」慣習を踏襲する。省略時はサーバー側の`LOGO_PATH`（§11）が指す画像（`getLogoWatermark()`、`apps/api/src/services/logoWatermark.ts`）を`makeitaquote`の`setWatermark(Buffer)`にそのまま渡す（`AvatarSource`としてBufferを渡すと画像として描画される — `makeitaquote`自身の型定義`setWatermark(watermark: string | AvatarSource): this`より）。呼び出し側が`watermark`をボディに含めた場合（空文字列を含む）はそちらが優先され、`makeitaquote`には文字列としてそのまま渡る（テキストとして描画）。`LOGO_PATH`未設定かつ呼び出し側指定も無い場合は`setWatermark()`自体を呼ばず、`makeitaquote`自体の既定に委ねる。
 
 ### 8.6 画像ストレージ（`hosted: true`モード）
 
@@ -872,7 +874,7 @@ packages/openmiq/
 
 - クラス名は**必ず `OpenMiQ`**（`import { OpenMiQ } from "@makeitaquote/openmiq"`）。voids/miqxの`MiQ`エイリアスに相当する短縮名は、他パッケージと衝突しやすいため本パッケージではエイリアスを設けず`OpenMiQ`一本にする。
 - `OpenMiQOptions`: `{ apiKey: string; baseUrl: string; timeout?: number; retry?: number; signal?: AbortSignal }` — `apiKey`・`baseUrl`ともに必須（`apiKey`は自ホストのAPIキー認証必須エンドポイントを叩くため。`baseUrl`はvoids/miqxと異なり既定値を持たない — OpenMiQ-APIは各自がセルフホストするものであり、本パッケージが前提とすべき単一の「公式ホスト」が存在しないため、§15.1参照）。
-- `set*()`群（実装済み）: `setText` / `setUsername`（`authorName`にマップ） / `setAvatar`（URL文字列のみ、画像バイト列は不可） / `setTheme` / `setFont` / `setColor` / `setBold` / `setLayout('side'|'new')` / `setFake()`（`/api/fakequote`への切り替え） — §8.5 の実際の`/api/quote`スキーマ（`packages/shared/src/quote.ts`）に1:1対応させる。実装時の補正: `setDisplayName`/`setFlip`/`setWatermark`に対応するフィールドは実際の`/api/quote`スキーマに存在しないため実装していない（`authorName`一本、fakequoteは別エンドポイント）。
+- `set*()`群（実装済み）: `setText` / `setUsername`（`authorName`にマップ） / `setAvatar`（URL文字列のみ、画像バイト列は不可） / `setTheme` / `setFont` / `setColor` / `setBold` / `setLayout('side'|'new')` / `setWatermark(string | null)` / `setFake()`（`/api/fakequote`への切り替え） — §8.5 の実際の`/api/quote`スキーマ（`packages/shared/src/quote.ts`）に1:1対応させる。実装時の補正: `setDisplayName`/`setFlip`に対応するフィールドは実際の`/api/quote`スキーマに存在しないため実装していない（`authorName`一本、fakequoteは別エンドポイント）。`setWatermark`は`null`（既定）でサーバー側のデフォルト（`LOGO_PATH`が設定されていればそのロゴ画像、無ければmakeitaquote自体の既定）に委ね、文字列（空文字列を含む）を渡すとそれで上書きする — OpenMiQ本体（Discordボット）・OpenMiQ-misskeyの「`LOGO_PATH`をwatermarkに使う」慣習をAPI越しに再現したもの。
 - 出力メソッド: `toBuffer()`（既定、1ラウンドトリップでバイナリ）/ `toURL()`（`hosted: true`で生成し`/api/images/:id`のURLを返す、§8.5参照）— Voidsの`toURL()`/`toBuffer({hosted})`と同じ非対称設計を踏襲。
 - エラー: `OpenMiQApiError extends MiQError`（`status`/`body`/`endpoint`）、`ValidationError`は`@makeitaquote/utils/errors`から再export。
 - `GET /api/usage`を叩く `getUsage()` メソッドも用意し、Web Console同様にライブラリ利用者もレート制限状況を取得できるようにする（§5.4との対応）。
