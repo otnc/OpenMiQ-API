@@ -55,7 +55,7 @@
 </script>
 
 <div class="space-y-6">
-  <h1 class="text-xl font-semibold">{tr.admin.title}</h1>
+  <h1 class="font-display text-2xl font-semibold">{tr.admin.title}</h1>
 
   {#if form?.error}
     <p class="bg-destructive/10 text-destructive rounded-md px-3 py-2 text-sm">

@@ -3,76 +3,89 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Palette: "ledger ink" — a nod to the review desk at the heart of this
+ * app (applications get stamped approved/denied) and to the printed
+ * quotation the whole service exists to produce. Every neutral carries a
+ * faint teal bias toward the one accent instead of sitting at zero chroma,
+ * and headings are set in a serif (--font-display below) the way a quote
+ * would actually be typeset, rather than the sans-everywhere default.
+ */
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.975 0.006 200);
+  --foreground: oklch(0.2 0.02 200);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.2 0.02 200);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.2 0.02 200);
+  --primary: oklch(0.42 0.08 195);
+  --primary-foreground: oklch(0.98 0.006 200);
+  --secondary: oklch(0.94 0.008 200);
+  --secondary-foreground: oklch(0.25 0.02 200);
+  --muted: oklch(0.94 0.008 200);
+  --muted-foreground: oklch(0.48 0.015 200);
+  --accent: oklch(0.9 0.02 195);
+  --accent-foreground: oklch(0.25 0.02 200);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --border: oklch(0.9 0.008 200);
+  --input: oklch(0.9 0.008 200);
+  --ring: oklch(0.6 0.09 195);
+  --chart-1: oklch(0.42 0.08 195);
+  --chart-2: oklch(0.55 0.09 165);
+  --chart-3: oklch(0.68 0.1 130);
+  --chart-4: oklch(0.75 0.13 80);
+  --chart-5: oklch(0.65 0.18 40);
+  --sidebar: oklch(0.96 0.008 200);
+  --sidebar-foreground: oklch(0.2 0.02 200);
+  --sidebar-primary: oklch(0.42 0.08 195);
+  --sidebar-primary-foreground: oklch(0.98 0.006 200);
+  --sidebar-accent: oklch(0.9 0.02 195);
+  --sidebar-accent-foreground: oklch(0.25 0.02 200);
+  --sidebar-border: oklch(0.9 0.008 200);
+  --sidebar-ring: oklch(0.6 0.09 195);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: oklch(0.16 0.012 200);
+  --foreground: oklch(0.93 0.01 200);
+  --card: oklch(0.2 0.014 200);
+  --card-foreground: oklch(0.93 0.01 200);
+  --popover: oklch(0.2 0.014 200);
+  --popover-foreground: oklch(0.93 0.01 200);
+  --primary: oklch(0.72 0.1 190);
+  --primary-foreground: oklch(0.16 0.02 200);
+  --secondary: oklch(0.27 0.014 200);
+  --secondary-foreground: oklch(0.93 0.01 200);
+  --muted: oklch(0.27 0.014 200);
+  --muted-foreground: oklch(0.68 0.014 200);
+  --accent: oklch(0.3 0.03 195);
+  --accent-foreground: oklch(0.93 0.01 200);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.6 0.1 190);
+  --chart-1: oklch(0.72 0.1 190);
+  --chart-2: oklch(0.7 0.1 165);
+  --chart-3: oklch(0.75 0.12 130);
+  --chart-4: oklch(0.78 0.14 80);
+  --chart-5: oklch(0.7 0.18 40);
+  --sidebar: oklch(0.2 0.014 200);
+  --sidebar-foreground: oklch(0.93 0.01 200);
+  --sidebar-primary: oklch(0.72 0.1 190);
+  --sidebar-primary-foreground: oklch(0.16 0.02 200);
+  --sidebar-accent: oklch(0.3 0.03 195);
+  --sidebar-accent-foreground: oklch(0.93 0.01 200);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.6 0.1 190);
 }
 
 @theme inline {
+  /* A serif for headings and the wordmark — quotations have always been
+     typeset this way, and it's a system stack (no network font request),
+     which matters for a self-hosted service. Body text stays on Tailwind's
+     own sans stack. */
+  --font-display: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

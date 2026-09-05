@@ -17,7 +17,7 @@
     <div
       class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3"
     >
-      <a href="/" class="flex items-center font-semibold">
+      <a href="/" class="font-display flex items-center text-lg font-semibold">
         {#if !logoFailed}
           <img
             src="/api/branding/logo"
