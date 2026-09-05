@@ -8,7 +8,7 @@
 - pnpmワークスペース初期化（`apps/api`(Hono), `apps/web`(SvelteKit), `packages/db`, `packages/shared`, `packages/openmiq`）+ **Turborepo** 導入（`turbo.json`、`build`/`lint`/`test`/`dev`パイプライン、DESIGN.md §3.1/§13.4）
 - `LICENSE` / `ADDITIONAL_TERMS.md` を OpenMiQ から無改変コピー
 - `.github/assets/icon.png` / `logo.png` を OpenMiQ から著作権者本人の許諾のもとそのままコピー（DESIGN.md §0.1）
-- `ICON_PATH`/`LOGO_PATH` 環境変数によるブランディング配信の仕組み（`GET /api/branding/icon`, `GET /api/branding/logo`、実装済み）を実装。未設定時は `.github/assets/` の画像にフォールバックする（拡張子からContent-Typeを判定、実機動作確認済み）
+- `ICON_PATH`/`LOGO_PATH` 環境変数によるブランディング配信の仕組み（`GET /api/branding/icon`, `GET /api/branding/logo`、実装済み）を実装。**未設定時は404**（拡張子からContent-Typeを判定、実機動作確認済み）。**実装時の補正**: 当初`.github/assets/`の画像へ自動フォールバックする設計だったが、フォークがこの変数を設定し忘れた場合に本家ブランドが意図せず表示されてしまう（`ADDITIONAL_TERMS.md` §4・§2に抵触しうる）ため撤回し、未設定時は常に404にした。著作権者本人のデプロイを含め、アイコン・ロゴを表示したい場合は全デプロイで明示的に設定する（DESIGN.md §0.1、docs/DEPLOYMENT.md）
 - ルートに `eslint.config.js` / `.prettierrc` / `.prettierignore` / `tsconfig.base.json`（**TypeScript `^6.0.3`**、DESIGN.md §3.1/§13.3）をOpenMiQ本家の設定を踏襲して用意し、`apps/web`向けに `eslint-plugin-svelte` / `svelte-eslint-parser` / `prettier-plugin-svelte` を追加（DESIGN.md §13）
 - **Node/pnpmバージョン固定（決定、DESIGN.md §13.4）**: `.nvmrc`に`24`、`.npmrc`に`engine-strict=true`と`manage-package-manager-versions=false`、`package.json`に固定バージョンの`packageManager`を設定
 - README作成（実装済み）: DESIGN.md §12の雛形どおり、OpenMiQ-misskeyに倣ったAuthor/Credits/Licenseの型 + 帰属表示3要素 + 改変明示文を含む`README.md`（英語）・`README-ja.md`（日本語）を作成。前提条件・クイックスタート・Discord設定・本番ビルド/デプロイ・Configuration（全環境変数）・Known v1 limitationsを記載。作成時に`DISCORD_BOT_TOKEN`が実装のどこからも参照されていない（設計時点の想定と異なりWebhook自体のURL経由でメッセージ編集しておりBotトークン不要）ことに気づき、必須環境変数から削除した（`apps/api/src/config/env.ts`・`.env.example`・DESIGN.md §11/§12を修正）
@@ -91,7 +91,7 @@
   - nginx設定（`/api/` → apps/api、`/` → apps/web）を投入、80番はACMEチャレンジ経路+443へのリダイレクトのみ（DESIGN.md §14.3、`deploy-example/nginx/openmiq-api.conf`）
   - `ecosystem.config.cjs` で `apps/api`/`apps/web` の2プロセスをpm2起動。`.env`の`API_HOST`/`HOST`を`127.0.0.1`に設定して外部非公開にする（既定`0.0.0.0`は開発時の利便性のためのものなので、本番では明示的に変更が必要。DESIGN.md §14.2）
   - Discord Developer Portalに本番URL（Interactions Endpoint URL・OAuth2 Redirect URI）を登録（DESIGN.md §14.5）
-  - **実装時の補正**: 本番環境の`.env`に`ICON_PATH`/`LOGO_PATH`を明示的に設定する必要は無いと判明した — 未設定時のフォールバック先である`.github/assets/icon.png`/`logo.png`自体が既にOpenMiQ本家の正規アセット（著作権者本人の許諾のもと同梱、§0.1）であるため、著作権者本人によるmiq.otnc.devデプロイではこの2変数を空のまま（デフォルト）にしておけば意図通りに動作する
+  - **実装時の補正（実際のデプロイ作業中にユーザーからの指摘で発覚）**: 当初「著作権者本人のデプロイでは`ICON_PATH`/`LOGO_PATH`を空のままにしておけばよい（未設定時に`.github/assets/`へ自動フォールバックするため）」としていたが、これはフォーク先が同じ理由で本家ブランドを意図せず表示してしまうリスクがあり、`ADDITIONAL_TERMS.md`の趣旨に反するとの指摘を受け、**自動フォールバックそのものを廃止**（`apps/api/src/routes/branding.ts`、Phase 4参照）。著作権者本人のデプロイであっても`ICON_PATH`/`LOGO_PATH`を明示的に設定する運用に変更した
 
 ## 未確定事項（要ユーザー判断）
 現時点で残っている大きな未確定事項はなし。細部の値・文言は実装時に随時`docs/`を更新する。

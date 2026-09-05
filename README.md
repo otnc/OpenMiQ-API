@@ -95,7 +95,7 @@ Both apps read from a single `.env` at the project root (see `.env.example`) —
 | `ADMIN_DISCORD_IDS` | Comma-separated Discord user IDs allowed to use the Admin dashboard/endpoints |
 | `APP_BASE_URL` | This service's own public URL, used for the OAuth2 callback and Interactions Endpoint |
 | `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | Default per-API-key rate limit window (ms) and request cap (default `60000`/`60`) |
-| `ICON_PATH` / `LOGO_PATH` | Local image paths served by `GET /api/branding/icon`/`logo`. Unset = the bundled `.github/assets/icon.png`/`logo.png` (see [License](#license) for reuse restrictions on those files) |
+| `ICON_PATH` / `LOGO_PATH` | Local image paths served by `GET /api/branding/icon`/`logo`. **Unset = 404, on every deployment including the original one** — there's no fallback to the bundled `.github/assets/icon.png`/`logo.png`, since those identify the original OpenMiQ project and author specifically (see [License](#license) for the reuse restrictions on those files). Set these explicitly, even to that same path, if you want an icon/logo served |
 | `REAPPLY_COOLDOWN_DAYS` | Days a denied/revoked user must wait before re-applying (default `1`) |
 | `MAX_API_KEYS_PER_USER` | Default max active API keys per user; an admin can override this per user (default `10`) |
 | `STORAGE_DRIVER` | Where `hosted: true` images are stored: `r2` (default) or `local` |

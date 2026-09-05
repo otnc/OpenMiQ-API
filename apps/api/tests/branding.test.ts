@@ -9,15 +9,16 @@ import { createApp } from "../src/app.ts";
 describe("branding endpoints", () => {
   const { url: DATABASE_URL } = createTestDbFile();
 
-  it("falls back to the bundled icon/logo when ICON_PATH/LOGO_PATH are unset", async () => {
+  it("404s when ICON_PATH/LOGO_PATH are unset — no fallback to the bundled OpenMiQ assets", async () => {
+    // ADDITIONAL_TERMS.md §4: those assets identify the original project and
+    // its author specifically, so a fork that never sets these must not get
+    // them by default.
     const app = createApp(buildTestEnv({ DATABASE_URL }));
     const iconRes = await app.request("/api/branding/icon");
-    expect(iconRes.status).toBe(200);
-    expect(iconRes.headers.get("Content-Type")).toBe("image/png");
+    expect(iconRes.status).toBe(404);
 
     const logoRes = await app.request("/api/branding/logo");
-    expect(logoRes.status).toBe(200);
-    expect(logoRes.headers.get("Content-Type")).toBe("image/png");
+    expect(logoRes.status).toBe(404);
   });
 
   it("serves the file at ICON_PATH when it's set, with a matching Content-Type", async () => {

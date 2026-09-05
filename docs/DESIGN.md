@@ -42,9 +42,9 @@
 
 `ADDITIONAL_TERMS.md` §4 は本来「`.github/assets/` のアイコン・ロゴは無改変の同一プロジェクトを指す用途以外への流用を禁止」する条項だが、**本プロジェクトの利用者は OpenMiQ 本家のアイコン・ロゴの著作者本人**であるため、著作権者自身の許諾により OpenMiQ本家・OpenMiQ-misskey と同様に、これらの資産を **`.github/assets/icon.png` / `logo.png` としてそのままリポジトリにコミットしてよい**。
 
-- `apps/web` の静的アセット（favicon・ヘッダーロゴ等）は既定でこの `.github/assets/` の画像を参照する。
-- ただし本人以外がセルフホストしてブランディングを変えたい場合のために、`ICON_PATH` / `LOGO_PATH` 環境変数（§11）で差し替え可能にしておく。未設定時は `.github/assets/icon.png` / `logo.png`（＝OpenMiQ本家の資産）にフォールバックする。
-- README/`.env.example` のコメントには、これらの資産は著作権者本人の許諾のもと同梱されている旨、および `ADDITIONAL_TERMS.md` §4 により**このアイコン・ロゴを別のブランド・別の名称のプロジェクトの独自ブランディングとして転用することはできない**旨を明記する（＝そのまま使う／`ICON_PATH`・`LOGO_PATH`で自分の画像に差し替えるかのいずれかであり、OpenMiQ本家の資産に手を加えて別ブランドとして名乗ることは許されない）。
+- `ICON_PATH` / `LOGO_PATH` 環境変数（§11）を設定した場合のみ、`GET /api/branding/icon`/`logo`（§8.1）がそのローカル画像ファイルを配信する。
+- **実装時の補正（決定）**: 未設定時に`.github/assets/icon.png`/`logo.png`（OpenMiQ本家の資産）へ自動フォールバックする設計だったが撤回し、**未設定時は404を返す**（フォールバック無し）に変更した。理由: `ADDITIONAL_TERMS.md` §4はこれらの資産の使用を「無改変の同一プロジェクトを指す用途」に限定しており、自動フォールバックだと`ICON_PATH`/`LOGO_PATH`を設定し忘れた／知らずに使っているフォーク・改変版（別名を名乗るものを含む）にまで本家ブランドが既定で出てしまい、§2（改変版を本家と誤認させる表示の禁止）に抵触しかねない。**著作権者本人によるmiq.otnc.devデプロイを含め、アイコン・ロゴを表示したい場合は全デプロイで`ICON_PATH`/`LOGO_PATH`を明示的に`.github/assets/icon.png`/`logo.png`（またはそのコピー）に設定する**運用にする（docs/DEPLOYMENT.md参照）。
+- README/`.env.example` のコメントには、これらの資産は著作権者本人の許諾のもと同梱されている旨、および `ADDITIONAL_TERMS.md` §4 により**このアイコン・ロゴを別のブランド・別の名称のプロジェクトの独自ブランディングとして転用することはできない**旨を明記する。
 
 ---
 
@@ -369,7 +369,7 @@ Swagger UI: `GET /api/docs`（`@hono/swagger-ui`、`@hono/zod-openapi` が生成
 
 ### 8.1 公開情報
 - `GET /api/about` — 帰属表示（ソフトウェア名/著作者/リポジトリURL）、バージョン、ソース入手先（AGPL §13対応）
-- `GET /api/branding/icon`, `GET /api/branding/logo` — `ICON_PATH`/`LOGO_PATH`（§0.1, §11）が指すローカル画像を配信。未設定時は `.github/assets/icon.png` / `logo.png`（OpenMiQ本家の資産、コミット済み）にフォールバック。Web UIはこれをそのまま `<img>` に埋め込む
+- `GET /api/branding/icon`, `GET /api/branding/logo` — `ICON_PATH`/`LOGO_PATH`（§0.1, §11）が指すローカル画像を配信。**未設定時は404**（本家アセットへのフォールバックは無し、§0.1参照）。Web UIはこれをそのまま `<img>`/favicon に埋め込む
 - `GET /api/legal/terms`, `GET /api/legal/privacy` — 現行バージョンの利用規約・プライバシーポリシー本文をEN/JA両方（`?lang=ja`等）で返す（§16）。Web UI（`/legal/terms`, `/legal/privacy`ページ、§17のi18nでUI言語と連動）はこれを表示する
 
 ### 8.2 Console API（セッションJWT必須）
@@ -512,8 +512,8 @@ OpenMiQ-misskey の `## Configuration` 節に倣い、Markdownテーブル形式
 | `APP_BASE_URL` | OAuthコールバック等に使う自ホストの公開URL |
 | `RATE_LIMIT_WINDOW_MS` | `hono-rate-limiter` のデフォルトウィンドウ（既定 `60000`） |
 | `RATE_LIMIT_MAX` | ウィンドウあたりのデフォルト上限リクエスト数（既定 `60`。キー単位で個別上書きしたい場合はAPIKEYテーブルに拡張列を追加） |
-| `ICON_PATH` | サイトアイコンとして配信するローカル画像ファイルのパス（未設定時は `.github/assets/icon.png` を使用。差し替える場合も §0.1 の商標・ブランド資産に関する制約に従うこと） |
-| `LOGO_PATH` | ロゴとして配信するローカル画像ファイルのパス（未設定時は `.github/assets/logo.png` を使用。同上の制約あり） |
+| `ICON_PATH` | サイトアイコンとして配信するローカル画像ファイルのパス。**未設定時は`GET /api/branding/icon`が404を返す**（`.github/assets/icon.png`への自動フォールバックは無し、§0.1）。`.github/assets/icon.png`を使いたい場合もこの変数にそのパスを明示的に設定すること |
+| `LOGO_PATH` | ロゴとして配信するローカル画像ファイルのパス。`ICON_PATH`と同様、未設定時は404（フォールバック無し、§0.1） |
 | `REAPPLY_COOLDOWN_DAYS` | `denied`/`revoked`のユーザーが再申請できるようになるまでの日数（**既定 `1`**、§6.6） |
 | `MAX_API_KEYS_PER_USER` | 1ユーザーが保持できる有効なAPIキー数のグローバル既定上限（**既定 `10`**）。`USER.maxApiKeys`が設定されていればユーザー個別にそちらを優先（§4補足） |
 | `STORAGE_DRIVER` | `hosted: true`時の画像保存先。**既定 `r2`**（Cloudflare R2、§8.6）。`local`（ディスク保存）にも切替可能だが既定は前提としない |
@@ -600,7 +600,7 @@ This project is licensed under the [GNU Affero General Public License v3.0 or la
 - If you distribute or run a modified version of _this_ API, the same additional terms require you to make your modified source available under AGPL-3.0 and to display attribution to OpenMiQ (original repository URL: https://github.com/otnc/OpenMiQ) as described in [ADDITIONAL_TERMS.md](./ADDITIONAL_TERMS.md).
 
 ## Configuration
-（§11の環境変数テーブルをここに転記。`ICON_PATH`/`LOGO_PATH` を省略すると同梱の `.github/assets/icon.png`/`logo.png`（OpenMiQ本家の資産）がそのまま使われる。別ブランドとして名乗る場合は自分自身の画像に差し替えること — `ADDITIONAL_TERMS.md` §4 により OpenMiQ本家のアイコン・ロゴに手を加えて別ブランドの独自資産として転用することはできない）
+（§11の環境変数テーブルをここに転記。`ICON_PATH`/`LOGO_PATH` は省略すると`GET /api/branding/icon`/`logo`が404になる（本家アセットへの自動フォールバックは無し、§0.1）。`.github/assets/icon.png`/`logo.png`を使いたい場合はこの変数にそのパスを明示的に設定する。別ブランドとして名乗る場合は自分自身の画像に差し替えること — `ADDITIONAL_TERMS.md` §4 により OpenMiQ本家のアイコン・ロゴに手を加えて別ブランドの独自資産として転用することはできない）
 
 ## Legal
 - [Terms of Service](https://miq.otnc.dev/legal/terms) / [利用規約](https://miq.otnc.dev/legal/terms?lang=ja)
