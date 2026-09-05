@@ -1,6 +1,7 @@
 <script lang="ts">
   import "../app.css";
   import { t } from "$lib/i18n/index.ts";
+  import ThemeToggle from "$lib/components/ThemeToggle.svelte";
 
   let { data, children } = $props();
   const tr = $derived(t(data.locale));
@@ -8,7 +9,9 @@
 </script>
 
 <div class="bg-background text-foreground flex min-h-screen flex-col">
-  <header class="border-border bg-card border-b">
+  <header
+    class="border-border bg-card/80 sticky top-0 z-10 border-b backdrop-blur-sm"
+  >
     <div
       class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3"
     >
@@ -35,6 +38,7 @@
         {#if data.me}
           <a href="/admin" class="hover:text-foreground">{tr.nav.admin}</a>
         {/if}
+        <ThemeToggle labels={tr.theme} />
       </nav>
     </div>
   </header>
