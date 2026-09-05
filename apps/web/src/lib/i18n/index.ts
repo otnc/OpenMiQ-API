@@ -99,6 +99,9 @@ interface Translations {
     deleteKey: string;
     deleteAllKeys: string;
     discordIdLabel: string;
+    emailLabel: string;
+    ipLabel: string;
+    fingerprintLabel: string;
     confirmTitle: string;
     confirmMessage: string;
     confirmYes: string;
@@ -195,6 +198,9 @@ const en: Translations = {
     deleteKey: "Delete",
     deleteAllKeys: "Delete all",
     discordIdLabel: "Discord ID",
+    emailLabel: "Email",
+    ipLabel: "IP address",
+    fingerprintLabel: "Fingerprint",
     confirmTitle: "Are you sure?",
     confirmMessage: "This action cannot be undone.",
     confirmYes: "Yes",
@@ -294,6 +300,9 @@ const ja: Translations = {
     deleteKey: "削除",
     deleteAllKeys: "すべて削除",
     discordIdLabel: "Discord ID",
+    emailLabel: "メールアドレス",
+    ipLabel: "IPアドレス",
+    fingerprintLabel: "Fingerprint",
     confirmTitle: "本当によろしいですか？",
     confirmMessage: "この操作は取り消せません。",
     confirmYes: "はい",

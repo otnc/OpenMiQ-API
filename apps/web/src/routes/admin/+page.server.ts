@@ -20,6 +20,7 @@ export interface AdminUser {
   discordId: string;
   discordUsername: string;
   avatarUrl: string | null;
+  email: string;
   status: string;
   maxApiKeys: number | null;
   reconsentRequired: boolean;

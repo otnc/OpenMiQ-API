@@ -72,10 +72,42 @@
     </Card.Header>
     <Card.Content class="space-y-3">
       {#each data.applications as app (app.id)}
-        <div class="rounded-md border p-3 text-sm">
-          <p class="text-muted-foreground font-mono text-xs">{app.id}</p>
-          <p class="mt-1">{app.message}</p>
-          <div class="mt-2 flex gap-2">
+        <div class="space-y-3 rounded-md border p-4 text-sm">
+          <div class="flex items-center gap-2">
+            <img
+              src={app.avatarUrl ??
+                (app.discordId
+                  ? defaultDiscordAvatarUrl(app.discordId)
+                  : undefined)}
+              alt=""
+              class="size-8 shrink-0 rounded-full"
+              loading="lazy"
+            />
+            <div class="flex flex-col">
+              <span class="font-medium"
+                >{app.discordUsername ?? app.userId}</span
+              >
+              <span
+                class="text-muted-foreground font-mono text-[0.7rem]"
+                title={tr.admin.discordIdLabel}
+                >{app.discordId ?? app.userId}</span
+              >
+            </div>
+          </div>
+          <dl
+            class="grid grid-cols-[auto_1fr] items-baseline gap-x-3 gap-y-1 text-xs"
+          >
+            <dt class="text-muted-foreground">{tr.admin.emailLabel}</dt>
+            <dd class="truncate">{app.email ?? "—"}</dd>
+            <dt class="text-muted-foreground">{tr.admin.ipLabel}</dt>
+            <dd class="font-mono">{app.ip}</dd>
+            <dt class="text-muted-foreground">{tr.admin.fingerprintLabel}</dt>
+            <dd class="truncate font-mono">{app.fingerprint}</dd>
+          </dl>
+          <p class="bg-muted rounded-md p-2 text-sm whitespace-pre-wrap">
+            {app.message}
+          </p>
+          <div class="flex gap-2">
             <form method="POST" action="?/approve" use:enhance>
               <input type="hidden" name="id" value={app.id} />
               <Button type="submit" size="sm">{tr.admin.approve}</Button>
@@ -126,6 +158,10 @@
                     <span
                       class="text-muted-foreground font-mono text-[0.7rem]"
                       title={tr.admin.discordIdLabel}>{user.discordId}</span
+                    >
+                    <span
+                      class="text-muted-foreground text-[0.7rem]"
+                      title={tr.admin.emailLabel}>{user.email}</span
                     >
                   </div>
                 </div>
