@@ -62,8 +62,14 @@
 
 ## Phase 6: セキュリティ強化・仕上げ
 - 監査ログ整備、ログのマスキング確認
-- E2Eテスト（申請→承認→キー発行→API利用の一連の導線、Discordボタン再起動後動作）
-- READMEに帰属表示・利用規約・セットアップ手順を整理
+- テストスイート（実装済み・実機動作確認済み）: `apps/api`に`vitest`導入。`packages/db/src/testDb.ts`（インメモリDB+マイグレーション適用）、`apps/api/tests/helpers/`（`buildTestEnv`・ファイルDB版`createTestDbFile`・セッションCookie生成・Discord Ed25519署名生成）を整備し、単体テスト（`apiKeyCrypto`/`rateLimiter`/`legal diff`/`consentService`/`banService`/`applicationService`）と、実際にHTTPリクエストを`app.request()`で送るE2E/結合テスト（申請→承認→キー発行→API利用の一連の導線、`GET /api/legal/*`、`GET /api/branding/*`）を実装。`apps/api/src/index.ts`から`createApp(env)`を`apps/api/src/app.ts`に分離し、テストが本番と同一のルーティング構成を`.request()`で直接叩けるようにした
+- Discordボタンの再起動後動作（実装済み・実機動作確認済み）: `apps/api/tests/discordInteractions.test.ts`で、`createApp(env)`を2回呼び出して「再起動」を模擬し、1回目のプロセスで作成した申請に対し2回目の（＝別インスタンスの）appから送ったボタン操作が正しく処理されることを確認。Interactionsエンドポイントがプロセス内状態を一切持たずDBのみに依存している設計（HTTP Interactions方式）を裏付ける
+- READMEに帰属表示・利用規約・セットアップ手順を整理（実装済み、`README.md`/`README-ja.md`）
+- **`.env`の配置に関する修正**: 当初`apps/api/.env`・`apps/web/.env`のように各app個別に`.env`を置く実装になっていたが、README/DESIGN.mdが元々想定していた「プロジェクトルート直下に単一の`.env`」（`cp .env.example .env`を一度実行するだけで済む構成）と食い違っていたため、`apps/api`/`apps/web`双方の`dev`/`start`スクリプトとecosystem.config.cjsを修正し、実際にルート直下の単一`.env`を両アプリが読む構成に統一（実機動作確認済み）。この過程で以下の副次的な不具合も発見・修正:
+  - `apps/api`の`start`スクリプトに`--env-file-if-exists`が付いておらず、本番起動時に環境変数を一切読み込めていなかった
+  - `tsdown`のビルド成果物は`dist/index.js`ではなく`dist/index.mjs`（`format: "esm"`のため）だったが、`package.json`の`main`/`start`とecosystem.config.cjsは`dist/index.js`を参照しており、本番起動が常に失敗する状態だった
+  - `apps/api`の`serve()`呼び出しが`hostname`オプションを渡しておらず、`ecosystem.config.cjs`で`HOST: "127.0.0.1"`を設定していても実際には全インターフェースにbindしていた（DESIGN.md §14.2の意図と不一致）。`API_HOST`環境変数を追加し実際にbindアドレスを制御できるよう修正
+  - `apps/api`と`apps/web`が同じ`.env`を共有する際、`PORT`という素の名前を両方で使うと値を奪い合う（`@sveltejs/adapter-node`が`PORT`/`HOST`を直接読むため）ことが判明し、`apps/api`側の変数を`API_PORT`/`API_HOST`にリネーム
 
 ## Phase 7: npmラッパーパッケージ `@makeitaquote/openmiq`
 - `packages/openmiq` を `@makeitaquote/voids`/`@makeitaquote/miqx` の構成（Biome, tsdown, vitest, examples/, CONTRIBUTING.md, ci.yml/release.yml）に倣ってセットアップ（DESIGN.md §15）

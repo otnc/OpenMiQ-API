@@ -56,14 +56,14 @@ pnpm run db:migrate     # 未適用のマイグレーションを適用
 pnpm run pm2:start      # pm2で両プロセスを起動（ecosystem.config.cjs参照）
 ```
 
-両プロセスとも`127.0.0.1`のみにバインドします — 前提とするnginx + Let's Encrypt構成は[Deployment](#deployment)を参照してください。
+前提とするnginx + Let's Encrypt構成は[Deployment](#deployment)を参照してください。`.env`の`API_HOST`/`HOST`を`127.0.0.1`に設定し、nginx以外から両プロセスに直接到達できないようにしてください。
 
 ## Deployment
 
 `apps/api`・`apps/web`の両方を1台のVPS上で動かし、nginxの背後でLet's Encrypt（`certbot`）によりTLS終端する構成を前提としています。
 
 1. ドメインのDNS Aレコード（必要ならAAAAも）をサーバーのIPに向けます。
-2. nginxをインストールし、`/api/`をapps/api（既定ポート`9413`）に、それ以外をapps/web（既定ポート`9414`）にルーティングします。両方とも`127.0.0.1`にのみバインドします。
+2. `.env`で`API_HOST=127.0.0.1`・`HOST=127.0.0.1`を設定し、nginx以外から両プロセスに直接到達できないようにした上で、nginxをインストールして`/api/`をapps/api（`API_PORT`、既定`9413`）に、それ以外をapps/web（`PORT`、既定`9414`）にルーティングします。
 3. `sudo certbot --nginx -d <your-domain>`を実行して証明書を取得します。nginxプラグインがHTTPSのserver blockと80→443リダイレクトを自動で構成します。更新はインストール時に登録される`certbot.timer`/cronに任せます。
 4. `pnpm run build && pnpm run pm2:start`で両プロセスを起動します。
 5. ドメインが疎通するようになったら、HTTPSが前提の[Discordの設定](#discordの設定)手順（Interactions Endpoint URL、OAuth2リダイレクトURI）を完了させます。
@@ -77,11 +77,11 @@ pnpm run pm2:restart
 pnpm run pm2:stop
 ```
 
-`ecosystem.config.cjs`が`apps/api`と`apps/web`を2つのプロセスとして起動し、それぞれ自身の作業ディレクトリの`.env`を読み込みます。
+`ecosystem.config.cjs`が`apps/api`と`apps/web`を2つのプロセスとして起動し、どちらもプロジェクトルートの同じ`.env`を読み込みます。
 
 ## Configuration
 
-特記のない限り、すべて`apps/api/.env`に設定します（`.env.example`参照）:
+両アプリともプロジェクトルートの単一の`.env`（`.env.example`参照）を読み込みます — `apps/api/`や`apps/web/`ではなく、ルートに配置してください:
 
 | Variable | Purpose |
 | --- | --- |
@@ -102,8 +102,9 @@ pnpm run pm2:stop
 | `HOSTED_IMAGE_TTL_HOURS` | `hosted: true`画像の有効期限（時間）。未設定時は無期限に保持 |
 | `TERMS_VERSION` / `PRIVACY_VERSION` | 現在有効な利用規約・プライバシーポリシーのバージョン識別子。本文を変更したらインクリメントし、再同意を要求する |
 | `DEFAULT_LOCALE` | Web UIの既定表示言語: `en`（既定）または`ja` |
-| `PORT` | `apps/api`が待ち受けるポート番号（既定 `9413`） |
-| `API_BASE_URL` | *（`apps/web/.env`に設定）* `apps/web`のサーバーサイドが`apps/api`に到達するためのURL（既定 `http://localhost:9413`） |
+| `API_PORT` / `API_HOST` | `apps/api`が待ち受けるポート番号/バインドアドレス（既定 `9413`/`0.0.0.0`）。素の`PORT`/`HOST`ではないのは、この`.env`を共有する`apps/web`側で`@sveltejs/adapter-node`がその素の名前を直接読むため |
+| `API_BASE_URL` | `apps/web`のサーバーサイドが`apps/api`に到達するためのURL（既定 `http://localhost:9413`） |
+| `PORT` / `HOST` | `apps/web`が待ち受けるポート番号/バインドアドレス（既定 `9414`/`0.0.0.0`）。本APIのコードからは参照せず、`@sveltejs/adapter-node`自身が直接読む変数名 |
 
 ## Author
 

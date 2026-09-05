@@ -33,7 +33,12 @@ const envSchema = z.object({
   TERMS_VERSION: z.string().default("1"),
   PRIVACY_VERSION: z.string().default("1"),
   DEFAULT_LOCALE: z.enum(["en", "ja"]).default("en"),
-  PORT: z.coerce.number().int().positive().default(9413),
+  // Named API_PORT/API_HOST, not PORT/HOST, because this env file is shared
+  // with apps/web (README.md "Configuration") and @sveltejs/adapter-node
+  // reads plain PORT/HOST itself — reusing those names here would make the
+  // two apps fight over one value.
+  API_PORT: z.coerce.number().int().positive().default(9413),
+  API_HOST: z.string().default("0.0.0.0"),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -497,9 +497,9 @@ OpenMiQ-api/
 
 ---
 
-## 11. 環境変数（案）
+## 11. 環境変数（実装済み）
 
-OpenMiQ-misskey の `## Configuration` 節に倣い、Markdownテーブル形式で `.env.example` とREADMEに列挙する。
+OpenMiQ-misskey の `## Configuration` 節に倣い、Markdownテーブル形式で `.env.example` とREADMEに列挙する。**`apps/api`・`apps/web`は同じ1つの`.env`（プロジェクトルート直下）を共有する**（§14.2）。
 
 | Variable | Purpose |
 | --- | --- |
@@ -522,8 +522,9 @@ OpenMiQ-misskey の `## Configuration` 節に倣い、Markdownテーブル形式
 | `HOSTED_IMAGE_TTL_HOURS` | hosted画像の保存期間。**既定は未設定＝無期限**（自動削除しない）。設定した場合、期限切れ後に`GET /api/images/:id`が404を返し、実体はR2バケットのライフサイクルルールにより自動削除される（`local`選択時のみアプリ側の削除ジョブにフォールバック、§8.6） |
 | `TERMS_VERSION` / `PRIVACY_VERSION` | 現在有効な利用規約・プライバシーポリシーのバージョン識別子（§16）。更新の都度インクリメントし、`USER.agreedTermsVersion`/`agreedPrivacyVersion`と不一致のユーザーは再同意するまでAPIキーが凍結される（§16.4） |
 | `DEFAULT_LOCALE` | Web UIの既定表示言語。**既定 `en`**（§17） |
-| `PORT` | `apps/api`（Hono）が待ち受けるポート番号（既定 `9413`） |
+| `API_PORT` / `API_HOST` | `apps/api`（Hono/`@hono/node-server`）が待ち受けるポート/バインドアドレス（既定 `9413`/`0.0.0.0`）。素の`PORT`/`HOST`ではなく`API_`接頭辞付きなのは、同じ`.env`を共有する`apps/web`側で`@sveltejs/adapter-node`がその素の名前を予約しているため（§14.2） |
 | `API_BASE_URL` | `apps/web`（SvelteKit）がサーバーサイドから`apps/api`に到達するためのURL（既定 `http://localhost:9413`） |
+| `PORT` / `HOST` | `apps/web`（`@sveltejs/adapter-node`）が待ち受けるポート/バインドアドレス（既定 `9414`/`0.0.0.0`）。本APIのコードからは参照せず、adapter-node自身が直接読む変数名（§14.2） |
 
 ---
 
@@ -702,29 +703,36 @@ OpenMiQ本家の `tsconfig.json`（`target: ES2025`, `module/moduleResolution: N
 - `.dev` はブラウザ組込みの **HSTS preloadリストに標準で含まれる**gTLDのため、ユーザーの通常アクセスは常に自動的にHTTPSへ引き上げられ、平文の`http://`ではそもそも到達できない。したがって本番は**HTTPS(443)のみを実運用の入口**として扱う。ただし証明書発行・更新の HTTP-01 チャレンジ（Let's Encrypt側からの検証アクセス）のために **80番ポート自体は開けておく必要がある**（ブラウザではなくACMEサーバーからのアクセス経路として）。
 
 ### 14.2 プロセス構成（pm2）
-OpenMiQ本家の `ecosystem.config.cjs` の書式を踏襲し、`apps/api` と `apps/web` の2プロセスを1つの設定ファイルで管理する。
+OpenMiQ本家の `ecosystem.config.cjs` の書式を踏襲し、`apps/api` と `apps/web` の2プロセスを1つの設定ファイルで管理する（実装済み）。
 
 ```js
-// ecosystem.config.cjs（イメージ）
+// ecosystem.config.cjs（実装）
+const ENV_FILE_ARGS = [
+  "--env-file-if-exists=../../.env",
+  "--env-file-if-exists=../../.env.local",
+];
+
 module.exports = {
   apps: [
     {
       name: process.env.PM2_APP_NAME_API || "openmiq-api",
       cwd: "./apps/api",
-      script: "dist/index.js",     // tsdownビルド成果物、@hono/node-serverで起動
-      env: { PORT: 9413, HOST: "127.0.0.1" },
+      script: "dist/index.mjs",   // tsdownビルド成果物（.mjs拡張子、format: "esm"のため）、@hono/node-serverで起動
+      node_args: ENV_FILE_ARGS,
     },
     {
       name: process.env.PM2_APP_NAME_WEB || "openmiq-web",
       cwd: "./apps/web",
       script: "build/index.js",    // adapter-node ビルド成果物
-      env: { PORT: 9414, HOST: "127.0.0.1" },
+      node_args: ENV_FILE_ARGS,
     },
   ],
 };
 ```
 
-- 両プロセスとも **`127.0.0.1`にのみbind**し、外部には一切直接公開しない（nginxのみが443で公開）。
+- pm2は`script`をnodeで直接起動するため（各appの`package.json`の`start`は経由しない）、ルート直下の共有`.env`（§11、`.env.example`）を読み込むための`--env-file-if-exists`フラグは`node_args`経由で両プロセスに渡す。`apps/api`・`apps/web`それぞれの`pnpm run start`も同じフラグを自前で付けているため、pm2を使わず単体で起動しても同じ`.env`を読む。
+- ポート/バインドアドレスは**両プロセスとも`.env`の値で制御する**（pm2側でのハードコードはしない）: `apps/api`は独自の`API_PORT`/`API_HOST`変数（既定`9413`/`0.0.0.0`）、`apps/web`は`@sveltejs/adapter-node`が直接読む`PORT`/`HOST`変数（既定`9414`/`0.0.0.0`）。**`PORT`/`HOST`という素の名前は`apps/web`の起動フレームワーク側の予約名なので、`apps/api`側では意図的に`API_PORT`/`API_HOST`という別名にしてある**（両者が同じ`.env`を共有するため、素の`PORT`/`HOST`を両方で使うと値を奪い合ってしまう）。
+- 両プロセスとも `127.0.0.1`にのみbindし、外部には一切直接公開しない（nginxのみが443で公開）という運用にする場合は、`.env`の`API_HOST`と`HOST`を両方とも`127.0.0.1`に設定する（既定`0.0.0.0`は開発時の利便性のため）。
 - 起動・停止・ログはOpenMiQ本家と同じ`pnpm run pm2:start`/`pm2:stop`/`pm2:restart`/`pm2:logs`で統一する。
 
 ### 14.3 nginx設定（イメージ）

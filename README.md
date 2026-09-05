@@ -56,14 +56,14 @@ pnpm run db:migrate     # applies any new migrations
 pnpm run pm2:start      # starts both processes under pm2 (see ecosystem.config.cjs)
 ```
 
-Both processes bind to `127.0.0.1` only — see [Deployment](#deployment) for the nginx + Let's Encrypt setup this assumes.
+See [Deployment](#deployment) for the nginx + Let's Encrypt setup this assumes, and set `API_HOST`/`HOST` to `127.0.0.1` in `.env` so neither process is reachable except through nginx.
 
 ## Deployment
 
 This is written for a single VPS running both `apps/api` and `apps/web` behind nginx, terminating TLS with Let's Encrypt (`certbot`).
 
 1. Point your domain's DNS A (and AAAA, if applicable) record at the server's IP.
-2. Install nginx and route `/api/` to `apps/api` (port `9413` by default) and everything else to `apps/web` (port `9414` by default), each bound to `127.0.0.1`.
+2. Set `API_HOST=127.0.0.1` and `HOST=127.0.0.1` in `.env` so neither process is reachable except through nginx, then install nginx and route `/api/` to `apps/api` (`API_PORT`, `9413` by default) and everything else to `apps/web` (`PORT`, `9414` by default).
 3. Run `sudo certbot --nginx -d <your-domain>` to obtain a certificate; its nginx plugin wires up the HTTPS server block and the 80→443 redirect. Renewal is handled by the `certbot.timer`/cron entry it installs.
 4. Run `pnpm run build && pnpm run pm2:start` to start both processes under pm2.
 5. Finish the [Discord setup](#discord-setup) steps that require HTTPS (Interactions Endpoint URL, OAuth2 redirect URI) now that the domain resolves.
@@ -77,11 +77,11 @@ pnpm run pm2:restart
 pnpm run pm2:stop
 ```
 
-`ecosystem.config.cjs` runs `apps/api` and `apps/web` as two processes, each reading its own `.env` from its working directory.
+`ecosystem.config.cjs` runs `apps/api` and `apps/web` as two processes, both reading the same `.env` at the project root.
 
 ## Configuration
 
-All of these go in `apps/api/.env` (see `.env.example`) unless noted otherwise:
+Both apps read from a single `.env` at the project root (see `.env.example`) — copy it there, not into `apps/api/` or `apps/web/`:
 
 | Variable | Purpose |
 | --- | --- |
@@ -102,8 +102,9 @@ All of these go in `apps/api/.env` (see `.env.example`) unless noted otherwise:
 | `HOSTED_IMAGE_TTL_HOURS` | Hours before a `hosted: true` image expires. Unset = kept indefinitely |
 | `TERMS_VERSION` / `PRIVACY_VERSION` | Current Terms/Privacy version identifiers; bump when the text changes to require re-consent |
 | `DEFAULT_LOCALE` | Default Web UI language: `en` (default) or `ja` |
-| `PORT` | Port `apps/api` listens on (default `9413`) |
-| `API_BASE_URL` | *(in `apps/web/.env`)* Where `apps/web`'s server side reaches `apps/api` (default `http://localhost:9413`) |
+| `API_PORT` / `API_HOST` | Port/bind address `apps/api` listens on (default `9413`/`0.0.0.0`). Named `API_PORT`/`API_HOST`, not `PORT`/`HOST`, because `apps/web` shares this same file and `@sveltejs/adapter-node` reads those plain names itself |
+| `API_BASE_URL` | Where `apps/web`'s server side reaches `apps/api` (default `http://localhost:9413`) |
+| `PORT` / `HOST` | Port/bind address `apps/web` listens on (default `9414`/`0.0.0.0`) — read directly by `@sveltejs/adapter-node`, not by this API's own code |
 
 ## Author
 
