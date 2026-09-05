@@ -43,14 +43,15 @@ export default tseslint.config(
     },
   },
   {
-    files: ["apps/web/**/*.svelte"],
+    files: ["apps/web/**/*.svelte", "apps/web/**/*.svelte.ts"],
     languageOptions: {
       parser: svelteParser,
       parserOptions: {
         // Lets svelte-eslint-parser hand a <script lang="ts"> block's
-        // contents to the TS parser instead of parsing it as plain JS —
-        // required for type annotations like `let { data }: Props = $props()`
-        // (see eslint-plugin-svelte's TypeScript setup docs).
+        // contents (or, for a *.svelte.ts runes module, the whole file) to
+        // the TS parser instead of parsing it as plain JS — required for
+        // type annotations like `let { data }: Props = $props()` (see
+        // eslint-plugin-svelte's TypeScript setup docs).
         parser: tseslint.parser,
         // Passing the real svelte.config.js gives the parser/rules the same
         // preprocessors and kit aliases ($lib, etc.) the app itself uses.
