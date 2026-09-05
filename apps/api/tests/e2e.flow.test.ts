@@ -61,6 +61,31 @@ describe("apply -> approve -> issue key -> use API key", () => {
     expect(res.status).toBe(401);
   });
 
+  it("rejects an application message containing a backtick or backslash", async () => {
+    const cookie = await sessionCookieHeader(env, applicant);
+    for (const message of [
+      "I would like to use this API `for` my project.",
+      "I would like to use this API \\for my project.",
+    ]) {
+      const res = await app.request("/api/console/applications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          cookie,
+          "X-Forwarded-For": "203.0.113.1",
+        },
+        body: JSON.stringify({
+          message,
+          fingerprint: "fp-1",
+          agreedTermsVersion: "1",
+          agreedPrivacyVersion: "1",
+        }),
+      });
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toBe("invalid_request");
+    }
+  });
+
   it("submits an application once logged in", async () => {
     const cookie = await sessionCookieHeader(env, applicant);
     const res = await app.request("/api/console/applications", {

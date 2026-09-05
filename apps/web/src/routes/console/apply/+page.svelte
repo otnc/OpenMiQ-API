@@ -56,7 +56,15 @@
           required
           rows="4"
           class="border-input flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs"
-        ></textarea>
+          oninput={(event) => {
+            const el = event.currentTarget;
+            const sanitized = el.value.replace(/[`\\]/g, "");
+            if (sanitized !== el.value) {
+              const caret = el.selectionStart ?? sanitized.length;
+              el.value = sanitized;
+              el.setSelectionRange(caret - 1, caret - 1);
+            }
+          }}></textarea>
         <p class="text-muted-foreground text-xs">{tr.apply.messageHint}</p>
       </div>
 

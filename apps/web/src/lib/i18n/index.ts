@@ -157,7 +157,7 @@ const en: Translations = {
     title: "Request API access",
     messageLabel: "Tell us how you plan to use this API (20-500 characters)",
     messageHint:
-      "This is reviewed by an administrator before your account is approved.",
+      "This is reviewed by an administrator before your account is approved. Backticks (`) and backslashes (\\) aren't allowed.",
     agreeTerms: "I agree to the Terms of Service",
     agreePrivacy: "I agree to the Privacy Policy",
     submit: "Submit application",
@@ -255,7 +255,8 @@ const ja: Translations = {
   apply: {
     title: "API利用申請",
     messageLabel: "利用目的を教えてください（20〜500字）",
-    messageHint: "この内容は管理者が承認前に確認します。",
+    messageHint:
+      "この内容は管理者が承認前に確認します。バッククォート（`）とバックスラッシュ（\\）は使用できません。",
     agreeTerms: "利用規約に同意する",
     agreePrivacy: "プライバシーポリシーに同意する",
     submit: "申請を送信",
