@@ -1,5 +1,5 @@
 {
-  "name": "@openmiq-api/api",
+  "name": "@openmiq/api",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -12,12 +12,13 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@badgateway/oauth2-client": "^3.3.1",
     "@hono/node-server": "^1.14.0",
     "@hono/swagger-ui": "^0.5.0",
     "@hono/zod-openapi": "^0.19.0",
-    "@openmiq-api/db": "workspace:*",
-    "@openmiq-api/shared": "workspace:*",
-    "discord-interactions": "^4.1.0",
+    "@openmiq/db": "workspace:*",
+    "@openmiq/shared": "workspace:*",
+    "discord-interactions": "^4.4.0",
     "drizzle-orm": "^0.44.6",
     "hono": "^4.6.14",
     "hono-rate-limiter": "^0.4.2",

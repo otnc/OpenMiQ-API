@@ -18,7 +18,7 @@
 | `hono/jwt` (Hono組込み) | セッションJWTの署名・検証 | 追加依存なし |
 | `hono/cookie` (Hono組込み) | httpOnly Cookie操作 | 追加依存なし |
 | `hono-rate-limiter` | APIキー単位のレート制限ミドルウェア | ストアは自前のSQLite永続実装（決定、DESIGN.md §5.4） |
-| （追加ライブラリなし） | Discord OAuth2クライアント | `ofetch`で自前実装（決定・変更）。当初予定していた`arctic`は実装着手時点でnpm上deprecatedと判明したため不採用（DESIGN.md §3.1） |
+| `@badgateway/oauth2-client`（決定・変更） | Discord OAuth2クライアント（authorization_code + PKCE） | 当初予定していた`arctic`は実装着手時点でnpm上deprecatedと判明したため不採用。依存ゼロ・4KB gzipの汎用OAuth2クライアントを採用（DESIGN.md §3.1） |
 | `discord-interactions` | Discord Interactions署名検証(Ed25519) | `POST /api/discord/interactions` で使用 |
 | `ofetch`（決定） | Discord Webhook実行/メッセージ編集のHTTPクライアント | 素の`fetch`から置き換え。`@discordjs/rest`は本サービスの呼び出し頻度には過剰と判断し不採用（比較はDESIGN.md §3.1/§6.4） |
 | `drizzle-orm` | ORM | スキーマ定義・クエリ |

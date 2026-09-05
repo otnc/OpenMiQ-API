@@ -1,7 +1,6 @@
 import { ofetch } from "ofetch";
+import { OAuth2Client } from "@badgateway/oauth2-client";
 import type { Env } from "../config/env.ts";
-
-const DISCORD_API_BASE = "https://discord.com/api/v10";
 
 export interface DiscordUser {
   id: string;
@@ -9,39 +8,21 @@ export interface DiscordUser {
   email: string;
 }
 
-export function buildAuthorizationUrl(env: Env, state: string): string {
-  const url = new URL(`${DISCORD_API_BASE}/oauth2/authorize`);
-  url.searchParams.set("client_id", env.DISCORD_CLIENT_ID);
-  url.searchParams.set(
-    "redirect_uri",
-    `${env.APP_BASE_URL}/api/auth/discord/callback`,
-  );
-  url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", "identify email");
-  url.searchParams.set("state", state);
-  return url.toString();
+export function createDiscordOAuthClient(env: Env): OAuth2Client {
+  return new OAuth2Client({
+    server: "https://discord.com",
+    clientId: env.DISCORD_CLIENT_ID,
+    clientSecret: env.DISCORD_CLIENT_SECRET,
+    // Discord's authorize endpoint has no /api prefix, but the token
+    // endpoint does — these are Discord's documented OAuth2 URLs, not
+    // interchangeable with its versioned /api/v10 REST endpoints.
+    authorizationEndpoint: "/oauth2/authorize",
+    tokenEndpoint: "/api/oauth2/token",
+  });
 }
 
-export async function exchangeCodeForToken(
-  env: Env,
-  code: string,
-): Promise<string> {
-  const body = new URLSearchParams({
-    client_id: env.DISCORD_CLIENT_ID,
-    client_secret: env.DISCORD_CLIENT_SECRET,
-    grant_type: "authorization_code",
-    code,
-    redirect_uri: `${env.APP_BASE_URL}/api/auth/discord/callback`,
-  });
-  const response = await ofetch<{ access_token: string }>(
-    `${DISCORD_API_BASE}/oauth2/token`,
-    {
-      method: "POST",
-      body,
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    },
-  );
-  return response.access_token;
+export function redirectUriFor(env: Env): string {
+  return `${env.APP_BASE_URL}/api/auth/discord/callback`;
 }
 
 export async function fetchDiscordUser(
@@ -51,7 +32,7 @@ export async function fetchDiscordUser(
     id: string;
     username: string;
     email: string | null;
-  }>(`${DISCORD_API_BASE}/users/@me`, {
+  }>("https://discord.com/api/v10/users/@me", {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (!user.email) {

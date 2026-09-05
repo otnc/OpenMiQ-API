@@ -53,6 +53,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@badgateway/oauth2-client':
+        specifier: ^3.3.1
+        version: 3.3.1
       '@hono/node-server':
         specifier: ^1.14.0
         version: 1.19.17(hono@4.13.5)
@@ -62,14 +65,14 @@ importers:
       '@hono/zod-openapi':
         specifier: ^0.19.0
         version: 0.19.10(hono@4.13.5)(zod@4.5.4)
-      '@openmiq-api/db':
+      '@openmiq/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@openmiq-api/shared':
+      '@openmiq/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       discord-interactions:
-        specifier: ^4.1.0
+        specifier: ^4.4.0
         version: 4.4.0
       drizzle-orm:
         specifier: ^0.44.6
@@ -131,6 +134,10 @@ packages:
     resolution: {integrity: sha512-/2rThQ5zPi9OzVwes6U7lK1+Yvug0iXu25olp7S0XsYmOqnyMfxH7gdSQjn/+DSOHRg7wnotwGJSyL+fBKdnEA==}
     peerDependencies:
       zod: ^3.20.2
+
+  '@badgateway/oauth2-client@3.3.1':
+    resolution: {integrity: sha512-7R4mZocEt8nOIMCz9cQyxsrY7n/jhFW9YUW6Er9ySnBzH92wA0KmQUR1cT2encq2Lix6kRD2GyQRAmT1dWtwzg==}
+    engines: {node: '>= 18'}
 
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
@@ -2138,6 +2145,8 @@ snapshots:
     dependencies:
       openapi3-ts: 4.6.1
       zod: 4.5.4
+
+  '@badgateway/oauth2-client@3.3.1': {}
 
   '@drizzle-team/brocli@0.10.2': {}
 

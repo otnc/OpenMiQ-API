@@ -1,10 +1,11 @@
 import { Hono } from "hono";
 import { getCookie, setCookie, deleteCookie } from "hono/cookie";
+import { generateCodeVerifier } from "@badgateway/oauth2-client";
 import { newSecretToken } from "../lib/ids.ts";
 import type { Env } from "../config/env.ts";
 import {
-  buildAuthorizationUrl,
-  exchangeCodeForToken,
+  createDiscordOAuthClient,
+  redirectUriFor,
   fetchDiscordUser,
 } from "../services/discordOAuthService.ts";
 import {
@@ -13,12 +14,16 @@ import {
 } from "../services/sessionService.ts";
 
 const OAUTH_STATE_COOKIE = "openmiq_oauth_state";
+const OAUTH_VERIFIER_COOKIE = "openmiq_oauth_verifier";
 
 export function createAuthApp(env: Env) {
   const app = new Hono();
+  const client = createDiscordOAuthClient(env);
 
-  app.get("/api/auth/discord", (c) => {
+  app.get("/api/auth/discord", async (c) => {
     const state = newSecretToken();
+    const codeVerifier = await generateCodeVerifier();
+
     setCookie(c, OAUTH_STATE_COOKIE, state, {
       httpOnly: true,
       secure: true,
@@ -26,21 +31,38 @@ export function createAuthApp(env: Env) {
       maxAge: 600,
       path: "/",
     });
-    return c.redirect(buildAuthorizationUrl(env, state));
+    setCookie(c, OAUTH_VERIFIER_COOKIE, codeVerifier, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Lax",
+      maxAge: 600,
+      path: "/",
+    });
+
+    const authorizeUri = await client.authorizationCode.getAuthorizeUri({
+      redirectUri: redirectUriFor(env),
+      state,
+      codeVerifier,
+      scope: ["identify", "email"],
+    });
+    return c.redirect(authorizeUri);
   });
 
   app.get("/api/auth/discord/callback", async (c) => {
-    const code = c.req.query("code");
-    const state = c.req.query("state");
-    const expectedState = getCookie(c, OAUTH_STATE_COOKIE);
+    const state = getCookie(c, OAUTH_STATE_COOKIE);
+    const codeVerifier = getCookie(c, OAUTH_VERIFIER_COOKIE);
     deleteCookie(c, OAUTH_STATE_COOKIE, { path: "/" });
+    deleteCookie(c, OAUTH_VERIFIER_COOKIE, { path: "/" });
 
-    if (!code || !state || !expectedState || state !== expectedState) {
+    if (!state || !codeVerifier) {
       return c.text("Invalid OAuth state", 400);
     }
 
-    const accessToken = await exchangeCodeForToken(env, code);
-    const discordUser = await fetchDiscordUser(accessToken);
+    const token = await client.authorizationCode.getTokenFromCodeRedirect(
+      c.req.url,
+      { redirectUri: redirectUriFor(env), state, codeVerifier },
+    );
+    const discordUser = await fetchDiscordUser(token.accessToken);
 
     const session = await createSessionToken(env, {
       discordId: discordUser.id,
