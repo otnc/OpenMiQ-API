@@ -72,9 +72,9 @@
       <Table.Header>
         <Table.Row>
           <Table.Head>{tr.apiKeys.nameLabel}</Table.Head>
-          <Table.Head>Prefix</Table.Head>
+          <Table.Head>{tr.common.prefix}</Table.Head>
           <Table.Head>{tr.apiKeys.expiresAtLabel}</Table.Head>
-          <Table.Head>Requests</Table.Head>
+          <Table.Head>{tr.common.requests}</Table.Head>
           <Table.Head></Table.Head>
         </Table.Row>
       </Table.Header>
@@ -90,25 +90,27 @@
                 <Badge variant="secondary">{tr.apiKeys.noExpiry}</Badge>
               {/if}
             </Table.Cell>
-            <Table.Cell>{key.requestCount}</Table.Cell>
-            <Table.Cell class="flex gap-2">
-              <form method="POST" action="?/regenerate" use:enhance>
-                <input type="hidden" name="id" value={key.id} />
-                <Button type="submit" variant="link" size="sm"
-                  >{tr.apiKeys.regenerate}</Button
-                >
-              </form>
-              <form method="POST" action="?/delete" use:enhance>
-                <input type="hidden" name="id" value={key.id} />
-                <Button
-                  type="submit"
-                  variant="link"
-                  size="sm"
-                  class="text-destructive"
-                >
-                  {tr.apiKeys.delete}
-                </Button>
-              </form>
+            <Table.Cell class="tabular-nums">{key.requestCount}</Table.Cell>
+            <Table.Cell>
+              <div class="flex flex-wrap items-center gap-2">
+                <form method="POST" action="?/regenerate" use:enhance>
+                  <input type="hidden" name="id" value={key.id} />
+                  <Button type="submit" variant="link" size="sm"
+                    >{tr.apiKeys.regenerate}</Button
+                  >
+                </form>
+                <form method="POST" action="?/delete" use:enhance>
+                  <input type="hidden" name="id" value={key.id} />
+                  <Button
+                    type="submit"
+                    variant="link"
+                    size="sm"
+                    class="text-destructive"
+                  >
+                    {tr.apiKeys.delete}
+                  </Button>
+                </form>
+              </div>
             </Table.Cell>
           </Table.Row>
         {/each}

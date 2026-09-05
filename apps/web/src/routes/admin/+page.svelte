@@ -103,8 +103,8 @@
       <Table.Root>
         <Table.Header>
           <Table.Row>
-            <Table.Head>Discord</Table.Head>
-            <Table.Head>Status</Table.Head>
+            <Table.Head>{tr.common.discord}</Table.Head>
+            <Table.Head>{tr.common.status}</Table.Head>
             <Table.Head>{tr.admin.maxApiKeysLabel}</Table.Head>
             <Table.Head></Table.Head>
           </Table.Row>
@@ -134,7 +134,9 @@
                 <div class="flex flex-wrap items-center gap-1">
                   <Badge variant="outline">{user.status}</Badge>
                   {#if user.reconsentRequired}
-                    <Badge variant="destructive">reconsent pending</Badge>
+                    <Badge variant="destructive"
+                      >{tr.common.reconsentPending}</Badge
+                    >
                   {/if}
                 </div>
               </Table.Cell>
@@ -260,11 +262,11 @@
       <Table.Root>
         <Table.Header>
           <Table.Row>
-            <Table.Head>Discord</Table.Head>
+            <Table.Head>{tr.common.discord}</Table.Head>
             <Table.Head>{tr.apiKeys.nameLabel}</Table.Head>
-            <Table.Head>Prefix</Table.Head>
-            <Table.Head>Requests</Table.Head>
-            <Table.Head>Remaining</Table.Head>
+            <Table.Head>{tr.common.prefix}</Table.Head>
+            <Table.Head>{tr.common.requests}</Table.Head>
+            <Table.Head>{tr.common.remaining}</Table.Head>
             <Table.Head></Table.Head>
           </Table.Row>
         </Table.Header>
@@ -277,10 +279,10 @@
               <Table.Cell>{key.name}</Table.Cell>
               <Table.Cell class="font-mono text-xs">{key.keyPrefix}…</Table.Cell
               >
-              <Table.Cell>{key.requestCount}</Table.Cell>
-              <Table.Cell>
+              <Table.Cell class="tabular-nums">{key.requestCount}</Table.Cell>
+              <Table.Cell class="tabular-nums">
                 {#if key.revokedAt}
-                  <Badge variant="destructive">revoked</Badge>
+                  <Badge variant="destructive">{tr.common.revoked}</Badge>
                 {:else}
                   {key.remaining}/{key.limit}
                 {/if}
