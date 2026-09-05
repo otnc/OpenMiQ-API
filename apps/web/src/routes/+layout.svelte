@@ -20,6 +20,16 @@
       </nav>
     </div>
   </header>
+  {#if data.me?.reconsentRequired}
+    <div
+      class="bg-destructive/10 text-destructive px-4 py-2 text-center text-sm"
+    >
+      {tr.home.reconsentRequired}
+      <a href="/console/reconsent" class="ml-2 font-medium underline"
+        >{tr.home.reconsentCta}</a
+      >
+    </div>
+  {/if}
   <main class="mx-auto max-w-3xl px-4 py-8">
     {@render children()}
   </main>

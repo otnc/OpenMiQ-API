@@ -64,9 +64,12 @@
           {#each data.users as user (user.id)}
             <Table.Row>
               <Table.Cell>{user.discordUsername}</Table.Cell>
-              <Table.Cell
-                ><Badge variant="outline">{user.status}</Badge></Table.Cell
-              >
+              <Table.Cell class="flex gap-1">
+                <Badge variant="outline">{user.status}</Badge>
+                {#if user.reconsentRequired}
+                  <Badge variant="destructive">reconsent pending</Badge>
+                {/if}
+              </Table.Cell>
               <Table.Cell class="flex flex-wrap gap-2">
                 <form method="POST" action="?/revoke" use:enhance>
                   <input type="hidden" name="id" value={user.id} />

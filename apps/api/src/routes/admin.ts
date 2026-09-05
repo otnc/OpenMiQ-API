@@ -16,6 +16,7 @@ import {
   unbanByBanId,
 } from "../services/userService.ts";
 import { listBans } from "../services/banService.ts";
+import { needsReconsent } from "../services/consentService.ts";
 import type { SessionIdentity } from "../services/sessionService.ts";
 
 type Variables = { identity: SessionIdentity | null };
@@ -83,7 +84,12 @@ export function createAdminApp(env: Env) {
   app.get("/api/admin/users", async (c) => {
     const status = c.req.query("status") as UserStatus | undefined;
     const rows = await listUsers(db, status);
-    return c.json(rows);
+    return c.json(
+      rows.map((user) => ({
+        ...user,
+        reconsentRequired: needsReconsent(env, user),
+      })),
+    );
   });
 
   app.post("/api/admin/users/:id/revoke", async (c) => {

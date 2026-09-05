@@ -6,6 +6,9 @@ export interface ConsoleMe {
   discordUsername: string;
   email: string;
   status: "unlinked" | "pending" | "approved" | "denied" | "revoked" | "banned";
+  reconsentRequired: boolean;
+  termsVersion: string;
+  privacyVersion: string;
 }
 
 export const load: LayoutServerLoad = async (event) => {

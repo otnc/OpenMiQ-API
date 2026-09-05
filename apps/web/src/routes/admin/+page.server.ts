@@ -14,6 +14,7 @@ export interface AdminUser {
   discordId: string;
   discordUsername: string;
   status: string;
+  reconsentRequired: boolean;
 }
 
 export interface AdminBan {

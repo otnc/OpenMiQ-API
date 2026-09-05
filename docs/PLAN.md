@@ -28,7 +28,7 @@
 ## Phase 2: 申請〜審査フロー
 - 利用規約・プライバシーポリシー（EN/JA）を作成し `GET /api/legal/terms`,`GET /api/legal/privacy` で配信、Web UIに `/legal/terms`,`/legal/privacy` ページを実装（DESIGN.md §16）。`hosted: true`時のサーバー保存に関する明記を含める
 - 申請フォームAPI `POST /api/console/applications`（20〜500字バリデーション(Zod)、IP取得、fingerprint受領、`agreedTermsVersion`/`agreedPrivacyVersion`必須チェック）。同意チェックボックス無しでは送信不可なフォームをWeb側にも実装。承認時に`USER.agreedTermsVersion`/`agreedPrivacyVersion`/`agreedAt`へ反映
-- 再同意フロー（DESIGN.md §16.4、決定）: `POST /api/console/consent`実装、`TERMS_VERSION`/`PRIVACY_VERSION`不一致ユーザーへのWeb再同意画面、APIキー認証ミドルウェアでの`reconsent_required`(403)判定（§5.3）。同意しない/放置した場合はAPIキーが一時凍結されるが`status`は変更せず再申請も不要
+- 再同意フロー（DESIGN.md §16.4、実装済み）: `POST /api/console/consent`、`GET /api/console/me`の`reconsentRequired`フラグ、APIキー認証ミドルウェアでの`reconsent_required`(403)判定（§5.3）、Web側の再同意バナー・`/console/reconsent`ページ、Admin一覧の「reconsent pending」バッジまで実装・実機動作確認済み。同意しない/放置した場合はAPIキーが一時凍結されるが`status`は変更せず再申請も不要。**スコープ調整**: 差分表示は法的文書のバージョン履歴が無いため未実装で、現状は全文表示のみ（DESIGN.md §16.4参照）
 - 再申請クールダウン判定（`REAPPLY_COOLDOWN_DAYS`、DESIGN.md §6.6）: `denied`は直近Applicationの`reviewedAt`、`revoked`は`ADMIN_ACTION`の該当`revoke`の`createdAt`を起点に経過日数を検証し、未経過ならエラーで残り日数を返す。BANは常に優先して即拒否
 - 申請の悪用防止（DESIGN.md §6.5、決定）: 既存の`pending`Applicationがあれば新規申請を409で拒否、`POST /api/console/applications`にセッション/IP単位のレート制限を適用
 - Discord Webhook送信サービスを**`ofetch`**で実装（素の`fetch`から置き換え。429時は`Retry-After`に従い最大2回リトライ。`@discordjs/rest`は呼び出し頻度に対し過剰と判断し不採用、DESIGN.md §6.4）。`DISCORD_REVIEW_WEBHOOK_URL`はクライアントに一切露出しない

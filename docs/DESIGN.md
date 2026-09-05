@@ -893,7 +893,7 @@ packages/openmiq/
 `TERMS_VERSION`/`PRIVACY_VERSION`が更新されると、`USER.agreedTermsVersion`/`agreedPrivacyVersion`が古いままの既存ユーザー全員が対象になる。
 
 - **検知**: Web Console/Admin UIへのログイン時（セッション検証時）、および§5.3のAPIキー認証ミドルウェアの双方で、`USER.agreedTermsVersion/agreedPrivacyVersion`を現行バージョンと比較する。
-- **Web側（決定）**: 不一致を検知した利用者には、他のConsole機能より先に「利用規約・プライバシーポリシーが更新されました」という再同意画面を表示する。**既定表示は旧バージョンとの差分（変更点サマリ）**とし、画面上のトグルで**全文表示に切り替え可能**にする。差分データは`TERMS_VERSION`/`PRIVACY_VERSION`ごとの本文をバージョン管理しておき、直近の同意済みバージョンとの差分を生成する。
+- **Web側（決定）**: 不一致を検知した利用者には、他のConsole機能より先に「利用規約・プライバシーポリシーが更新されました」という再同意画面を表示する。**既定表示は旧バージョンとの差分（変更点サマリ）**とし、画面上のトグルで**全文表示に切り替え可能**にする。差分データは`TERMS_VERSION`/`PRIVACY_VERSION`ごとの本文をバージョン管理しておき、直近の同意済みバージョンとの差分を生成する。**実装時のスコープ調整**: 初回実装では法的文書のバージョン別本文履歴を保持する仕組みがまだ無く、差分生成ができないため、`/console/reconsent`ページは暫定的に**常に全文表示**としている（`apps/api/src/legal/content.ts`は現行バージョンの本文のみ保持）。バージョン履歴の保存と差分表示は別タスクとする。
 - **同意した場合**: `POST /api/console/consent`（§8.2）で`USER.agreedTermsVersion/agreedPrivacyVersion/agreedAt`を更新し、即座に通常利用へ戻る。**`status`は変更せず、再申請も不要。**
 - **同意しなかった場合（決定）**: 明示的に「同意しない」を選んだ場合も、単に再同意画面を放置した場合も、`USER.agreedTermsVersion/agreedPrivacyVersion`が現行バージョンと不一致のままとなり、**APIキーが一時凍結される**（§5.3の`reconsent_required`）。これは`revoked`と似た「APIキーが使えなくなる」という結果だが、`USER.status`自体は`approved`のまま変更されない一時的な状態であり、**管理者の操作も再申請も不要**——後で同意すれば即座に解除される点が`revoked`（管理者操作 + クールダウン + 再申請が必要）と異なる。
 - **Admin側の可視性**: 管理画面のユーザー一覧に「同意待ち（reconsent pending）」のようなバッジを表示し、どのユーザーが凍結中かを把握できるようにする（§7）。

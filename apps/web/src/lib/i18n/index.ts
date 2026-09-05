@@ -32,6 +32,7 @@ interface Translations {
     revoked: string;
     banned: string;
     reconsentRequired: string;
+    reconsentCta: string;
   };
   apply: {
     title: string;
@@ -84,6 +85,7 @@ const en: Translations = {
     banned: "Your account has been banned.",
     reconsentRequired:
       "The Terms of Service or Privacy Policy have changed. Please review and re-agree to continue using your API keys.",
+    reconsentCta: "Review and re-agree",
   },
   apply: {
     title: "Request API access",
@@ -135,6 +137,7 @@ const ja: Translations = {
     banned: "アカウントはBANされています。",
     reconsentRequired:
       "利用規約またはプライバシーポリシーが更新されました。内容をご確認の上、再度同意してください。",
+    reconsentCta: "内容を確認して再同意する",
   },
   apply: {
     title: "API利用申請",
