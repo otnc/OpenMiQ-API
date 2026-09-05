@@ -115,7 +115,7 @@ flowchart LR
 | API docs / Swagger UI | **`@hono/zod-openapi` + `@hono/swagger-ui`** | swagger-jsdoc手動記述 | ルート定義（Zodスキーマ）から自動でOpenAPI 3.1を生成でき、手書きSwaggerとのズレが発生しない |
 | ORM / DB | **Drizzle ORM + SQLite**（`better-sqlite3`、決定） | PostgreSQL, Prisma | セルフホスト規模・運用コストを優先しSQLiteに決定（本家のローカルファイルストア思想にも近い）。複数インスタンス運用が必要になった場合のみPostgreSQLへの切替を検討する。Prismaはクエリエンジンのネイティブバイナリを同梱し自己ホストにはやや重いため不採用 |
 | Web UI (Console/Admin) | **SvelteKit**（`adapter-node`でセルフホスト） | Astro, Next.js | Next.jsは指定により除外。Astroは静的コンテンツ+部分的な島構造向きで、認証必須の動的ダッシュボード（フォーム送信・ポーリング更新・権限分岐）には不向き。SvelteKitはビルド後のクライアントJSが小さく、SSR/APIルート（`+server.ts`）を1アプリで完結でき、セルフホスト実績も豊富 |
-| UIコンポーネント | **shadcn-svelte**（Tailwind CSS + bits-ui ベース） | Skeleton UI, DaisyUI | 指定の shadcn/ui 系列で、SvelteKit向け公式相当の移植として最も知名度・実績がある |
+| UIコンポーネント | **shadcn-svelte**（Tailwind CSS + bits-ui ベース、方針は継続） | Skeleton UI, DaisyUI | 指定の shadcn/ui 系列で、SvelteKit向け公式相当の移植として最も知名度・実績がある。**初期スキャフォールド実装ではTailwindの素のユーティリティクラスで暫定実装**し、`shadcn-svelte`のCLIによるコンポーネント追加は画面デザインに着手する段階で行う（詳細はdocs/LIBRARIES.md） |
 | Discord OAuth2 | **`@badgateway/oauth2-client`（決定・再変更）** | Arctic, 自前実装(ofetchベース), openid-client | 当初Arcticを予定していたが実装着手時点でnpm上**deprecated**と判明し、一時的に自前ofetch実装へ切替えていた。ただし認可コードフローの状態検証・PKCE・トークン交換を毎回手書きするのは車輪の再発明であり保守負荷も残るため、改めて汎用OAuth2クライアントライブラリに戻す。`openid-client`はOIDC専業でDiscordのような素のOAuth2プロバイダには discovery document 前提の設計がやや過剰。`@badgateway/oauth2-client`はOIDCに限定しない汎用OAuth2クライアントで、依存ゼロ・4KB gzip・`fetch()`ベース、authorization_code+PKCEをビルトインサポートしメンテナンスも活発（2026年時点でリポジトリへの直近pushあり、npm非deprecated）。PKCEの`codeVerifier`とCSRF対策の`state`（`ransu/secure`の`token()`で生成）はいずれもhttpOnly Cookieに一時保存して照合する。Discordの認可エンドポイント(`https://discord.com/oauth2/authorize`)とトークンエンドポイント(`https://discord.com/api/oauth2/token`)は`/api`プレフィックスの有無が異なる点に注意 |
 | Discord Webhook送信・メッセージ編集 | **`ofetch` によるREST API直叩き（決定・再検討済み）** | discord.js, `@discordjs/rest` | Botとして常駐する必要がなく、Webhook実行(`POST /webhooks/{id}/{token}`)とメッセージ編集(`PATCH`)のみで完結するため、discord.js（Gateway前提の重量級ライブラリ）は不要。`@makeitaquote/utils`（§15）が既に依存している`ofetch`を採用し素の`fetch`から置き換え——リトライ・タイムアウト・エラーハンドリングを自前実装せず済む。`@discordjs/rest`（レート制限バケット管理込み）とも比較したが、本サービスの呼び出し頻度（申請1件につきWebhook送信1回、承認/却下1回につきメッセージ編集1回という低頻度・非バースト）では429を受けてから`Retry-After`に従い1回リトライする程度で十分であり、常時バケット管理を行う専用RESTマネージャーは過剰と判断。詳細は§6.4 |
 | Discord Interactions署名検証 | **`discord-interactions`**（公式提供の軽量パッケージ） | 自前Ed25519検証 | Discord公式（`discord/discord-interactions-js`）が保有・メンテナンスするパッケージ。npm上の最終更新は約1年前に見えるが、GitHubリポジトリ自体はアーカイブされておらず直近まで更新・リリースがあり、署名検証という仕様が安定した領域のため更新頻度が低いだけで放棄されたパッケージではないと判断した。公式実装を使い、検証ロジックの実装ミスを避ける |
@@ -717,7 +717,7 @@ module.exports = {
       name: process.env.PM2_APP_NAME_WEB || "openmiq-web",
       cwd: "./apps/web",
       script: "build/index.js",    // adapter-node ビルド成果物
-      env: { PORT: 3000, HOST: "127.0.0.1" },
+      env: { PORT: 9414, HOST: "127.0.0.1" },
     },
   ],
 };
@@ -760,7 +760,7 @@ server {
 
     # apps/web（SvelteKit）: それ以外すべて
     location / {
-        proxy_pass http://127.0.0.1:3000;
+        proxy_pass http://127.0.0.1:9414;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

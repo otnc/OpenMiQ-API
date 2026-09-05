@@ -8,12 +8,12 @@ import svelteParser from "svelte-eslint-parser";
 export default tseslint.config(
   {
     ignores: [
-      "dist/",
-      "build/",
-      ".svelte-kit/",
-      "coverage/",
-      "node_modules/",
-      "data/",
+      "**/dist/",
+      "**/build/",
+      "**/.svelte-kit/",
+      "**/coverage/",
+      "**/node_modules/",
+      "**/data/",
     ],
   },
   eslint.configs.recommended,
@@ -28,7 +28,15 @@ export default tseslint.config(
   },
   {
     files: ["**/*.svelte"],
-    languageOptions: { parser: svelteParser },
+    languageOptions: {
+      parser: svelteParser,
+      parserOptions: { parser: tseslint.parser },
+    },
+    rules: {
+      // We're not adopting SvelteKit's typed-routes `resolve()` helper yet —
+      // plain string hrefs are still the norm across this app.
+      "svelte/no-navigation-without-resolve": "off",
+    },
   },
   {
     files: ["ecosystem.config.cjs"],

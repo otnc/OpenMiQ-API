@@ -38,11 +38,12 @@
 | --- | --- | --- |
 | `@sveltejs/kit` | Web UIフレームワーク本体 | Console/Admin共通 |
 | `@sveltejs/adapter-node` | セルフホスト用ビルドアダプタ | Next.js不使用の代替 |
-| `tailwindcss` | ユーティリティCSS | shadcn-svelteの前提 |
-| `shadcn-svelte`（`bits-ui` ベース） | UIコンポーネント一式 | 指定のshadcn/ui系列をSvelteKit向けに採用 |
+| `tailwindcss` / `@tailwindcss/vite` | ユーティリティCSS（v4、Viteプラグイン方式） | 設定ファイル不要のCSSファーストconfig |
+| `svelte-check` | Svelteコンポーネント込みの型検査 | `tsc`だけでは`.svelte`ファイルを検査できないため |
 | `@fingerprintjs/fingerprintjs`（OSS版） | クライアント側フィンガープリント取得 | 申請フォームで`visitorId`を送信 |
-| `zod`（`apps/api`と共通） | フォームバリデーション | サーバー側スキーマと共有 (`packages/shared`) |
 | （追加ライブラリなし） | i18n（EN/JA） | 外部ライブラリを導入せず、OpenMiQ本家と同じ手法の自前`Translations`オブジェクトで実装（決定、DESIGN.md §17） |
+
+**実装時のスコープ調整（UIコンポーネント）**: 当初`shadcn-svelte`の導入を予定していたが、初期スキャフォールド段階ではTailwindのユーティリティクラスを直接書く最小実装とした（フォーム・テーブル・ボタン等）。`shadcn-svelte`のCLIによるコンポーネント追加は、実際の画面デザインに着手するタイミングでの導入とする（見た目の作り込みは別タスク）。`zod`はサーバー側`apps/api`のバリデーションに一本化し、`apps/web`側はSvelteKitの`FormData`をそのまま扱う設計にしたため、`apps/web`自体は`zod`に直接依存しない。
 
 ## packages/db
 
