@@ -8,6 +8,7 @@ import {
   resolveConsoleStatus,
 } from "../services/userService.ts";
 import { needsReconsent, recordConsent } from "../services/consentService.ts";
+import { fetchDiscordUserById } from "../services/discordBotService.ts";
 import type { SessionIdentity } from "../services/sessionService.ts";
 
 type Variables = { identity: SessionIdentity | null };
@@ -22,11 +23,18 @@ export function createConsoleApp(env: Env) {
 
     const status = await resolveConsoleStatus(db, identity);
     const user = await findUserByDiscordId(db, identity.discordId);
+    const avatarUrl = await fetchDiscordUserById(
+      env.DISCORD_BOT_TOKEN,
+      identity.discordId,
+    )
+      .then((discordUser) => discordUser.avatarUrl)
+      .catch(() => null);
 
     return c.json({
       discordId: identity.discordId,
       discordUsername: identity.discordUsername,
       email: identity.email,
+      avatarUrl,
       status,
       reconsentRequired: user ? needsReconsent(env, user) : false,
       termsVersion: env.TERMS_VERSION,

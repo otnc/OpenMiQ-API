@@ -18,9 +18,7 @@ describe("GET /api/sample-quote", () => {
   const { url: DATABASE_URL } = createTestDbFile();
 
   it("404s before generateSampleQuote() has ever run", async () => {
-    const app = createApp(
-      buildTestEnv({ DATABASE_URL, DISCORD_BOT_TOKEN: undefined }),
-    );
+    const app = createApp(buildTestEnv({ DATABASE_URL }));
     const res = await app.request("/api/sample-quote");
     expect(res.status).toBe(404);
   });

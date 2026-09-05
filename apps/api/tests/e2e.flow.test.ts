@@ -11,6 +11,17 @@ vi.mock("../src/services/discordWebhookService.ts", () => ({
   disableReviewButtons: vi.fn().mockResolvedValue(undefined),
 }));
 
+// GET /api/admin/users and /api/console/me now look up each user's avatar
+// via the bot token — stubbed here so this suite stays offline like the
+// rest of it, instead of making a real Discord API call.
+vi.mock("../src/services/discordBotService.ts", () => ({
+  fetchDiscordUserById: vi.fn().mockResolvedValue({
+    id: "0",
+    username: "stub",
+    avatarUrl: "https://cdn.discordapp.com/embed/avatars/0.png",
+  }),
+}));
+
 const { createApp } = await import("../src/app.ts");
 
 // Exercises the full path described in PLAN.md Phase 6: an applicant links

@@ -19,13 +19,6 @@ describe("generateSampleQuote", () => {
     vi.mocked(renderQuote).mockReset();
   });
 
-  it("does nothing when DISCORD_BOT_TOKEN is unset", async () => {
-    await generateSampleQuote(
-      buildTestEnv({ DISCORD_BOT_TOKEN: undefined, ADMIN_DISCORD_IDS: ["1"] }),
-    );
-    expect(fetchDiscordUserById).not.toHaveBeenCalled();
-  });
-
   it("does nothing when there is no admin configured", async () => {
     await generateSampleQuote(
       buildTestEnv({ DISCORD_BOT_TOKEN: "tok", ADMIN_DISCORD_IDS: [] }),

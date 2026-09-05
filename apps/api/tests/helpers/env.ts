@@ -10,6 +10,7 @@ export function buildTestEnv(overrides: Partial<Env> = {}): Env {
     DISCORD_CLIENT_SECRET: "test-client-secret",
     DISCORD_PUBLIC_KEY: "0".repeat(64),
     DISCORD_REVIEW_WEBHOOK_URL: "https://discord.test/webhook",
+    DISCORD_BOT_TOKEN: "test-bot-token",
     ADMIN_DISCORD_IDS: ["admin-1"],
     APP_BASE_URL: "http://localhost:9413",
     RATE_LIMIT_WINDOW_MS: 60_000,

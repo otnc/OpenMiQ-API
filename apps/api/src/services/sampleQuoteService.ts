@@ -23,7 +23,7 @@ export function getSampleQuote(): Buffer | null {
 
 export async function generateSampleQuote(env: Env): Promise<void> {
   const adminId = env.ADMIN_DISCORD_IDS[0];
-  if (!env.DISCORD_BOT_TOKEN || !adminId) return;
+  if (!adminId) return;
   try {
     const admin = await fetchDiscordUserById(env.DISCORD_BOT_TOKEN, adminId);
     const input: QuoteRequest = {

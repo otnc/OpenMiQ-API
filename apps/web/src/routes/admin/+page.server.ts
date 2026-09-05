@@ -13,6 +13,7 @@ export interface AdminUser {
   id: string;
   discordId: string;
   discordUsername: string;
+  avatarUrl: string | null;
   status: string;
   maxApiKeys: number | null;
   reconsentRequired: boolean;

@@ -115,7 +115,8 @@
               <Table.Cell>
                 <div class="flex items-center gap-2">
                   <img
-                    src={defaultDiscordAvatarUrl(user.discordId)}
+                    src={user.avatarUrl ??
+                      defaultDiscordAvatarUrl(user.discordId)}
                     alt=""
                     class="size-6 shrink-0 rounded-full"
                     loading="lazy"

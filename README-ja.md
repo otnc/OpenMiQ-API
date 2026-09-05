@@ -58,7 +58,7 @@ pnpm run dev           # Turborepo経由でapps/apiとapps/webを同時起動
       ```
       レスポンスの`url`フィールドを`DISCORD_REVIEW_WEBHOOK_URL`に設定してください。**この手順は重要です**: チャンネルのUIから作成したWebhookは「application-owned」ではないため、そこから送るメッセージのApprove/DenyボタンはDiscord側で黙って無視されます — 埋め込み自体はエラー無く投稿されるので、ボタンが無い原因に気づきにくい落とし穴になります。Bot自身のAPI呼び出しで作成したWebhookのみが、実際に機能するインタラクティブボタンを送れます（[Discord公式ドキュメント](https://docs.discord.com/developers/resources/webhook)）。
    4. Webhookさえ作成してしまえば、以降はBotがそのサーバーに所属している必要はありません — Approve/Denyは（手順4で設定した）Interactions EndpointとこのWebhook自身のトークンだけで完結し、Botそのものは関与しません。
-6. （任意）同じ`DISCORD_BOT_TOKEN`はトップページのサンプルクォート画像にも使われます。`ADMIN_DISCORD_IDS`の先頭ユーザーのアバターをDiscordの`GET /users/{id}`（上記のWebhook/ギルド設定とは無関係な、グローバルなエンドポイント）経由で取得します。
+6. 同じ`DISCORD_BOT_TOKEN`は実行時にも必須です — ヘッダーに表示するログイン中ユーザー自身のアバター、Admin画面のユーザー一覧に表示する各ユーザーのアバター、トップページのサンプルクォート画像（`ADMIN_DISCORD_IDS`の先頭ユーザーのアバター、起動時に一度だけ取得）のすべてが、Discordの`GET /users/{id}`（上記のWebhook/ギルド設定とは無関係な、グローバルなエンドポイント）経由でこのトークンを使います。
 
 ### 本番ビルド・デプロイ
 
@@ -105,7 +105,7 @@ pnpm run pm2:stop
 | `DISCORD_PUBLIC_KEY` | 受信したDiscord Interactionsリクエストの署名検証に使用 |
 | `DISCORD_REVIEW_WEBHOOK_URL` | 審査用メッセージ（Approve/Deniedボタン付き）の投稿先Webhook URL |
 | `ADMIN_DISCORD_IDS` | Adminダッシュボード/管理エンドポイントの利用を許可するDiscordユーザーIDのカンマ区切りリスト |
-| `DISCORD_BOT_TOKEN` | 実行時は任意 — 稼働中のサーバーがこれを読むのはトップページのサンプルクォート画像生成時のみ（起動時に一度だけ`ADMIN_DISCORD_IDS`の先頭ユーザーのアバターを取得。未設定ならその画像を省略するだけ）。ただしセットアップ時には一度必要 — application-owned な`DISCORD_REVIEW_WEBHOOK_URL`を作成するため（[Discordの設定](#discordの設定)手順5参照）。これを怠るとApprove/Denyボタンが黙って表示されなくなる |
+| `DISCORD_BOT_TOKEN` | 必須。Discordユーザーのアバターをユーザーidから取得するために使用（ログイン中ユーザー自身のヘッダーアバター、Admin画面のユーザー一覧の各アバター、トップページのサンプルクォート画像 — `ADMIN_DISCORD_IDS`の先頭ユーザーのアバター、起動時に一度だけ取得）。application-owned な`DISCORD_REVIEW_WEBHOOK_URL`の作成にも必要（[Discordの設定](#discordの設定)手順5参照）。これを怠るとApprove/Denyボタンが黙って表示されなくなる |
 | `APP_BASE_URL` | 本サービス自身の公開URL。OAuth2コールバックとInteractions Endpointに使用 |
 | `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | APIキーごとの既定レート制限のウィンドウ（ms）と上限リクエスト数（既定 `60000`/`60`） |
 | `ICON_PATH` / `LOGO_PATH` | `GET /api/branding/icon`/`logo`が配信するローカル画像パス。相対パスは`.env`自体と同じくプロジェクトルート基準で解決される。**未設定時は本家デプロイも含めて全デプロイで404**になる — 同梱の`.github/assets/icon.png`/`logo.png`への自動フォールバックは無い（これらの資産は本家OpenMiQプロジェクト・著作者を特定するものであるため。再利用に関する制約は[License](#license)参照）。アイコン・ロゴを表示したい場合は、同じパス（`ICON_PATH=.github/assets/icon.png`）を指すとしても明示的にこの変数を設定すること。`LOGO_PATH`は生成されるクォート画像の既定watermarkとしても使われる（OpenMiQ本体・OpenMiQ-misskeyと同じ慣習）。リクエスト自体で`watermark`フィールドを指定した場合はそちらが優先される — `POST /api/quote`の詳細なスキーマは`GET /api/docs`参照 |

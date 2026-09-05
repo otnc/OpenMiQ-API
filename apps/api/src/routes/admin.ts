@@ -17,6 +17,7 @@ import {
 } from "../services/userService.ts";
 import { listBans } from "../services/banService.ts";
 import { needsReconsent } from "../services/consentService.ts";
+import { fetchDiscordUserById } from "../services/discordBotService.ts";
 import type { SessionIdentity } from "../services/sessionService.ts";
 
 type Variables = { identity: SessionIdentity | null };
@@ -84,12 +85,22 @@ export function createAdminApp(env: Env) {
   app.get("/api/admin/users", async (c) => {
     const status = c.req.query("status") as UserStatus | undefined;
     const rows = await listUsers(db, status);
-    return c.json(
-      rows.map((user) => ({
-        ...user,
-        reconsentRequired: needsReconsent(env, user),
-      })),
+    const withAvatars = await Promise.all(
+      rows.map(async (user) => {
+        const avatarUrl = await fetchDiscordUserById(
+          env.DISCORD_BOT_TOKEN,
+          user.discordId,
+        )
+          .then((discordUser) => discordUser.avatarUrl)
+          .catch(() => null);
+        return {
+          ...user,
+          avatarUrl,
+          reconsentRequired: needsReconsent(env, user),
+        };
+      }),
     );
+    return c.json(withAvatars);
   });
 
   app.post("/api/admin/users/:id/revoke", async (c) => {

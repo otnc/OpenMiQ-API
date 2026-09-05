@@ -371,10 +371,10 @@ Swagger UI: `GET /api/docs`（`@hono/swagger-ui`、`@hono/zod-openapi` が生成
 - `GET /api/about` — 帰属表示（ソフトウェア名/著作者/リポジトリURL）、バージョン、ソース入手先（AGPL §13対応）
 - `GET /api/branding/icon`, `GET /api/branding/logo` — `ICON_PATH`/`LOGO_PATH`（§0.1, §11）が指すローカル画像を配信。**未設定時は404**（本家アセットへのフォールバックは無し、§0.1参照）。Web UIはこれをそのまま `<img>`/favicon に埋め込む
 - `GET /api/legal/terms`, `GET /api/legal/privacy` — 現行バージョンの利用規約・プライバシーポリシー本文をEN/JA両方（`?lang=ja`等）で返す（§16）。Web UI（`/legal/terms`, `/legal/privacy`ページ、§17のi18nでUI言語と連動、実装済み）はこれを表示する
-- `GET /api/sample-quote`（実装済み）— トップページ用のサンプルクォート画像。プロセス起動時に一度だけ、`ADMIN_DISCORD_IDS`の先頭ユーザーのアバターを`DISCORD_BOT_TOKEN`（任意）経由でDiscord REST APIから取得し`renderQuote()`で生成、以後はメモリにキャッシュしたものをそのまま返す（毎リクエスト生成しない、タイマー更新もしない）。`DISCORD_BOT_TOKEN`未設定または`ADMIN_DISCORD_IDS`が空なら404を返し続ける（Web UIはトップページでこの画像取得に失敗したら単に非表示にする）。このエンドポイント自体は`DISCORD_BOT_TOKEN`が無くても404を返すだけで動く——本サービスの他の部分は一貫してGateway非常駐・HTTP Interactions方式だが、ログイン前の任意ユーザーのアバターを取得する手段がOAuth2には無いため、この1機能に限りBotトークンを許容する（`apps/api/src/services/discordBotService.ts`）。なお`DISCORD_BOT_TOKEN`自体はこのサンプル画像専用というわけではなく、審査Webhook（§6.1・§0.1）をapplication-ownedとして作成するセットアップ手順でも1回限り必要になる。
+- `GET /api/sample-quote`（実装済み）— トップページ用のサンプルクォート画像。プロセス起動時に一度だけ、`ADMIN_DISCORD_IDS`の先頭ユーザーのアバターを`DISCORD_BOT_TOKEN`経由でDiscord REST APIから取得し`renderQuote()`で生成、以後はメモリにキャッシュしたものをそのまま返す（毎リクエスト生成しない、タイマー更新もしない）。`ADMIN_DISCORD_IDS`が空なら404を返し続ける（Web UIはトップページでこの画像取得に失敗したら単に非表示にする）。**実装時の補正**: 本サービスの他の部分は一貫してGateway非常駐・HTTP Interactions方式だが、ログイン前の任意ユーザーのアバターを取得する手段がOAuth2には無いため、この用途に限りBotトークンを許容する（`apps/api/src/services/discordBotService.ts`）。当初`DISCORD_BOT_TOKEN`はこのサンプル画像専用の任意機能として導入したが、その後ログイン中ユーザー自身のヘッダーアバター取得（§8.2）・Admin画面のユーザー一覧の各アバター取得（§8.3）・審査Webhookをapplication-ownedとして作成するセットアップ手順（§6.1）でも同じBotトークンが必要になったため、`DISCORD_BOT_TOKEN`自体を必須環境変数に変更した（§11）。
 
 ### 8.2 Console API（セッションJWT必須）
-- `GET /api/console/me` — 自分のステータス取得
+- `GET /api/console/me` — 自分のステータス取得。`avatarUrl`（`DISCORD_BOT_TOKEN`経由で取得した自分自身のDiscordアバター、失敗時は`null`）を含む — Web UIがヘッダーのユーザーメニューのアイコンに使う
 - `POST /api/console/applications` — 申請提出（`message: string(20..500)`, `fingerprint: string`, `agreedTermsVersion: string`, `agreedPrivacyVersion: string`。現行の`TERMS_VERSION`/`PRIVACY_VERSION`と一致しないと400。既存の`pending`があれば409、`denied`/`revoked`のクールダウン未経過なら429または409＋残り日数。§16, §6.5, §6.6）
 - `GET /api/console/api-keys` — 自分のAPIキー一覧（プレフィックスのみ表示、複数件。各要素に `limit/remaining/resetAt/requestCount/lastUsedAt` を含む、§5.4）
 - `POST /api/console/api-keys` — APIキー発行（`approved`のみ、`{ name: string, expiresAt: string|null }`、平文は生成時1回のみ返却。有効なキー数が上限（`MAX_API_KEYS_PER_USER`または`USER.maxApiKeys`、§4補足）に達していれば409）
@@ -389,7 +389,7 @@ Swagger UI: `GET /api/docs`（`@hono/swagger-ui`、`@hono/zod-openapi` が生成
 - `GET /api/admin/applications?status=pending`
 - `POST /api/admin/applications/:id/approve`
 - `POST /api/admin/applications/:id/deny`
-- `GET /api/admin/users?status=approved|denied`
+- `GET /api/admin/users?status=approved|denied` — 各要素に`avatarUrl`（`DISCORD_BOT_TOKEN`経由で取得したDiscordアバター、失敗時は`null`）を含む — Web UIのユーザー一覧でアイコン表示に使う
 - `POST /api/admin/users/:id/revoke`
 - `POST /api/admin/users/:id/ban` (`reason: string`)
 - `POST /api/admin/bans/:id/unban`
@@ -512,7 +512,7 @@ OpenMiQ-misskey の `## Configuration` 節に倣い、Markdownテーブル形式
 | `DISCORD_PUBLIC_KEY` | Interactions Endpointの署名検証用（Botを常駐させないHTTP Interactions方式のため、この署名検証自体にBotトークンは不要 — メッセージ編集もWebhook自体のURL経由で行う） |
 | `DISCORD_REVIEW_WEBHOOK_URL` | 審査用埋め込みの送信先Webhook URL |
 | `ADMIN_DISCORD_IDS` | 管理画面/管理操作を許可するDiscordユーザーIDのカンマ区切りリスト |
-| `DISCORD_BOT_TOKEN` | 実行時は任意 — サーバーが読むのは`GET /api/sample-quote`（§8.1、`ADMIN_DISCORD_IDS`の先頭ユーザーのアバター取得）のみで、未設定ならそのエンドポイントが404を返し続けるだけ。ただしセットアップ時には1回必要 — application-ownedな`DISCORD_REVIEW_WEBHOOK_URL`（§6.1）を`POST /channels/{channel.id}/webhooks`で作成するため。これを怠るとApprove/Denyボタンが送信されず（Discordが黙って無視する）、埋め込みだけが届く |
+| `DISCORD_BOT_TOKEN` | 必須。Discordユーザーのアバターをユーザーidから取得するために使用（`GET /api/console/me`のログイン中ユーザー自身のアバター§8.2、`GET /api/admin/users`の各ユーザーのアバター§8.3、`GET /api/sample-quote`の`ADMIN_DISCORD_IDS`先頭ユーザーのアバター§8.1）。application-ownedな`DISCORD_REVIEW_WEBHOOK_URL`（§6.1）を`POST /channels/{channel.id}/webhooks`で作成するためにも必要。これを怠るとApprove/Denyボタンが送信されず（Discordが黙って無視する）、埋め込みだけが届く |
 | `APP_BASE_URL` | OAuthコールバック等に使う自ホストの公開URL |
 | `RATE_LIMIT_WINDOW_MS` | `hono-rate-limiter` のデフォルトウィンドウ（既定 `60000`） |
 | `RATE_LIMIT_MAX` | ウィンドウあたりのデフォルト上限リクエスト数（既定 `60`。キー単位で個別上書きしたい場合はAPIKEYテーブルに拡張列を追加） |

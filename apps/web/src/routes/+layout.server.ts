@@ -5,6 +5,7 @@ export interface ConsoleMe {
   discordId: string;
   discordUsername: string;
   email: string;
+  avatarUrl: string | null;
   status: "unlinked" | "pending" | "approved" | "denied" | "revoked" | "banned";
   reconsentRequired: boolean;
   termsVersion: string;
