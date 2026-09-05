@@ -51,6 +51,7 @@ new OpenMiQ({ apiKey, baseUrl })
   .setColor()               // keep the avatar in color
   .setBold()
   .setLayout("side")        // "side" | "new"
+  .setWatermark("...")      // overrides the server's default watermark (its LOGO_PATH image, if set); "" for none
   .setFake();                // targets /api/fakequote instead of /api/quote
 ```
 

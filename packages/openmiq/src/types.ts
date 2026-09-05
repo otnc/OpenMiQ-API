@@ -11,6 +11,8 @@ export interface QuoteData {
   color: boolean | null;
   bold: boolean | null;
   layout: "side" | "new" | null;
+  /** Drawn in place of the server's default watermark. `null`: let the server decide (its LOGO_PATH image, if configured). */
+  watermark: string | null;
   /** When true, targets `/api/fakequote` instead of `/api/quote`. */
   fake: boolean;
 }
@@ -25,6 +27,7 @@ export interface QuoteInput {
   color?: boolean | null;
   bold?: boolean | null;
   layout?: "side" | "new" | null;
+  watermark?: string | null;
   fake?: boolean;
 }
 

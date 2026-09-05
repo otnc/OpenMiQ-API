@@ -13,6 +13,7 @@ const MAX_TEXT_LENGTH = 4000;
 const MAX_AUTHOR_NAME_LENGTH = 128;
 const MAX_THEME_LENGTH = 256;
 const MAX_FONT_LENGTH = 64;
+const MAX_WATERMARK_LENGTH = 256;
 
 export function emptyQuote(): QuoteData {
   return {
@@ -24,6 +25,7 @@ export function emptyQuote(): QuoteData {
     color: null,
     bold: null,
     layout: null,
+    watermark: null,
     fake: false,
   };
 }
@@ -57,6 +59,16 @@ export function normalizeTheme(theme: unknown): string | null {
 export function normalizeFont(font: unknown): string | null {
   if (font === null || font === undefined) return null;
   return normalizeString(font, "font", MAX_FONT_LENGTH);
+}
+
+/**
+ * `null` (the default) leaves the server's own default watermark in place —
+ * its LOGO_PATH image, if the instance has one configured. An empty string
+ * is a valid override: it asks for no watermark at all.
+ */
+export function normalizeWatermark(watermark: unknown): string | null {
+  if (watermark === null || watermark === undefined) return null;
+  return normalizeString(watermark, "watermark", MAX_WATERMARK_LENGTH);
 }
 
 export function normalizeLayout(layout: unknown): "side" | "new" | null {
@@ -102,6 +114,9 @@ export function applyInput(target: QuoteData, input: QuoteInput): QuoteData {
   }
   if (input.bold !== undefined) next.bold = normalizeFlag(input.bold, "bold");
   if (input.layout !== undefined) next.layout = normalizeLayout(input.layout);
+  if (input.watermark !== undefined) {
+    next.watermark = normalizeWatermark(input.watermark);
+  }
   if (input.fake !== undefined) {
     assertBoolean(input.fake, "fake");
     next.fake = input.fake;

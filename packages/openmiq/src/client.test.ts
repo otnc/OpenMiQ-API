@@ -90,6 +90,21 @@ describe("OpenMiQ requests", () => {
     expect(body.options).toEqual({ bold: true, layout: "side" });
   });
 
+  it("includes watermark in the payload only when set, even as an empty string", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(pngResponse());
+    vi.stubGlobal("fetch", fetchMock);
+
+    await new OpenMiQ({ apiKey: "k", baseUrl: BASE_URL })
+      .setText("hi")
+      .setUsername("alice")
+      .setWatermark("")
+      .toBuffer();
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(init.body as string);
+    expect(body.watermark).toBe("");
+  });
+
   it("strips a trailing slash from baseUrl", async () => {
     const fetchMock = vi.fn().mockResolvedValue(pngResponse());
     vi.stubGlobal("fetch", fetchMock);

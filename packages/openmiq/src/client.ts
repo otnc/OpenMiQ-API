@@ -25,6 +25,7 @@ import {
   normalizeLayout,
   normalizeText,
   normalizeTheme,
+  normalizeWatermark,
 } from "./quote.ts";
 import { fromMessage } from "./source.ts";
 import { fromTweet } from "./tweet.ts";
@@ -127,6 +128,16 @@ export class OpenMiQ {
     return this;
   }
 
+  /**
+   * Overrides the server's default watermark for this quote. `null` (the
+   * default): let the server decide — its LOGO_PATH image, if configured.
+   * Pass `""` to explicitly ask for no watermark.
+   */
+  setWatermark(watermark: string | null): this {
+    this.#data.watermark = normalizeWatermark(watermark);
+    return this;
+  }
+
   /** Targets `/api/fakequote` instead of `/api/quote` for this quote — marks it as fabricated. */
   setFake(fake = true): this {
     this.#data.fake = normalizeFlag(fake, "fake") ?? false;
@@ -134,7 +145,7 @@ export class OpenMiQ {
   }
 
   setFromMessage(message: MessageLike, options?: MessageSourceOptions): this {
-    const { theme, font, color, bold, layout, fake } = this.#data;
+    const { theme, font, color, bold, layout, watermark, fake } = this.#data;
     this.#data = {
       ...fromMessage(message, options),
       theme,
@@ -142,6 +153,7 @@ export class OpenMiQ {
       color,
       bold,
       layout,
+      watermark,
       fake,
     };
     return this;
@@ -152,7 +164,7 @@ export class OpenMiQ {
    * MFM is stripped by default — see `NoteSourceOptions`.
    */
   setFromNote(note: NoteLike, options?: NoteSourceOptions): this {
-    const { theme, font, color, bold, layout, fake } = this.#data;
+    const { theme, font, color, bold, layout, watermark, fake } = this.#data;
     this.#data = {
       ...fromNote(note, options),
       theme,
@@ -160,6 +172,7 @@ export class OpenMiQ {
       color,
       bold,
       layout,
+      watermark,
       fake,
     };
     return this;
@@ -171,7 +184,7 @@ export class OpenMiQ {
    * `fromTwitterApiV2Tweet()`/`fromFxTwitterStatus()` in `./tweetAdapters.ts`.
    */
   setFromTweet(tweet: TweetLike, options?: TweetSourceOptions): this {
-    const { theme, font, color, bold, layout, fake } = this.#data;
+    const { theme, font, color, bold, layout, watermark, fake } = this.#data;
     this.#data = {
       ...fromTweet(tweet, options),
       theme,
@@ -179,6 +192,7 @@ export class OpenMiQ {
       color,
       bold,
       layout,
+      watermark,
       fake,
     };
     return this;

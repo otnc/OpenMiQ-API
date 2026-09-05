@@ -36,6 +36,7 @@ export function buildPayload(
   }
   if (data.theme !== null) payload.theme = data.theme;
   if (data.font !== null) payload.font = data.font;
+  if (data.watermark !== null) payload.watermark = data.watermark;
   if (Object.keys(options).length > 0) payload.options = options;
   return payload;
 }
