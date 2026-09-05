@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+.svelte-kit/
+coverage/
+data/
+.env
+.env.local
+.turbo/
+*.log

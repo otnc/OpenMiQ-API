@@ -1,0 +1,51 @@
+{
+  "name": "openmiq-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted Web API for OpenMiQ's quote image generation, based on OpenMiQ (a Discord bot)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/otnc/OpenMiQ-API.git"
+  },
+  "author": "otoneko. (https://github.com/otnc)",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "bugs": {
+    "url": "https://github.com/otnc/OpenMiQ-API/issues"
+  },
+  "homepage": "https://github.com/otnc/OpenMiQ-API#readme",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "db:generate": "drizzle-kit generate --config drizzle/drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config drizzle/drizzle.config.ts",
+    "pm2:start": "pm2 start ecosystem.config.cjs",
+    "pm2:stop": "pm2 stop ecosystem.config.cjs",
+    "pm2:restart": "pm2 restart ecosystem.config.cjs",
+    "pm2:logs": "pm2 logs",
+    "checkupdates": "ncu"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.9.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-svelte": "^3.0.0",
+    "globals": "^17.11.0",
+    "npm-check-updates": "^23.1.0",
+    "prettier": "^3.9.6",
+    "prettier-plugin-svelte": "^3.2.0",
+    "svelte-eslint-parser": "^1.0.0",
+    "turbo": "^2.3.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.68.0"
+  }
+}
