@@ -16,7 +16,9 @@
             >{tr.nav.console}</a
           >
         {/if}
-        <a href="/admin" class="hover:text-foreground">{tr.nav.admin}</a>
+        {#if data.me}
+          <a href="/admin" class="hover:text-foreground">{tr.nav.admin}</a>
+        {/if}
       </nav>
     </div>
   </header>
