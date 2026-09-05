@@ -15,6 +15,10 @@ export default tseslint.config(
       "**/coverage/",
       "**/node_modules/",
       "**/data/",
+      // Lints/formats with its own Biome setup instead (see DESIGN.md §15.2)
+      // — the small npm-published packages follow the sibling packages'
+      // convention, distinct from the ESLint/Prettier setup the apps use.
+      "packages/openmiq/**",
     ],
   },
   eslint.configs.recommended,

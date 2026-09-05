@@ -12,11 +12,8 @@ vi.mock("./discordWebhookService.ts", () => ({
   disableReviewButtons: vi.fn().mockResolvedValue(undefined),
 }));
 
-const {
-  checkCanApply,
-  submitApplication,
-  reviewApplication,
-} = await import("./applicationService.ts");
+const { checkCanApply, submitApplication, reviewApplication } =
+  await import("./applicationService.ts");
 const { sendReviewMessage } = await import("./discordWebhookService.ts");
 
 const identity: SessionIdentity = {

@@ -21,9 +21,9 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "eslint .",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "lint": "eslint . && pnpm --filter @makeitaquote/openmiq run ci",
+    "format": "prettier --write . && pnpm --filter @makeitaquote/openmiq run format",
+    "format:check": "prettier --check . && pnpm --filter @makeitaquote/openmiq run format:check",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "db:generate": "drizzle-kit generate --config drizzle/drizzle.config.ts",

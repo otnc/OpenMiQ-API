@@ -16,9 +16,8 @@ vi.mock("../src/services/discordWebhookService.ts", () => ({
 
 const { createApp } = await import("../src/app.ts");
 const { getDb } = await import("../src/db.ts");
-const { submitApplication } = await import(
-  "../src/services/applicationService.ts"
-);
+const { submitApplication } =
+  await import("../src/services/applicationService.ts");
 
 const ADMIN_ID = "admin-1";
 const NON_ADMIN_ID = "not-an-admin";
@@ -30,7 +29,8 @@ async function postInteraction(
   overrides: { signature?: string; timestamp?: string } = {},
 ) {
   const raw = JSON.stringify(body);
-  const timestamp = overrides.timestamp ?? String(Math.floor(Date.now() / 1000));
+  const timestamp =
+    overrides.timestamp ?? String(Math.floor(Date.now() / 1000));
   const signature =
     overrides.signature ?? (await signInteraction(privateKey, timestamp, raw));
   return app.request("/api/discord/interactions", {
@@ -65,9 +65,8 @@ async function createPendingApplication(env: ReturnType<typeof buildTestEnv>) {
   );
   const { applications } = await import("@openmiq/db");
   const { eq } = await import("drizzle-orm");
-  const { findUserByDiscordId } = await import(
-    "../src/services/userService.ts"
-  );
+  const { findUserByDiscordId } =
+    await import("../src/services/userService.ts");
   const user = await findUserByDiscordId(db, identity.discordId);
   const [row] = await db
     .select()
@@ -120,9 +119,14 @@ describe("Discord interactions endpoint", () => {
 
   it("rejects an invalid signature", async () => {
     const app = createApp(env);
-    const res = await postInteraction(app, privateKey, { type: 1 }, {
-      signature: "00".repeat(64),
-    });
+    const res = await postInteraction(
+      app,
+      privateKey,
+      { type: 1 },
+      {
+        signature: "00".repeat(64),
+      },
+    );
     expect(res.status).toBe(401);
   });
 

@@ -1,0 +1,28 @@
+name: openmiq-ci
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/openmiq/**"
+      - ".github/workflows/openmiq-ci.yml"
+  pull_request:
+    paths:
+      - "packages/openmiq/**"
+      - ".github/workflows/openmiq-ci.yml"
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @makeitaquote/openmiq run ci
+      - run: pnpm --filter @makeitaquote/openmiq run typecheck
+      - run: pnpm --filter @makeitaquote/openmiq run test
+      - run: pnpm --filter @makeitaquote/openmiq run build

@@ -58,7 +58,7 @@
 | `drizzle-orm` | スキーマ定義・クエリビルダ（apps/apiと共有） |
 | `better-sqlite3` | SQLiteドライバ（apps/apiと共有、決定） |
 
-## packages/openmiq（npm公開: `@makeitaquote/openmiq`）
+## packages/openmiq（npm公開: `@makeitaquote/openmiq`、実装済み）
 
 `@makeitaquote/voids` / `@makeitaquote/miqx`（同一著者の姉妹パッケージ）の構成を踏襲した独立ツールチェーン（DESIGN.md §15.2）。ルートのESLint/Prettier(§13)ではなく、姉妹パッケージと同じ **Biome** を採用する。
 
@@ -71,7 +71,7 @@
 | `typescript` | 型検査 | 独自の`tsconfig.json`（ルートの`tsconfig.base.json`とは別、voids/miqx同様パッケージ単体で完結） |
 | `npm-check-updates` | 依存更新チェック | voids/miqxと同一 |
 
-CI/公開ワークフロー（`.github/workflows/ci.yml` + `release.yml`、GitHub Actions OIDC経由のnpm publish）も姉妹パッケージの構成をそのまま流用する。
+CI/公開ワークフロー（GitHub Actions OIDC経由のnpm publish）は姉妹パッケージ同様`ci.yml`/`release.yml`の2本立てだが、配置はリポジトリルート直下`.github/workflows/openmiq-ci.yml`/`openmiq-release.yml`（`paths`フィルタで`packages/openmiq/**`に限定）——姉妹パッケージは単独リポジトリだが本パッケージはモノレポのサブパッケージであり、GitHub Actionsがリポジトリルートの`.github/workflows/`しか見ないための配置変更（PLAN.md Phase 7参照）。npm側のTrusted Publisher設定は別途必要で未実施。
 
 ## 開発ツール（ルート、OpenMiQ本家踏襲 + Svelte拡張）
 

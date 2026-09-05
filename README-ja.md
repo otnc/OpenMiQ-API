@@ -125,6 +125,10 @@ otoneko. https://github.com/otnc
 - **SPDX:** `AGPL-3.0-or-later`（AGPL-3.0 第7条に基づく追加条項付き）
 - 本APIの改変版を配布または運用する場合、同じ追加条項により、改変版のソースをAGPL-3.0のもとで公開し、OpenMiQ（本家リポジトリURL: https://github.com/otnc/OpenMiQ）への帰属表示を[ADDITIONAL_TERMS.md](./ADDITIONAL_TERMS.md)に記載の方法で行う必要があります。
 
+## クライアントライブラリ
+
+[`@makeitaquote/openmiq`](https://www.npmjs.com/package/@makeitaquote/openmiq)（[ソース](./packages/openmiq)）は、本APIの`/api/quote`・`/api/fakequote`・`/api/usage`エンドポイント向けの、型安全な薄いクライアントです。姉妹パッケージ`@makeitaquote/voids`・`@makeitaquote/miqx`と同じFluentビルダー形式で、MITライセンスのもと本サーバー本体（AGPL-3.0-or-later）とは別に公開されています。使い方は同パッケージ自身のREADMEを参照してください。
+
 ## Legal
 
 - 利用規約・プライバシーポリシーは、稼働中のインスタンスの`GET /api/legal/terms` / `GET /api/legal/privacy`から取得できます（Web ConsoleでもAPI Console申請前に表示されます）。

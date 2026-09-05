@@ -1,0 +1,83 @@
+{
+  "name": "@makeitaquote/openmiq",
+  "version": "0.1.0",
+  "description": "Generate \"Make it a Quote\" images through the OpenMiQ-API.",
+  "keywords": [
+    "img",
+    "image",
+    "gen",
+    "generate",
+    "miq",
+    "makeitaquote",
+    "Make it a Quote",
+    "quote",
+    "discord",
+    "twitter",
+    "misskey",
+    "api",
+    "openmiq"
+  ],
+  "homepage": "https://github.com/otnc/OpenMiQ-API/tree/main/packages/openmiq#readme",
+  "bugs": {
+    "url": "https://github.com/otnc/OpenMiQ-API/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/otnc/OpenMiQ-API.git",
+    "directory": "packages/openmiq"
+  },
+  "license": "MIT",
+  "author": "otoneko.",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/index.d.mts",
+        "require": "./dist/index.d.cts"
+      },
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "format": "biome format --write",
+    "format:check": "biome format",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --write",
+    "check": "biome check --write",
+    "ci": "biome ci",
+    "prepublishOnly": "npm run build",
+    "checkupdates": "ncu -u -t minor",
+    "migrate": "biome migrate --write"
+  },
+  "dependencies": {
+    "@makeitaquote/utils": "^1.2.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.12",
+    "@types/node": "^26.4.1",
+    "@vitest/coverage-v8": "^5.0.0",
+    "npm-check-updates": "^23.1.0",
+    "tsdown": "^0.23.0",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.0"
+  }
+}

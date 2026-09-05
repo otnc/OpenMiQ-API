@@ -1,0 +1,32 @@
+name: openmiq-release
+
+# Publishes @makeitaquote/openmiq to npm via OIDC (Trusted Publisher) — no
+# npm token stored in this repo. Requires configuring this repo/workflow as
+# a Trusted Publisher for the package at
+# https://www.npmjs.com/package/@makeitaquote/openmiq/access before this
+# can succeed; see the sibling packages (@makeitaquote/voids, .../miqx) for
+# a working example of that setup.
+on:
+  push:
+    tags:
+      - "openmiq-v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: "https://registry.npmjs.org"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @makeitaquote/openmiq run ci
+      - run: pnpm --filter @makeitaquote/openmiq run test
+      - run: pnpm --filter @makeitaquote/openmiq run build
+      - run: npm publish --provenance --access public
+        working-directory: packages/openmiq

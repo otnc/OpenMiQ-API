@@ -7,3 +7,5 @@ node_modules/
 pnpm-lock.yaml
 data/
 *.md
+packages/openmiq/
+drizzle/migrations/

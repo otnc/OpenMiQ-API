@@ -125,6 +125,10 @@ This project is licensed under the [GNU Affero General Public License v3.0 or la
 - **SPDX:** `AGPL-3.0-or-later` (with additional terms under AGPL-3.0 Section 7)
 - If you distribute or run a modified version of _this_ API, the same additional terms require you to make your modified source available under AGPL-3.0 and to display attribution to OpenMiQ (original repository URL: https://github.com/otnc/OpenMiQ) as described in [ADDITIONAL_TERMS.md](./ADDITIONAL_TERMS.md).
 
+## Client library
+
+[`@makeitaquote/openmiq`](https://www.npmjs.com/package/@makeitaquote/openmiq) ([source](./packages/openmiq)) is a thin, type-safe client for this API's `/api/quote`, `/api/fakequote` and `/api/usage` endpoints, in the same fluent-builder style as its sibling packages `@makeitaquote/voids` and `@makeitaquote/miqx`. MIT-licensed and published separately from the AGPL-3.0-or-later server itself — see its own README for usage.
+
 ## Legal
 
 - Terms of Service / Privacy Policy are served by the running instance at `GET /api/legal/terms` / `GET /api/legal/privacy` (and shown in the Web Console before an application can be submitted).

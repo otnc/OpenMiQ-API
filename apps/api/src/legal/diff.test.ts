@@ -16,9 +16,7 @@ describe("diffVersions", () => {
     const unchanged = result.parts.filter(
       (part) => !part.added && !part.removed,
     );
-    expect(unchanged.map((part) => part.value).join("")).toContain(
-      "Hello ",
-    );
+    expect(unchanged.map((part) => part.value).join("")).toContain("Hello ");
   });
 
   it("returns a single unchanged part when from and to are the same version", () => {

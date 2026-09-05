@@ -51,10 +51,7 @@ describe("recordConsent", () => {
 
     await recordConsent(db, "user-1", "2", "2");
 
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, "user-1"));
+    const [user] = await db.select().from(users).where(eq(users.id, "user-1"));
     expect(user?.agreedTermsVersion).toBe("2");
     expect(user?.agreedPrivacyVersion).toBe("2");
     expect(user?.agreedAt).toBeInstanceOf(Date);

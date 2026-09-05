@@ -72,12 +72,14 @@
   - `apps/api`の`serve()`呼び出しが`hostname`オプションを渡しておらず、`ecosystem.config.cjs`で`HOST: "127.0.0.1"`を設定していても実際には全インターフェースにbindしていた（DESIGN.md §14.2の意図と不一致）。`API_HOST`環境変数を追加し実際にbindアドレスを制御できるよう修正
   - `apps/api`と`apps/web`が同じ`.env`を共有する際、`PORT`という素の名前を両方で使うと値を奪い合う（`@sveltejs/adapter-node`が`PORT`/`HOST`を直接読むため）ことが判明し、`apps/api`側の変数を`API_PORT`/`API_HOST`にリネーム
 
-## Phase 7: npmラッパーパッケージ `@makeitaquote/openmiq`
-- `packages/openmiq` を `@makeitaquote/voids`/`@makeitaquote/miqx` の構成（Biome, tsdown, vitest, examples/, CONTRIBUTING.md, ci.yml/release.yml）に倣ってセットアップ（DESIGN.md §15）
-- `OpenMiQ` クラス（Fluentビルダー）、`endpoints.ts`/`errors.ts`/`types.ts`/`quote.ts`、`fromMessage`/`fromNote`/`fromTweet` アダプタを実装
-- `v1.ts` に `/api/quote`,`/api/fakequote` 向けのリクエスト/レスポンス整形を実装、`client.ts`はその契約にのみ依存させる
-- `toBuffer()`/`toURL()`/`getUsage()` を実装し、`examples/basic.ts` を用意
-- MITライセンスで npm に `@makeitaquote/openmiq` として公開（GitHub Actions OIDC経由）
+## Phase 7: npmラッパーパッケージ `@makeitaquote/openmiq`（実装済み・実機動作確認済み）
+- `packages/openmiq` を `@makeitaquote/voids`/`@makeitaquote/miqx` の構成（Biome, tsdown, vitest, examples/, CONTRIBUTING.md）に倣ってセットアップ（DESIGN.md §15）。両パッケージの実際の公開物（npm packからdist/型定義を取得）を参照し、規約を細部まで踏襲した
+- `OpenMiQ` クラス（Fluentビルダー）、`endpoints.ts`/`errors.ts`/`types.ts`/`quote.ts`、`fromMessage`/`fromNote`/`fromTweet` アダプタを実装。`@makeitaquote/utils`のHTTPクライアント・エラー基底・バリデーションヘルパー・Discord/MFM/Twitterテキスト処理をそのまま再利用し、車輪の再発明をしていない
+- `v1.ts` に `/api/quote`/`/api/fakequote`/`/api/usage` 向けのリクエスト/レスポンス整形（`packages/shared/src/quote.ts`の実スキーマに1:1対応）を実装、`client.ts`はその契約（`pathFor()`/`buildPayload()`/`parseHostedResult()`/`parseUsageResult()`）にのみ依存させる
+- `toBuffer()`/`toBuffer({hosted:true})`/`toURL()`/`getUsage()`/`setFake()`（`/api/fakequote`への切り替え）を実装し、`examples/basic.ts` を用意。単体テスト28件（`quote.ts`の正規化・`fromMessage`アダプタ・`client.ts`のHTTPリクエスト整形とエラーマッピング、`fetch`をスタブ化して検証）に加え、実際に`apps/api`のサーバーを起動しAPIキーを発行した上でこのパッケージの`toBuffer()`/`toURL()`/`toBuffer({hosted:true})`/`getUsage()`/`setFake()`/エラー系すべてを実リクエストで動作確認済み
+- MITライセンス（`LICENSE`同梱）。npm公開自体（GitHub Actions OIDC経由）は`.github/workflows/openmiq-release.yml`を用意したが、npm側でのTrusted Publisher設定（アカウント操作）は別途必要 — 未実施
+- **DESIGN.md §15.3の設計からの補正**: 実装時に判明した差分は2点。(1) 実際の`/api/quote`スキーマには`setDisplayName`/`setFlip`/`setWatermark`に対応するフィールドが無い（`authorName`一本で、fakequoteは別エンドポイント呼び出しで表現）ため、それらのビルダーメソッドは実装せず、代わりに`setFake()`でエンドポイント切り替えを表現した。(2) `.github/workflows/`はDESIGN.mdの雛形では`packages/openmiq/.github/workflows/`に置く想定だったが、GitHub Actionsはリポジトリルートの`.github/workflows/`しか見ないため（本パッケージは単独リポジトリではなくモノレポ内サブパッケージ）、`paths`フィルタ付きでリポジトリルート直下（`openmiq-ci.yml`/`openmiq-release.yml`）に配置した
+- **副次的に発見・修正したバグ**: `drizzle/drizzle.config.ts`が`DATABASE_URL`の相対パスをdrizzle-kitの実行時cwd（リポジトリルート、`pnpm run db:migrate`実行時）基準で解決していた一方、`apps/api`自身は常に`apps/api`をcwdとして起動する（pm2・`pnpm run dev`/`start`いずれも）ため、`DATABASE_URL=file:./data/db.sqlite`のような相対パスが両者で異なるファイルを指してしまい、マイグレーションが実際にアプリが読むDBに適用されない不具合があった。`drizzle.config.ts`側で明示的に`apps/api`ディレクトリを基準に解決するよう修正し、実際にサーバーを起動・マイグレーション適用・本パッケージからの実リクエストが同一DBに対して機能することを確認して発見した
 
 ## Phase 8: 本番デプロイ（miq.otnc.dev）
 - VPS等にNode.js(`>=24`)・pnpm・nginx・certbotをセットアップ

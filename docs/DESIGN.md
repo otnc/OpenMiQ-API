@@ -836,7 +836,7 @@ const image = await new OpenMiQ({ apiKey: "sk_live_..." })
 | パッケージング | ESM+CJS両対応の`exports`マップ（`tsdown`ビルド、`dist/index.{mjs,cjs}` + `.d.mts`/`.d.cts`）、`"type": "module"` |
 | Lint/Format | **Biome**（`biome.json`、`check`/`ci`/`migrate`スクリプト）— ルート直下のOpenMiQ本家系ESLint/Prettier（§13）とは別系統。npm公開用の小さな単体パッケージは軽量なBiome、モノレポ本体のアプリ群はOpenMiQ本家踏襲のESLint/Prettierという**サブプロジェクトごとの使い分け**を、姉妹パッケージの実際の運用にならって踏襲する |
 | テスト | vitest。各モジュールに対応する`*.test.ts`をsrc直下に併置 |
-| CI/公開 | `.github/workflows/ci.yml`（lint/typecheck/test）+ `release.yml`（GitHub ActionsのOIDCでnpm publish、`npm view`の`published by GitHub Actions`から確認済み） |
+| CI/公開 | `ci.yml`（lint/typecheck/test）+ `release.yml`（GitHub ActionsのOIDCでnpm publish、`npm view`の`published by GitHub Actions`から確認済み）。姉妹パッケージは単独リポジトリなので`.github/workflows/`直下だが、本パッケージはモノレポのサブパッケージであり、GitHub Actionsはリポジトリルートの`.github/workflows/`しか見ないため、リポジトリルート直下に`paths: ["packages/openmiq/**"]`フィルタ付きで配置する（実装時の補正、PLAN.md Phase 7参照） |
 | ライセンス | **MIT**（サーバー本体`apps/api`のAGPL-3.0-or-later + 追加条項とは別。理由は§15.4） |
 
 ### 15.3 `@makeitaquote/openmiq` の設計
@@ -850,7 +850,6 @@ packages/openmiq/
 ├─ examples/
 │  └─ basic.ts
 ├─ CONTRIBUTING.md
-├─ .github/workflows/{ci.yml, release.yml}
 └─ src/
    ├─ index.ts                  # export { OpenMiQ } ほか
    ├─ client.ts                 # OpenMiQ クラス本体（Fluentビルダー）
@@ -866,7 +865,7 @@ packages/openmiq/
 
 - クラス名は**必ず `OpenMiQ`**（`import { OpenMiQ } from "@makeitaquote/openmiq"`）。voids/miqxの`MiQ`エイリアスに相当する短縮名は、他パッケージと衝突しやすいため本パッケージではエイリアスを設けず`OpenMiQ`一本にする。
 - `OpenMiQOptions`: `{ apiKey: string; baseUrl?: string /* 既定 DEFAULT_BASE_URL */; timeout?: number; retry?: number; signal?: AbortSignal }` — `apiKey`は必須（voids/miqxは無認証の第三者APIだが、本パッケージは自ホストのAPIキー認証必須エンドポイントを叩くため）。`baseUrl`を指定すれば自前セルフホストインスタンスにもそのまま向けられる。
-- `set*()`群: `setText` / `setUsername` / `setDisplayName` / `setAvatar` / `setTheme` / `setFont` / `setColor` / `setBold` / `setLayout('side'|'new')` / `setFlip` / `setWatermark` — DESIGN.md §8.5 の`/api/quote`リクエストボディ項目に1:1対応させる。
+- `set*()`群（実装済み）: `setText` / `setUsername`（`authorName`にマップ） / `setAvatar`（URL文字列のみ、画像バイト列は不可） / `setTheme` / `setFont` / `setColor` / `setBold` / `setLayout('side'|'new')` / `setFake()`（`/api/fakequote`への切り替え） — §8.5 の実際の`/api/quote`スキーマ（`packages/shared/src/quote.ts`）に1:1対応させる。実装時の補正: `setDisplayName`/`setFlip`/`setWatermark`に対応するフィールドは実際の`/api/quote`スキーマに存在しないため実装していない（`authorName`一本、fakequoteは別エンドポイント）。
 - 出力メソッド: `toBuffer()`（既定、1ラウンドトリップでバイナリ）/ `toURL()`（`hosted: true`で生成し`/api/images/:id`のURLを返す、§8.5参照）— Voidsの`toURL()`/`toBuffer({hosted})`と同じ非対称設計を踏襲。
 - エラー: `OpenMiQApiError extends MiQError`（`status`/`body`/`endpoint`）、`ValidationError`は`@makeitaquote/utils/errors`から再export。
 - `GET /api/usage`を叩く `getUsage()` メソッドも用意し、Web Console同様にライブラリ利用者もレート制限状況を取得できるようにする（§5.4との対応）。
