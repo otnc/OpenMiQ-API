@@ -80,5 +80,13 @@ export function createAuthApp(env: Env) {
     return c.redirect(env.APP_BASE_URL);
   });
 
+  app.post("/api/auth/logout", async (c) => {
+    deleteCookie(c, SESSION_COOKIE, { path: "/" });
+    // 303, not the default 302 — this always follows a POST (a plain <form>
+    // submit, no client-side fetch), and a redirect after POST should be
+    // fetched with GET regardless of what the original method was.
+    return c.redirect(env.APP_BASE_URL, 303);
+  });
+
   return app;
 }

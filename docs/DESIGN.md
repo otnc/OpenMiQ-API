@@ -233,7 +233,8 @@ erDiagram
 1. `GET /api/auth/discord` → Discord OAuth2 (`identify email`) にリダイレクト
 2. コールバックで `discordId / username / email` を取得し `USER` を作成 or 取得
 3. セッションJWTをhttpOnly Cookieに設定（有効期限つき、リフレッシュはDiscordトークンで再検証 or 再ログイン）
-4. `USER.status` に応じて画面遷移:
+4. `POST /api/auth/logout`（実装済み）— セッションCookieを削除し`APP_BASE_URL`へ303リダイレクト。Web UIはヘッダーのユーザーメニュー（アバターアイコンをクリックすると開く、§8.2の`avatarUrl`を表示）内の通常の`<form method="POST">`から呼ぶ——ログインが素の`<a href="/api/auth/discord">`によるフルページ遷移であることに倣い、こちらも素のフォーム送信のみで完結させ、クライアント側JSでのfetch呼び出しには依存しない
+5. `USER.status` に応じて画面遷移:
    - レコードなし/`unlinked` → 申請フォームへ
    - `pending` → 「審査中」画面
    - `approved` → API Console（キー発行・利用状況）
