@@ -1,7 +1,8 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, ne } from "drizzle-orm";
 import { users, applications, adminActions, bans, type Db } from "@openmiq/db";
 import { newId } from "../lib/ids.ts";
 import { createBan, deleteBan } from "./banService.ts";
+import { SYSTEM_DISCORD_ID } from "./playgroundKeyService.ts";
 import type { SessionIdentity } from "./sessionService.ts";
 
 export async function findUserByDiscordId(db: Db, discordId: string) {
@@ -22,9 +23,11 @@ export async function listUsers(
   db: Db,
   status?: (typeof users.$inferSelect)["status"],
 ) {
-  return status
-    ? db.select().from(users).where(eq(users.status, status))
-    : db.select().from(users);
+  const notSystem = ne(users.discordId, SYSTEM_DISCORD_ID);
+  return db
+    .select()
+    .from(users)
+    .where(status ? and(eq(users.status, status), notSystem) : notSystem);
 }
 
 async function latestApplicationIp(

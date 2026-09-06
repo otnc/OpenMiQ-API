@@ -4,8 +4,8 @@ import type { Env } from "../config/env.ts";
 import { newId } from "../lib/ids.ts";
 import { createApiKey, deleteAllApiKeysAsAdmin } from "./apiKeyService.ts";
 
-// This user only exists to own the rotating shared key below — it never signs in, submits an application, or is visible anywhere in the Admin UI (it has no application row, so it never shows up in the pending/users lists there either).
-const SYSTEM_DISCORD_ID = "system:playground-shared";
+// This user only exists to own the rotating shared key below — it never signs in or submits an application. Not a real Discord id (BigInt(discordId) would throw), so userService.listUsers() excludes it explicitly to keep it out of the Admin UI.
+export const SYSTEM_DISCORD_ID = "system:playground-shared";
 
 async function ensureSystemUser(db: Db, env: Env): Promise<string> {
   const existing = await db

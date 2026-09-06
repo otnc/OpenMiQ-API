@@ -66,8 +66,15 @@ export const load: PageServerLoad = async (event) => {
     apiJson<AdminApiKey[]>(event, "/api/admin/api-keys"),
   ]);
 
-  if (applications.status === 403) {
-    throw error(403, "Forbidden");
+  // All five share the same admin-auth middleware, so they fail together — one status check covers the group instead of five. Anything but 200 here means `data` came back as an error object (e.g. { error: "unauthorized" }), not the array the page expects.
+  const firstFailure = [applications, users, bans, auditLog, apiKeys].find(
+    (r) => r.status !== 200,
+  );
+  if (firstFailure) {
+    throw error(
+      firstFailure.status === 401 ? 401 : 403,
+      firstFailure.status === 401 ? "Unauthorized" : "Forbidden",
+    );
   }
 
   return {
