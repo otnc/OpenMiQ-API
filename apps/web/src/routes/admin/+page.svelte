@@ -9,11 +9,21 @@
   import Pagination from "$lib/components/Pagination.svelte";
   import ConfirmDialog from "$lib/components/ConfirmDialog.svelte";
   import { defaultDiscordAvatarUrl } from "$lib/discordAvatar.ts";
+  import { formatDuration } from "$lib/duration.ts";
   import { Inbox, Users, Ban, ScrollText, KeyRound } from "@lucide/svelte";
   import type { PageData, ActionData } from "./$types.ts";
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   const tr = $derived(t(data.locale));
+
+  function resetsIn(resetAt: string): string {
+    const duration = formatDuration(new Date(resetAt).getTime() - Date.now(), {
+      day: tr.common.unitDay,
+      hour: tr.common.unitHour,
+      minute: tr.common.unitMinute,
+    });
+    return tr.common.resetsIn.replace("{duration}", duration);
+  }
   const usernameByUserId = $derived(
     new Map(data.users.map((user) => [user.id, user.discordUsername])),
   );
@@ -309,7 +319,7 @@
             <Table.Head>{tr.apiKeys.nameLabel}</Table.Head>
             <Table.Head>{tr.common.prefix}</Table.Head>
             <Table.Head>{tr.common.requests}</Table.Head>
-            <Table.Head>{tr.common.remaining}</Table.Head>
+            <Table.Head>{tr.common.usage}</Table.Head>
             <Table.Head></Table.Head>
           </Table.Row>
         </Table.Header>
@@ -327,7 +337,12 @@
                 {#if key.revokedAt}
                   <Badge variant="destructive">{tr.common.revoked}</Badge>
                 {:else}
-                  {key.remaining}/{key.limit}
+                  <div class="flex flex-col">
+                    <span>{key.limit - key.remaining}/{key.limit}</span>
+                    <span class="text-muted-foreground text-xs"
+                      >{resetsIn(key.resetAt)}</span
+                    >
+                  </div>
                 {/if}
               </Table.Cell>
               <Table.Cell>

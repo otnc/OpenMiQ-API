@@ -35,6 +35,11 @@ interface Translations {
     revoked: string;
     reconsentPending: string;
     apiDocs: string;
+    usage: string;
+    resetsIn: string;
+    unitDay: string;
+    unitHour: string;
+    unitMinute: string;
   };
   home: {
     unlinked: string;
@@ -133,6 +138,11 @@ const en: Translations = {
     revoked: "Revoked",
     reconsentPending: "Reconsent pending",
     apiDocs: "API docs",
+    usage: "Usage",
+    resetsIn: "Resets in {duration}",
+    unitDay: "d",
+    unitHour: "h",
+    unitMinute: "m",
   },
   home: {
     unlinked: "Link your Discord account to request API access.",
@@ -241,6 +251,11 @@ const ja: Translations = {
     revoked: "失効済み",
     reconsentPending: "再同意待ち",
     apiDocs: "APIドキュメント",
+    usage: "使用量",
+    resetsIn: "{duration}で回復",
+    unitDay: "日",
+    unitHour: "時間",
+    unitMinute: "分",
   },
   home: {
     unlinked: "Discordアカウントを連携してAPI利用を申請してください。",

@@ -8,10 +8,20 @@
   import * as Table from "$lib/components/ui/table/index.ts";
   import { Copy, Check } from "@lucide/svelte";
   import DatePicker from "$lib/components/DatePicker.svelte";
+  import { formatDuration } from "$lib/duration.ts";
   import type { PageData, ActionData } from "./$types.ts";
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   const tr = $derived(t(data.locale));
+
+  function resetsIn(resetAt: string): string {
+    const duration = formatDuration(new Date(resetAt).getTime() - Date.now(), {
+      day: tr.common.unitDay,
+      hour: tr.common.unitHour,
+      minute: tr.common.unitMinute,
+    });
+    return tr.common.resetsIn.replace("{duration}", duration);
+  }
 
   let expiresAt: string | null = $state(null);
   let copied = $state(false);
@@ -95,7 +105,7 @@
           <Table.Head>{tr.apiKeys.nameLabel}</Table.Head>
           <Table.Head>{tr.common.prefix}</Table.Head>
           <Table.Head>{tr.apiKeys.expiresAtLabel}</Table.Head>
-          <Table.Head>{tr.common.requests}</Table.Head>
+          <Table.Head>{tr.common.usage}</Table.Head>
           <Table.Head></Table.Head>
         </Table.Row>
       </Table.Header>
@@ -111,7 +121,14 @@
                 <Badge variant="secondary">{tr.apiKeys.noExpiry}</Badge>
               {/if}
             </Table.Cell>
-            <Table.Cell class="tabular-nums">{key.requestCount}</Table.Cell>
+            <Table.Cell class="tabular-nums">
+              <div class="flex flex-col">
+                <span>{key.limit - key.remaining}/{key.limit}</span>
+                <span class="text-muted-foreground text-xs"
+                  >{resetsIn(key.resetAt)}</span
+                >
+              </div>
+            </Table.Cell>
             <Table.Cell>
               <div class="flex flex-wrap items-center gap-2">
                 <form method="POST" action="?/regenerate" use:enhance>
