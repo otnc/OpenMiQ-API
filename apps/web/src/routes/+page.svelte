@@ -36,6 +36,30 @@
     </div>
   {/if}
 
+  <div class="mx-auto max-w-md">
+    <NoteCallout label={tr.common.noteLabel}>
+      <p>{tr.common.npmPackageMessage}</p>
+      <code
+        class="bg-foreground/5 mt-1 mb-1.5 block w-fit rounded px-2 py-1 text-xs"
+        >npm install &commat;makeitaquote/openmiq</code
+      >
+      <p class="space-x-2">
+        <a
+          href="https://www.npmjs.com/package/@makeitaquote/openmiq"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-primary font-medium underline">npm</a
+        >
+        <a
+          href="https://github.com/otnc/OpenMiQ-API/tree/main/packages/openmiq"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-primary font-medium underline">GitHub</a
+        >
+      </p>
+    </NoteCallout>
+  </div>
+
   <Card.Root class="mx-auto max-w-md">
     <Card.Header>
       <Card.Title>OpenMiQ-API</Card.Title>
@@ -77,6 +101,14 @@
       <Card.Title>{tr.home.creditsTitle}</Card.Title>
     </Card.Header>
     <Card.Content class="text-muted-foreground space-y-2 text-sm">
+      <p>
+        <a
+          href="https://github.com/otnc/OpenMiQ-API"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hover:text-foreground underline">OpenMiQ-API</a
+        > — this Web API, and the source you're looking at right now.
+      </p>
       <p>
         <a
           href="https://github.com/otnc/OpenMiQ"

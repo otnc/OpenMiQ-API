@@ -43,6 +43,7 @@ interface Translations {
     noteLabel: string;
     discordInviteMessage: string;
     discordInviteCta: string;
+    npmPackageMessage: string;
   };
   home: {
     unlinked: string;
@@ -190,6 +191,8 @@ const en: Translations = {
     discordInviteMessage:
       "Join our Discord server to chat with other users, get help, and hear about updates first.",
     discordInviteCta: "Join the Discord server",
+    npmPackageMessage:
+      "Prefer working in code? Install the official npm client:",
   },
   home: {
     unlinked: "Link your Discord account to request API access.",
@@ -352,6 +355,8 @@ const ja: Translations = {
     discordInviteMessage:
       "Discordサーバーに参加すると、他のユーザーとの交流やサポート、最新情報をいち早く受け取れます。",
     discordInviteCta: "Discordサーバーに参加する",
+    npmPackageMessage:
+      "コードから利用したい場合は、公式npmクライアントをインストールできます。",
   },
   home: {
     unlinked: "Discordアカウントを連携してAPI利用を申請してください。",
