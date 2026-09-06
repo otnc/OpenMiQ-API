@@ -44,6 +44,7 @@ export async function revokeUser(
   db: Db,
   userId: string,
   adminDiscordId: string,
+  reason?: string,
 ): Promise<boolean> {
   const user = await findUserById(db, userId);
   if (!user) return false;
@@ -54,6 +55,7 @@ export async function revokeUser(
     actorDiscordId: adminDiscordId,
     action: "revoke",
     targetUserId: userId,
+    reason,
   });
   return true;
 }

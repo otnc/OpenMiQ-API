@@ -6,9 +6,8 @@ export interface DurationUnitLabels {
 }
 
 /**
- * Formats a duration for a "resets in ..." countdown. Rounds up to the
- * nearest minute so a window that resets in 10 seconds still reads as "1m"
- * rather than "0m" (which would look like it already reset).
+ * Formats a duration for a "resets in ..." countdown.
+ * Rounds up to the nearest minute so a window that resets in 10 seconds still reads as "1m" rather than "0m" (which would look like it already reset).
  */
 export function formatDuration(ms: number, labels: DurationUnitLabels): string {
   const totalMinutes = Math.max(0, Math.ceil(ms / 60_000));

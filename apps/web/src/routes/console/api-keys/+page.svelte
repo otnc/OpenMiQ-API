@@ -6,7 +6,7 @@
   import { Badge } from "$lib/components/ui/badge/index.ts";
   import * as Card from "$lib/components/ui/card/index.ts";
   import * as Table from "$lib/components/ui/table/index.ts";
-  import { Copy, Check } from "@lucide/svelte";
+  import { Copy, Check, RefreshCw, Trash2 } from "@lucide/svelte";
   import DatePicker from "$lib/components/DatePicker.svelte";
   import { formatDuration } from "$lib/duration.ts";
   import type { PageData, ActionData } from "./$types.ts";
@@ -133,20 +133,24 @@
               <div class="flex flex-wrap items-center gap-2">
                 <form method="POST" action="?/regenerate" use:enhance>
                   <input type="hidden" name="id" value={key.id} />
-                  <Button type="submit" variant="link" size="sm"
-                    >{tr.apiKeys.regenerate}</Button
+                  <Button
+                    type="submit"
+                    variant="ghost"
+                    size="icon-sm"
+                    title={tr.apiKeys.regenerate}
+                    aria-label={tr.apiKeys.regenerate}><RefreshCw /></Button
                   >
                 </form>
                 <form method="POST" action="?/delete" use:enhance>
                   <input type="hidden" name="id" value={key.id} />
                   <Button
                     type="submit"
-                    variant="link"
-                    size="sm"
+                    variant="ghost"
+                    size="icon-sm"
                     class="text-destructive"
+                    title={tr.apiKeys.delete}
+                    aria-label={tr.apiKeys.delete}><Trash2 /></Button
                   >
-                    {tr.apiKeys.delete}
-                  </Button>
                 </form>
               </div>
             </Table.Cell>

@@ -12,11 +12,9 @@ import { newSecretToken } from "../lib/ids.ts";
 
 type RenderFn = (input: QuoteRequest, env: Env) => Promise<Buffer>;
 
-// Documentation only — the actual request/response handling below is
-// unchanged, hand-rolled Hono. `registerPath()` just adds these to the
-// generated OpenAPI document (GET /api/docs); it does not run any of
-// zod-openapi's own request validation, so the exact error shapes below
-// (e.g. `{ error: "invalid_request", issues }`) stay exactly what they were.
+// Documentation only — the actual request/response handling below is unchanged, hand-rolled Hono.
+// `registerPath()` just adds these to the generated OpenAPI document (GET /api/docs); it does not run any of zod-openapi's own request validation.
+// So the exact error shapes below (e.g. `{ error: "invalid_request", issues }`) stay exactly what they were.
 const authErrorSchema = z.object({ error: z.string() }).openapi({
   description:
     "Authentication/authorization failure — see AUTH_ERROR_STATUS in apiKeyAuth.ts for the possible `error` values.",

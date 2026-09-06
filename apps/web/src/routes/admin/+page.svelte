@@ -10,7 +10,16 @@
   import ConfirmDialog from "$lib/components/ConfirmDialog.svelte";
   import { defaultDiscordAvatarUrl } from "$lib/discordAvatar.ts";
   import { formatDuration } from "$lib/duration.ts";
-  import { Inbox, Users, Ban, ScrollText, KeyRound } from "@lucide/svelte";
+  import {
+    Inbox,
+    Users,
+    Ban,
+    ScrollText,
+    KeyRound,
+    Save,
+    UserX,
+    Trash2,
+  } from "@lucide/svelte";
   import type { PageData, ActionData } from "./$types.ts";
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -28,24 +37,22 @@
     new Map(data.users.map((user) => [user.id, user.discordUsername])),
   );
 
-  // A single shared confirm dialog for every destructive action on this
-  // page (revoke/ban/delete-all) — opened with the form that should
-  // actually submit once the admin confirms, rather than one dialog
-  // instance per row. Ban also collects its (required) reason in the
-  // dialog itself instead of a separate table input — the confirm step
-  // reads it back out of `reasonValue` and writes it onto the form's own
-  // hidden "reason" field just before submitting.
+  // A single shared confirm dialog for every destructive action on this page (revoke/ban/delete-all) — opened with the form that should actually submit once the admin confirms, rather than one dialog instance per row.
+  // Revoke and ban also collect a reason in the dialog itself (required for ban, optional for revoke) instead of a separate table input — the confirm step reads it back out of `reasonValue` and writes it onto the form's own hidden "reason" field just before submitting.
   let confirmOpen = $state(false);
   let pendingForm: HTMLFormElement | null = $state(null);
   let confirmReasonLabel: string | null = $state(null);
+  let confirmReasonRequired = $state(true);
   let reasonValue = $state("");
 
   function confirmThen(
     formEl: HTMLFormElement,
     reasonLabel: string | null = null,
+    reasonRequired = true,
   ) {
     pendingForm = formEl;
     confirmReasonLabel = reasonLabel;
+    confirmReasonRequired = reasonRequired;
     reasonValue = "";
     confirmOpen = true;
   }
@@ -218,8 +225,12 @@
                     placeholder={tr.admin.maxApiKeysUnlimited}
                     class="h-7 w-20 text-xs"
                   />
-                  <Button type="submit" variant="link" size="sm"
-                    >{tr.admin.save}</Button
+                  <Button
+                    type="submit"
+                    variant="ghost"
+                    size="icon-sm"
+                    title={tr.admin.save}
+                    aria-label={tr.admin.save}><Save /></Button
                   >
                 </form>
               </Table.Cell>
@@ -227,14 +238,19 @@
                 <div class="flex flex-wrap items-center gap-2">
                   <form method="POST" action="?/revoke" use:enhance>
                     <input type="hidden" name="id" value={user.id} />
+                    <input type="hidden" name="reason" />
                     <Button
                       type="button"
-                      variant="link"
-                      size="sm"
+                      variant="ghost"
+                      size="icon-sm"
+                      title={tr.admin.revoke}
+                      aria-label={tr.admin.revoke}
                       onclick={(event) =>
                         confirmThen(
                           (event.currentTarget as HTMLButtonElement).form!,
-                        )}>{tr.admin.revoke}</Button
+                          tr.admin.reasonLabel,
+                          false,
+                        )}><UserX /></Button
                     >
                   </form>
                   <form method="POST" action="?/ban" use:enhance>
@@ -359,9 +375,11 @@
                     <input type="hidden" name="id" value={key.id} />
                     <Button
                       type="submit"
-                      variant="link"
-                      size="sm"
-                      class="text-destructive">{tr.admin.deleteKey}</Button
+                      variant="ghost"
+                      size="icon-sm"
+                      class="text-destructive"
+                      title={tr.admin.deleteKey}
+                      aria-label={tr.admin.deleteKey}><Trash2 /></Button
                     >
                   </form>
                 </div>
@@ -394,6 +412,9 @@
             {entry.createdAt} — {entry.actorDiscordId}
             {entry.action}
             {entry.targetUserId}
+            {#if entry.reason}
+              — {entry.reason}
+            {/if}
           </li>
         {/each}
       </ul>
@@ -408,6 +429,7 @@
   confirmLabel={tr.admin.confirmYes}
   cancelLabel={tr.admin.confirmCancel}
   reasonLabel={confirmReasonLabel}
+  reasonRequired={confirmReasonRequired}
   bind:reasonValue
   onConfirm={submitPending}
 />

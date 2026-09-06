@@ -11,6 +11,7 @@
     cancelLabel,
     reasonLabel = null,
     reasonValue = $bindable(""),
+    reasonRequired = true,
     onConfirm,
   }: {
     open: boolean;
@@ -18,15 +19,17 @@
     description: string;
     confirmLabel: string;
     cancelLabel: string;
-    /** When set, shows a required text field (e.g. a ban reason) above the buttons. */
+    /** When set, shows a text field (e.g. a ban/revoke reason) above the buttons. */
     reasonLabel?: string | null;
     reasonValue?: string;
+    /** Whether the reason field must be filled in before confirming. Default true. */
+    reasonRequired?: boolean;
     onConfirm: () => void;
   } = $props();
 
   let dialogEl: HTMLDialogElement | undefined = $state();
-  const reasonRequired = $derived(
-    reasonLabel !== null && reasonValue.trim().length === 0,
+  const reasonMissing = $derived(
+    reasonLabel !== null && reasonRequired && reasonValue.trim().length === 0,
   );
 
   // The <dialog> element (not open state) is the source of truth for
@@ -65,7 +68,7 @@
       type="button"
       variant="destructive"
       size="sm"
-      disabled={reasonRequired}
+      disabled={reasonMissing}
       onclick={() => {
         dialogEl?.close();
         onConfirm();

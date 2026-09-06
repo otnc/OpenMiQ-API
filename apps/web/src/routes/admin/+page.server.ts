@@ -50,6 +50,7 @@ export interface AdminActionEntry {
   actorDiscordId: string;
   action: string;
   targetUserId: string;
+  reason: string | null;
   createdAt: string;
 }
 
@@ -94,8 +95,13 @@ export const actions: Actions = {
     return { error: undefined };
   },
   revoke: async (event) => {
-    const id = String((await event.request.formData()).get("id") ?? "");
-    await apiJson(event, `/api/admin/users/${id}/revoke`, { method: "POST" });
+    const form = await event.request.formData();
+    const id = String(form.get("id") ?? "");
+    const reason = String(form.get("reason") ?? "");
+    await apiJson(event, `/api/admin/users/${id}/revoke`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    });
     return { error: undefined };
   },
   ban: async (event) => {

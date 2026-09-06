@@ -209,13 +209,9 @@ export class OpenMiQ {
   }
 
   /**
-   * Branches this builder: the quote data (`setText()`, `setTheme()`, etc.)
-   * is copied, so the clone and the original can diverge from here on and
-   * each `.toBuffer()`/`.toURL()` independently.
+   * Branches this builder: the quote data (`setText()`, `setTheme()`, etc.) is copied, so the clone and the original can diverge from here on and each `.toBuffer()`/`.toURL()` independently.
    *
-   * The underlying HTTP client and `signal` are shared, not copied — an
-   * `AbortController` passed as `signal` to the original's constructor still
-   * aborts requests made through the clone too.
+   * The underlying HTTP client and `signal` are shared, not copied — an `AbortController` passed as `signal` to the original's constructor still aborts requests made through the clone too.
    */
   clone(): OpenMiQ {
     const copy = new OpenMiQ({ apiKey: this.#apiKey, baseUrl: this.#baseUrl });

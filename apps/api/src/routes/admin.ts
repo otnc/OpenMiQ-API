@@ -125,7 +125,17 @@ export function createAdminApp(env: Env) {
 
   app.post("/api/admin/users/:id/revoke", async (c) => {
     const identity = c.get("identity")!;
-    const ok = await revokeUser(db, c.req.param("id"), identity.discordId);
+    const body = await c.req.json().catch(() => null);
+    const reason =
+      typeof body?.reason === "string" && body.reason.length > 0
+        ? body.reason
+        : undefined;
+    const ok = await revokeUser(
+      db,
+      c.req.param("id"),
+      identity.discordId,
+      reason,
+    );
     if (!ok) return c.json({ error: "not_found" }, 404);
     return c.json({ status: "revoked" });
   });
