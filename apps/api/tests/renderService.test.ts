@@ -85,6 +85,28 @@ describe("renderQuote watermark precedence", () => {
   });
 });
 
+describe("renderQuote display name / username", () => {
+  beforeEach(() => {
+    miqInstance.setDisplayName.mockClear();
+    miqInstance.setUsername.mockClear();
+  });
+
+  it("uses authorName for both the display name and username lines when authorUsername is omitted", async () => {
+    await renderQuote(baseInput, buildTestEnv());
+    expect(miqInstance.setDisplayName).toHaveBeenCalledWith("alice");
+    expect(miqInstance.setUsername).toHaveBeenCalledWith("alice");
+  });
+
+  it("uses authorUsername for the username line when given", async () => {
+    await renderQuote(
+      { ...baseInput, authorUsername: "alice123" },
+      buildTestEnv(),
+    );
+    expect(miqInstance.setDisplayName).toHaveBeenCalledWith("alice");
+    expect(miqInstance.setUsername).toHaveBeenCalledWith("alice123");
+  });
+});
+
 describe("renderQuote avatar", () => {
   beforeEach(() => {
     miqInstance.setAvatar.mockClear();

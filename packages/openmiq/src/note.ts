@@ -33,6 +33,10 @@ export function fromNote(
   const source = resolveNoteText(note, options.preferCw);
   const text = options.stripMfm === false ? source : stripMfm(source);
   const authorName = note.user.name || note.user.username;
+  // A remote user's handle keeps its `@host` half — that's part of the handle itself, not decoration makeitaquote's own "@" prefix would duplicate.
+  const authorUsername = note.user.host
+    ? `${note.user.username}@${note.user.host}`
+    : note.user.username;
   const authorAvatarUrl = note.user.avatarUrl ?? null;
-  return { ...emptyQuote(), text, authorName, authorAvatarUrl };
+  return { ...emptyQuote(), text, authorName, authorUsername, authorAvatarUrl };
 }

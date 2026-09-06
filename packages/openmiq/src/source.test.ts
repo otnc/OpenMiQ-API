@@ -53,4 +53,18 @@ describe("fromMessage", () => {
     const quote = fromMessage(baseMessage);
     expect(quote.text).toBe("hello world");
   });
+
+  it("always sets authorUsername to the account handle, regardless of which name option was picked", () => {
+    const message = {
+      ...baseMessage,
+      member: {
+        nickname: "AliceInServer",
+        displayAvatarURL: () => "https://cdn.example.com/guild.png",
+      },
+    };
+    expect(fromMessage(message).authorUsername).toBe("alice");
+    expect(fromMessage(message, { name: "global" }).authorUsername).toBe(
+      "alice",
+    );
+  });
 });

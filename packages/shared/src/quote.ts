@@ -8,7 +8,10 @@ export const quoteOptionsSchema = z.object({
 });
 
 export const quoteRequestSchema = z.object({
+  // Drawn as the bold display-name line.
   authorName: z.string().min(1).max(128),
+  // Drawn as the smaller "@username" line underneath. Defaults to authorName when omitted, so passing only authorName still renders (as it always has), just with the same text on both lines — pass this too when the two differ, e.g. a Discord display name vs. its handle.
+  authorUsername: z.string().min(1).max(128).optional(),
   // A raw image can't go here directly — POST /api/uploads it first (multipart/form-data) and use the URL it returns, same as any other authorAvatarUrl.
   authorAvatarUrl: z.url().optional(),
   text: z.string().min(1).max(4000),

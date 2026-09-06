@@ -32,6 +32,9 @@ export function buildPayload(
     authorName: data.authorName,
     text: data.text,
   };
+  if (data.authorUsername !== null) {
+    payload.authorUsername = data.authorUsername;
+  }
   if (data.authorAvatarUrl !== null) {
     payload.authorAvatarUrl = data.authorAvatarUrl;
   }

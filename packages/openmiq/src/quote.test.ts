@@ -6,6 +6,7 @@ import {
   emptyQuote,
   normalizeAuthorAvatar,
   normalizeAuthorName,
+  normalizeAuthorUsername,
   normalizeLayout,
   normalizeText,
   normalizeWatermarkValue,
@@ -24,6 +25,21 @@ describe("normalizeText/normalizeAuthorName", () => {
   it("rejects text over the length limit", () => {
     expect(() => normalizeText("a".repeat(4001))).toThrow(ValidationError);
     expect(normalizeText("a".repeat(4000))).toHaveLength(4000);
+  });
+});
+
+describe("normalizeAuthorUsername", () => {
+  it("accepts a plain string", () => {
+    expect(normalizeAuthorUsername("alice123")).toBe("alice123");
+  });
+
+  it("treats null/undefined as absent", () => {
+    expect(normalizeAuthorUsername(null)).toBeNull();
+    expect(normalizeAuthorUsername(undefined)).toBeNull();
+  });
+
+  it("rejects a non-string", () => {
+    expect(() => normalizeAuthorUsername(42)).toThrow(ValidationError);
   });
 });
 
@@ -112,6 +128,15 @@ describe("applyInput", () => {
     expect(next.text).toBe("keep me");
     expect(next.theme).toBe("sunset");
     expect(next.authorName).toBe("alice");
+  });
+
+  it("sets authorUsername independently of authorName", () => {
+    const withUsername = applyInput(emptyQuote(), {
+      authorName: "Alice",
+      authorUsername: "alice123",
+    });
+    expect(withUsername.authorName).toBe("Alice");
+    expect(withUsername.authorUsername).toBe("alice123");
   });
 
   it("rejects a non-object input", () => {

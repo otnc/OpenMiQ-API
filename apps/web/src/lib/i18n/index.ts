@@ -127,7 +127,9 @@ interface Translations {
     apiKeyHint: string;
     apiKeySharedHint: string;
     textLabel: string;
-    usernameLabel: string;
+    displayNameLabel: string;
+    authorUsernameLabel: string;
+    authorUsernameHint: string;
     avatarLabel: string;
     themeLabel: string;
     themePlaceholder: string;
@@ -286,7 +288,9 @@ const en: Translations = {
     apiKeySharedHint:
       "This instance provides a shared demo key for anonymous use, with its own low rate limit. Enter your own key instead for the full limit.",
     textLabel: "Text",
-    usernameLabel: "Username",
+    displayNameLabel: "Display name",
+    authorUsernameLabel: "Username",
+    authorUsernameHint: "Optional — defaults to the display name above.",
     avatarLabel: "Avatar",
     themeLabel: "Theme",
     themePlaceholder: "e.g. sunset, or any CSS color",
@@ -448,7 +452,9 @@ const ja: Translations = {
     apiKeySharedHint:
       "このインスタンスは匿名利用向けの共有デモキーを提供していますが、その利用枠は小さめです。フルの利用枠を使いたい場合は自分のAPIキーを入力してください。",
     textLabel: "テキスト",
-    usernameLabel: "ユーザー名",
+    displayNameLabel: "表示名",
+    authorUsernameLabel: "ユーザー名",
+    authorUsernameHint: "任意 — 省略すると上の表示名と同じ文字列が使われます。",
     avatarLabel: "アバター",
     themeLabel: "テーマ",
     themePlaceholder: "例: sunset、または任意のCSS色",

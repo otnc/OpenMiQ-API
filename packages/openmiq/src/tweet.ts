@@ -36,5 +36,11 @@ export function fromTweet(
     : tweet.text;
   const authorName = tweet.author.name || tweet.author.username;
   const authorAvatarUrl = tweet.author.avatarUrl ?? null;
-  return { ...emptyQuote(), text, authorName, authorAvatarUrl };
+  return {
+    ...emptyQuote(),
+    text,
+    authorName,
+    authorUsername: tweet.author.username,
+    authorAvatarUrl,
+  };
 }

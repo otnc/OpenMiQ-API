@@ -20,6 +20,7 @@ import {
   emptyQuote,
   normalizeAuthorAvatar,
   normalizeAuthorName,
+  normalizeAuthorUsername,
   normalizeFlag,
   normalizeFont,
   normalizeLayout,
@@ -92,8 +93,15 @@ export class OpenMiQ {
     return this;
   }
 
+  /** Sets the bold display-name line. Despite the method's name this is authorName on the wire, not the smaller "@username" line below it — see setAuthorUsername() for that one. */
   setUsername(authorName: string): this {
     this.#data.authorName = normalizeAuthorName(authorName);
+    return this;
+  }
+
+  /** Sets the smaller "@username" line drawn under the display name. `null` (the default): draw the same text as setUsername() on both lines. */
+  setAuthorUsername(username: string | null): this {
+    this.#data.authorUsername = normalizeAuthorUsername(username);
     return this;
   }
 

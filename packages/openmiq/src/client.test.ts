@@ -60,6 +60,25 @@ describe("OpenMiQ requests", () => {
     expect(body).toEqual({ authorName: "alice", text: "hi" });
   });
 
+  it("sends authorUsername only when setAuthorUsername() is used", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(pngResponse());
+    vi.stubGlobal("fetch", fetchMock);
+
+    await new OpenMiQ({ apiKey: "k", baseUrl: BASE_URL })
+      .setText("hi")
+      .setUsername("Alice")
+      .setAuthorUsername("alice123")
+      .toBuffer();
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(init.body as string);
+    expect(body).toEqual({
+      authorName: "Alice",
+      authorUsername: "alice123",
+      text: "hi",
+    });
+  });
+
   it("hits /api/fakequote when setFake() is used", async () => {
     const fetchMock = vi.fn().mockResolvedValue(pngResponse());
     vi.stubGlobal("fetch", fetchMock);

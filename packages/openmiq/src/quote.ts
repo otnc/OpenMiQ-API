@@ -19,6 +19,7 @@ export function emptyQuote(): QuoteData {
   return {
     text: "",
     authorName: "",
+    authorUsername: null,
     authorAvatarUrl: null,
     authorAvatarRaw: null,
     theme: null,
@@ -39,6 +40,11 @@ export function normalizeText(text: unknown): string {
 
 export function normalizeAuthorName(name: unknown): string {
   return normalizeString(name, "authorName", MAX_AUTHOR_NAME_LENGTH);
+}
+
+export function normalizeAuthorUsername(username: unknown): string | null {
+  if (username === null || username === undefined) return null;
+  return normalizeString(username, "authorUsername", MAX_AUTHOR_NAME_LENGTH);
 }
 
 export interface NormalizedAvatar {
@@ -145,6 +151,9 @@ export function applyInput(target: QuoteData, input: QuoteInput): QuoteData {
   if (input.text !== undefined) next.text = normalizeText(input.text);
   if (input.authorName !== undefined) {
     next.authorName = normalizeAuthorName(input.authorName);
+  }
+  if (input.authorUsername !== undefined) {
+    next.authorUsername = normalizeAuthorUsername(input.authorUsername);
   }
   if (input.authorAvatarUrl !== undefined) {
     const avatar = normalizeAuthorAvatar(input.authorAvatarUrl);

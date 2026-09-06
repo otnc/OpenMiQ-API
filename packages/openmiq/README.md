@@ -44,7 +44,8 @@ await miq.getUsage();              // { limit, remaining, resetAt, requestCount,
 ```ts
 new OpenMiQ({ apiKey, baseUrl })
   .setText("...")
-  .setUsername("...")
+  .setUsername("...")         // the bold display-name line
+  .setAuthorUsername("...")   // the smaller "@username" line underneath — defaults to the same text as setUsername() when unset
   .setAvatar("https://...")  // a URL/URL object, or raw image bytes (Uint8Array/Buffer) to upload directly
   .setTheme("sunset")        // any CSS color the renderer accepts
   .setFont("pop")
@@ -66,6 +67,8 @@ miq.setFromMessage(message); // anything shaped like a discord.js Message
 miq.setFromNote(note);       // a Misskey note, e.g. from misskey-js
 miq.setFromTweet(tweet);     // see fromTwitterApiV2Tweet()/fromFxTwitterStatus() below
 ```
+
+Each of these sets `authorUsername` too — the account's own handle (Discord's `author.username`, a Misskey note's `user.username`/`user.host`, or the tweet author's `username`) — regardless of which display name option was picked, so the display-name and username lines never end up showing the same text by accident.
 
 These read structurally — no dependency on `discord.js`, `misskey-js`, or a Twitter/X client is required. For a tweet, adapt a real API response first:
 

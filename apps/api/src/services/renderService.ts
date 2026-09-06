@@ -37,7 +37,8 @@ export async function renderQuote(
 ): Promise<Buffer> {
   const miq = new MiQ();
   miq.setText(input.text);
-  miq.setUsername(input.authorName);
+  miq.setDisplayName(input.authorName);
+  miq.setUsername(input.authorUsername ?? input.authorName);
   if (input.authorAvatarUrl) miq.setAvatar(input.authorAvatarUrl);
   miq.setTheme(buildTheme(input));
   const watermark = resolveWatermark(input, env);
@@ -54,7 +55,7 @@ export async function renderFakeQuote(
   const miq = new MiQ();
   miq.setText(input.text);
   miq.setDisplayName(`(fake) ${input.authorName}`);
-  miq.setUsername(input.authorName);
+  miq.setUsername(input.authorUsername ?? input.authorName);
   if (input.authorAvatarUrl) miq.setAvatar(input.authorAvatarUrl);
   miq.setTheme(buildTheme(input));
   const watermark = resolveWatermark(input, env);

@@ -32,6 +32,7 @@
 
   let text = $state("Hello, world!");
   let authorName = $state("otoneko.");
+  let authorUsername = $state("");
   let theme = $state("");
   let font = $state("");
   let layout = $state<"default" | "side" | "new">("default");
@@ -111,6 +112,7 @@
     if (layout !== "default") options.layout = layout;
 
     const body: Record<string, unknown> = { authorName, text };
+    if (authorUsername) body.authorUsername = authorUsername;
     if (authorAvatarUrl) body.authorAvatarUrl = authorAvatarUrl;
     if (theme) body.theme = theme;
     if (font) body.font = font;
@@ -168,8 +170,15 @@
 
       <div class="grid grid-cols-2 gap-4">
         <div class="space-y-1">
-          <Label for="pg-username">{tr.playground.usernameLabel}</Label>
-          <Input id="pg-username" bind:value={authorName} maxlength={128} />
+          <Label for="pg-display-name">{tr.playground.displayNameLabel}</Label>
+          <Input id="pg-display-name" bind:value={authorName} maxlength={128} />
+        </div>
+        <div class="space-y-1">
+          <Label for="pg-username">{tr.playground.authorUsernameLabel}</Label>
+          <Input id="pg-username" bind:value={authorUsername} maxlength={128} />
+          <p class="text-muted-foreground text-xs">
+            {tr.playground.authorUsernameHint}
+          </p>
         </div>
         <div class="space-y-1">
           <Label for="pg-theme">{tr.playground.themeLabel}</Label>

@@ -26,7 +26,9 @@ function isMessageLike(value: unknown): value is MessageLike {
  * per-server avatar and nickname are what someone reading that server saw,
  * so they are what a quote from it should show. Both can be switched to the
  * account-wide version; whichever is chosen, the other is still the
- * fallback.
+ * fallback. `author.username` (the account's own handle) always draws the
+ * smaller "@username" line underneath, regardless of which name option was
+ * picked for the display-name line above it.
  */
 export function fromMessage(
   message: unknown,
@@ -64,5 +66,11 @@ export function fromMessage(
     ? (userAvatar ?? guildAvatar)
     : (guildAvatar ?? userAvatar);
 
-  return { ...emptyQuote(), text, authorName, authorAvatarUrl };
+  return {
+    ...emptyQuote(),
+    text,
+    authorName,
+    authorUsername: message.author.username,
+    authorAvatarUrl,
+  };
 }

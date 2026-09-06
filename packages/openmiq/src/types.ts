@@ -4,7 +4,10 @@ export type AvatarSource = string | URL | Uint8Array;
 /** The normalized quote, after validation. Avatar/watermark image fields come in URL/raw pairs — at most one of each pair is ever set, since setAvatar()/setWatermark() clear its sibling whenever the other is used. */
 export interface QuoteData {
   text: string;
+  /** The bold display-name line. */
   authorName: string;
+  /** The smaller "@username" line underneath. `null`: draw the same text as authorName on both lines (the server's default when this is omitted). */
+  authorUsername: string | null;
   authorAvatarUrl: string | null;
   /** Raw image bytes pending upload — resolved to authorAvatarUrl via POST /api/uploads the next time toBuffer()/toURL() runs. Mutually exclusive with authorAvatarUrl. */
   authorAvatarRaw: Uint8Array | null;
@@ -27,6 +30,7 @@ export interface QuoteData {
 export interface QuoteInput {
   text?: string;
   authorName?: string;
+  authorUsername?: string | null;
   authorAvatarUrl?: AvatarSource | null;
   theme?: string | null;
   font?: string | null;
