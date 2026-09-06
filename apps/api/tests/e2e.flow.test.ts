@@ -3,6 +3,7 @@ import { buildTestEnv } from "./helpers/env.ts";
 import { createTestDbFile } from "./helpers/testDbFile.ts";
 import { sessionCookieHeader } from "./helpers/session.ts";
 import type { SessionIdentity } from "../src/services/sessionService.ts";
+import { sendDirectMessage } from "../src/services/discordBotService.ts";
 
 vi.mock("../src/services/discordWebhookService.ts", () => ({
   sendReviewMessage: vi
@@ -11,15 +12,14 @@ vi.mock("../src/services/discordWebhookService.ts", () => ({
   disableReviewButtons: vi.fn().mockResolvedValue(undefined),
 }));
 
-// GET /api/admin/users and /api/console/me now look up each user's avatar
-// via the bot token — stubbed here so this suite stays offline like the
-// rest of it, instead of making a real Discord API call.
+// GET /api/admin/users and /api/console/me now look up each user's avatar via the bot token, and revoke/ban DM the target user through it — all stubbed here so this suite stays offline like the rest of it, instead of making a real Discord API call.
 vi.mock("../src/services/discordBotService.ts", () => ({
   fetchDiscordUserById: vi.fn().mockResolvedValue({
     id: "0",
     username: "stub",
     avatarUrl: "https://cdn.discordapp.com/embed/avatars/0.png",
   }),
+  sendDirectMessage: vi.fn().mockResolvedValue(undefined),
 }));
 
 const { createApp } = await import("../src/app.ts");
@@ -229,6 +229,11 @@ describe("apply -> approve -> issue key -> use API key", () => {
       { method: "POST", headers: { cookie: adminCookie } },
     );
     expect(revokeRes.status).toBe(200);
+    expect(sendDirectMessage).toHaveBeenCalledWith(
+      env.DISCORD_BOT_TOKEN,
+      applicant.discordId,
+      expect.stringContaining("revoked"),
+    );
 
     const quoteRes = await app.request("/api/quote", {
       method: "POST",

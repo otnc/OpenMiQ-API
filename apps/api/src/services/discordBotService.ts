@@ -44,3 +44,34 @@ export async function fetchDiscordUserById(
     : defaultAvatarUrl(user);
   return { id: user.id, username: user.username, avatarUrl };
 }
+
+/**
+ * DMs a Discord user on behalf of the bot — e.g. to tell them their access was revoked or their account banned.
+ * Best-effort: silently gives up on failure (DMs closed, no shared guild, blocked the bot) rather than throwing, since this always follows an admin action that has already succeeded and must not be undone by a delivery failure.
+ */
+export async function sendDirectMessage(
+  botToken: string,
+  discordId: string,
+  content: string,
+): Promise<void> {
+  try {
+    const channel = await ofetch<{ id: string }>(
+      "https://discord.com/api/v10/users/@me/channels",
+      {
+        method: "POST",
+        headers: { Authorization: `Bot ${botToken}` },
+        body: { recipient_id: discordId },
+      },
+    );
+    await ofetch(
+      `https://discord.com/api/v10/channels/${channel.id}/messages`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bot ${botToken}` },
+        body: { content },
+      },
+    );
+  } catch {
+    // See the doc comment above — a failed DM is not this function's caller's problem.
+  }
+}

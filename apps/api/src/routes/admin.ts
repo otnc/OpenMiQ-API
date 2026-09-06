@@ -18,12 +18,30 @@ import {
 } from "../services/userService.ts";
 import { listBans } from "../services/banService.ts";
 import { needsReconsent } from "../services/consentService.ts";
-import { fetchDiscordUserById } from "../services/discordBotService.ts";
+import {
+  fetchDiscordUserById,
+  sendDirectMessage,
+} from "../services/discordBotService.ts";
 import type { SessionIdentity } from "../services/sessionService.ts";
 
 type Variables = { identity: SessionIdentity | null };
 type ApplicationStatus = (typeof applications.$inferSelect)["status"];
 type UserStatus = (typeof users.$inferSelect)["status"];
+
+// DMs the affected user through the bot when an admin revokes or bans them — best-effort (see sendDirectMessage's own doc comment), so this never blocks or fails the admin action itself.
+async function notifyModerationAction(
+  env: Env,
+  discordId: string,
+  action: "revoke" | "ban",
+  reason: string | undefined,
+): Promise<void> {
+  const reasonLine = reason ? ` Reason: ${reason}` : "";
+  const content =
+    action === "ban"
+      ? `Your OpenMiQ-API account has been banned by an administrator.${reasonLine}`
+      : `Your OpenMiQ-API access has been revoked by an administrator.${reasonLine} You can re-apply after the cooldown period at ${env.APP_BASE_URL}/console/apply.`;
+  await sendDirectMessage(env.DISCORD_BOT_TOKEN, discordId, content);
+}
 
 async function handleReview(
   db: Db,
@@ -130,13 +148,15 @@ export function createAdminApp(env: Env) {
       typeof body?.reason === "string" && body.reason.length > 0
         ? body.reason
         : undefined;
+    const target = await findUserById(db, c.req.param("id"));
     const ok = await revokeUser(
       db,
       c.req.param("id"),
       identity.discordId,
       reason,
     );
-    if (!ok) return c.json({ error: "not_found" }, 404);
+    if (!ok || !target) return c.json({ error: "not_found" }, 404);
+    void notifyModerationAction(env, target.discordId, "revoke", reason);
     return c.json({ status: "revoked" });
   });
 
@@ -147,8 +167,10 @@ export function createAdminApp(env: Env) {
     if (typeof reason !== "string" || reason.length === 0) {
       return c.json({ error: "reason_required" }, 400);
     }
+    const target = await findUserById(db, c.req.param("id"));
     const ok = await banUser(db, c.req.param("id"), reason, identity.discordId);
-    if (!ok) return c.json({ error: "not_found" }, 404);
+    if (!ok || !target) return c.json({ error: "not_found" }, 404);
+    void notifyModerationAction(env, target.discordId, "ban", reason);
     return c.json({ status: "banned" });
   });
 
