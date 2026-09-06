@@ -4,10 +4,11 @@ import {
   applyInput,
   assertRenderable,
   emptyQuote,
-  normalizeAuthorAvatarUrl,
+  normalizeAuthorAvatar,
   normalizeAuthorName,
   normalizeLayout,
   normalizeText,
+  normalizeWatermarkValue,
 } from "./quote.ts";
 
 describe("normalizeText/normalizeAuthorName", () => {
@@ -26,28 +27,68 @@ describe("normalizeText/normalizeAuthorName", () => {
   });
 });
 
-describe("normalizeAuthorAvatarUrl", () => {
-  it("passes a string URL through", () => {
-    expect(normalizeAuthorAvatarUrl("https://example.com/a.png")).toBe(
-      "https://example.com/a.png",
-    );
+describe("normalizeAuthorAvatar", () => {
+  it("passes a string URL through as .url", () => {
+    expect(normalizeAuthorAvatar("https://example.com/a.png")).toEqual({
+      url: "https://example.com/a.png",
+      raw: null,
+    });
   });
 
-  it("stringifies a URL instance", () => {
-    expect(normalizeAuthorAvatarUrl(new URL("https://example.com/a.png"))).toBe(
-      "https://example.com/a.png",
+  it("stringifies a URL instance as .url", () => {
+    expect(normalizeAuthorAvatar(new URL("https://example.com/a.png"))).toEqual(
+      { url: "https://example.com/a.png", raw: null },
     );
   });
 
   it("treats null/undefined as absent", () => {
-    expect(normalizeAuthorAvatarUrl(null)).toBeNull();
-    expect(normalizeAuthorAvatarUrl(undefined)).toBeNull();
+    expect(normalizeAuthorAvatar(null)).toEqual({ url: null, raw: null });
+    expect(normalizeAuthorAvatar(undefined)).toEqual({ url: null, raw: null });
   });
 
-  it("rejects raw image bytes — the API only accepts a URL", () => {
-    expect(() => normalizeAuthorAvatarUrl(new Uint8Array([1, 2, 3]))).toThrow(
-      ValidationError,
-    );
+  it("base64-encodes raw image bytes as .raw", () => {
+    const bytes = new Uint8Array([1, 2, 3]);
+    expect(normalizeAuthorAvatar(bytes)).toEqual({
+      url: null,
+      raw: Buffer.from(bytes).toString("base64"),
+    });
+  });
+
+  it("rejects anything else", () => {
+    expect(() => normalizeAuthorAvatar(42)).toThrow(ValidationError);
+  });
+});
+
+describe("normalizeWatermarkValue", () => {
+  it("treats a plain string as text", () => {
+    expect(normalizeWatermarkValue("hi")).toEqual({
+      text: "hi",
+      url: null,
+      raw: null,
+    });
+  });
+
+  it("treats a URL as an image watermark", () => {
+    expect(
+      normalizeWatermarkValue(new URL("https://example.com/logo.png")),
+    ).toEqual({ text: null, url: "https://example.com/logo.png", raw: null });
+  });
+
+  it("base64-encodes raw bytes as an image watermark", () => {
+    const bytes = new Uint8Array([4, 5, 6]);
+    expect(normalizeWatermarkValue(bytes)).toEqual({
+      text: null,
+      url: null,
+      raw: Buffer.from(bytes).toString("base64"),
+    });
+  });
+
+  it("treats null/undefined as absent", () => {
+    expect(normalizeWatermarkValue(null)).toEqual({
+      text: null,
+      url: null,
+      raw: null,
+    });
   });
 });
 

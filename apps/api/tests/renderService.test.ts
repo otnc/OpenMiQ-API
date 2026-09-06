@@ -24,9 +24,7 @@ vi.mock("../src/services/logoWatermark.ts", () => ({
 }));
 
 const { renderQuote } = await import("../src/services/renderService.ts");
-const { getLogoWatermark } = await import(
-  "../src/services/logoWatermark.ts"
-);
+const { getLogoWatermark } = await import("../src/services/logoWatermark.ts");
 
 const baseInput: QuoteRequest = {
   authorName: "alice",
@@ -70,5 +68,64 @@ describe("renderQuote watermark precedence", () => {
       buildTestEnv({ LOGO_PATH: "logo.png" }),
     );
     expect(setWatermark).toHaveBeenCalledWith("");
+  });
+
+  it("draws watermarkUrl as an image, overriding text watermark", async () => {
+    await renderQuote(
+      {
+        ...baseInput,
+        watermark: "ignored text",
+        watermarkUrl: "https://example.com/logo.png",
+      },
+      buildTestEnv(),
+    );
+    expect(setWatermark).toHaveBeenCalledWith(
+      new URL("https://example.com/logo.png"),
+    );
+  });
+
+  it("draws watermarkRaw as an image, overriding both watermark and watermarkUrl", async () => {
+    const raw = Buffer.from("raw-logo-bytes").toString("base64");
+    await renderQuote(
+      {
+        ...baseInput,
+        watermark: "ignored text",
+        watermarkUrl: "https://example.com/ignored.png",
+        watermarkRaw: raw,
+      },
+      buildTestEnv(),
+    );
+    expect(setWatermark).toHaveBeenCalledWith(Buffer.from(raw, "base64"));
+  });
+});
+
+describe("renderQuote avatar precedence", () => {
+  beforeEach(() => {
+    miqInstance.setAvatar.mockClear();
+  });
+
+  it("uses authorAvatarUrl when authorAvatarRaw is absent", async () => {
+    await renderQuote(
+      { ...baseInput, authorAvatarUrl: "https://example.com/a.png" },
+      buildTestEnv(),
+    );
+    expect(miqInstance.setAvatar).toHaveBeenCalledWith(
+      "https://example.com/a.png",
+    );
+  });
+
+  it("prefers authorAvatarRaw over authorAvatarUrl when both are given", async () => {
+    const raw = Buffer.from("raw-avatar-bytes").toString("base64");
+    await renderQuote(
+      {
+        ...baseInput,
+        authorAvatarUrl: "https://example.com/ignored.png",
+        authorAvatarRaw: raw,
+      },
+      buildTestEnv(),
+    );
+    expect(miqInstance.setAvatar).toHaveBeenCalledWith(
+      Buffer.from(raw, "base64"),
+    );
   });
 });

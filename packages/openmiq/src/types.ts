@@ -1,18 +1,24 @@
-/** The OpenMiQ-API only accepts an avatar URL, not image data — unlike some sibling packages' APIs. */
-export type AvatarSource = string | URL;
+/** A URL/string identifying an avatar or watermark image, or raw image bytes to upload directly (sent as base64 — see authorAvatarRaw/watermarkRaw on QuoteData). */
+export type AvatarSource = string | URL | Uint8Array;
 
-/** The normalized quote, after validation. */
+/** The normalized quote, after validation. Avatar/watermark image fields come in URL/raw pairs — at most one of each pair is ever set, since setAvatar()/setWatermark() clear its sibling whenever the other is used. */
 export interface QuoteData {
   text: string;
   authorName: string;
   authorAvatarUrl: string | null;
+  /** Base64-encoded raw image bytes, sent as authorAvatarRaw. Mutually exclusive with authorAvatarUrl. */
+  authorAvatarRaw: string | null;
   theme: string | null;
   font: string | null;
   color: boolean | null;
   bold: boolean | null;
   layout: "side" | "new" | null;
-  /** Drawn in place of the server's default watermark. `null`: let the server decide (its LOGO_PATH image, if configured). */
+  /** Text drawn in place of the server's default watermark. `null` (and watermarkUrl/watermarkRaw also null): let the server decide (its LOGO_PATH image, if configured). Mutually exclusive with watermarkUrl/watermarkRaw. */
   watermark: string | null;
+  /** An image watermark by URL. Mutually exclusive with watermark/watermarkRaw. */
+  watermarkUrl: string | null;
+  /** An image watermark by base64-encoded raw bytes, sent as watermarkRaw. Mutually exclusive with watermark/watermarkUrl. */
+  watermarkRaw: string | null;
   /** When true, targets `/api/fakequote` instead of `/api/quote`. */
   fake: boolean;
 }
@@ -27,7 +33,8 @@ export interface QuoteInput {
   color?: boolean | null;
   bold?: boolean | null;
   layout?: "side" | "new" | null;
-  watermark?: string | null;
+  /** A plain string sets the text watermark; a URL or raw bytes (see AvatarSource) set an image one instead — same rule setWatermark() follows. */
+  watermark?: string | AvatarSource | null;
   fake?: boolean;
 }
 

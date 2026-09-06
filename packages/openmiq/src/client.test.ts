@@ -105,6 +105,43 @@ describe("OpenMiQ requests", () => {
     expect(body.watermark).toBe("");
   });
 
+  it("sends a URL watermark as watermarkUrl, not text", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(pngResponse());
+    vi.stubGlobal("fetch", fetchMock);
+
+    await new OpenMiQ({ apiKey: "k", baseUrl: BASE_URL })
+      .setText("hi")
+      .setUsername("alice")
+      .setWatermark(new URL("https://example.com/logo.png"))
+      .toBuffer();
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(init.body as string);
+    expect(body.watermarkUrl).toBe("https://example.com/logo.png");
+    expect(body.watermark).toBeUndefined();
+  });
+
+  it("uploads raw avatar/watermark bytes as base64", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(pngResponse());
+    vi.stubGlobal("fetch", fetchMock);
+
+    await new OpenMiQ({ apiKey: "k", baseUrl: BASE_URL })
+      .setText("hi")
+      .setUsername("alice")
+      .setAvatar(new Uint8Array([1, 2, 3]))
+      .setWatermark(new Uint8Array([4, 5, 6]))
+      .toBuffer();
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(init.body as string);
+    expect(body.authorAvatarRaw).toBe(
+      Buffer.from([1, 2, 3]).toString("base64"),
+    );
+    expect(body.watermarkRaw).toBe(Buffer.from([4, 5, 6]).toString("base64"));
+    expect(body.authorAvatarUrl).toBeUndefined();
+    expect(body.watermark).toBeUndefined();
+  });
+
   it("strips a trailing slash from baseUrl", async () => {
     const fetchMock = vi.fn().mockResolvedValue(pngResponse());
     vi.stubGlobal("fetch", fetchMock);

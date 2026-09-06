@@ -18,14 +18,14 @@ import {
   applyInput,
   assertRenderable,
   emptyQuote,
-  normalizeAuthorAvatarUrl,
+  normalizeAuthorAvatar,
   normalizeAuthorName,
   normalizeFlag,
   normalizeFont,
   normalizeLayout,
   normalizeText,
   normalizeTheme,
-  normalizeWatermark,
+  normalizeWatermarkValue,
 } from "./quote.ts";
 import { fromMessage } from "./source.ts";
 import { fromTweet } from "./tweet.ts";
@@ -97,9 +97,11 @@ export class OpenMiQ {
     return this;
   }
 
-  /** The API only takes a URL, so raw image bytes are rejected here. */
-  setAvatar(avatar: string | URL | null): this {
-    this.#data.authorAvatarUrl = normalizeAuthorAvatarUrl(avatar);
+  /** A string/URL sets an avatar by address; raw image bytes (Uint8Array/Buffer) upload it directly instead — either way, clears whichever form was set before. */
+  setAvatar(avatar: string | URL | Uint8Array | null): this {
+    const normalized = normalizeAuthorAvatar(avatar);
+    this.#data.authorAvatarUrl = normalized.url;
+    this.#data.authorAvatarRaw = normalized.raw;
     return this;
   }
 
@@ -131,10 +133,16 @@ export class OpenMiQ {
   /**
    * Overrides the server's default watermark for this quote. `null` (the
    * default): let the server decide — its LOGO_PATH image, if configured.
-   * Pass `""` to explicitly ask for no watermark.
+   * A string is drawn as text (pass `""` to explicitly ask for no
+   * watermark); a URL or raw image bytes (Uint8Array/Buffer) are drawn as
+   * an image instead, the same rule makeitaquote's own `setWatermark()`
+   * follows. Either way, clears whichever form was set before.
    */
-  setWatermark(watermark: string | null): this {
-    this.#data.watermark = normalizeWatermark(watermark);
+  setWatermark(watermark: string | URL | Uint8Array | null): this {
+    const normalized = normalizeWatermarkValue(watermark);
+    this.#data.watermark = normalized.text;
+    this.#data.watermarkUrl = normalized.url;
+    this.#data.watermarkRaw = normalized.raw;
     return this;
   }
 
@@ -145,7 +153,17 @@ export class OpenMiQ {
   }
 
   setFromMessage(message: MessageLike, options?: MessageSourceOptions): this {
-    const { theme, font, color, bold, layout, watermark, fake } = this.#data;
+    const {
+      theme,
+      font,
+      color,
+      bold,
+      layout,
+      watermark,
+      watermarkUrl,
+      watermarkRaw,
+      fake,
+    } = this.#data;
     this.#data = {
       ...fromMessage(message, options),
       theme,
@@ -154,6 +172,8 @@ export class OpenMiQ {
       bold,
       layout,
       watermark,
+      watermarkUrl,
+      watermarkRaw,
       fake,
     };
     return this;
@@ -164,7 +184,17 @@ export class OpenMiQ {
    * MFM is stripped by default — see `NoteSourceOptions`.
    */
   setFromNote(note: NoteLike, options?: NoteSourceOptions): this {
-    const { theme, font, color, bold, layout, watermark, fake } = this.#data;
+    const {
+      theme,
+      font,
+      color,
+      bold,
+      layout,
+      watermark,
+      watermarkUrl,
+      watermarkRaw,
+      fake,
+    } = this.#data;
     this.#data = {
       ...fromNote(note, options),
       theme,
@@ -173,6 +203,8 @@ export class OpenMiQ {
       bold,
       layout,
       watermark,
+      watermarkUrl,
+      watermarkRaw,
       fake,
     };
     return this;
@@ -184,7 +216,17 @@ export class OpenMiQ {
    * `fromTwitterApiV2Tweet()`/`fromFxTwitterStatus()` in `./tweetAdapters.ts`.
    */
   setFromTweet(tweet: TweetLike, options?: TweetSourceOptions): this {
-    const { theme, font, color, bold, layout, watermark, fake } = this.#data;
+    const {
+      theme,
+      font,
+      color,
+      bold,
+      layout,
+      watermark,
+      watermarkUrl,
+      watermarkRaw,
+      fake,
+    } = this.#data;
     this.#data = {
       ...fromTweet(tweet, options),
       theme,
@@ -193,6 +235,8 @@ export class OpenMiQ {
       bold,
       layout,
       watermark,
+      watermarkUrl,
+      watermarkRaw,
       fake,
     };
     return this;

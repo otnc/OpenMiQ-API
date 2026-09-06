@@ -34,9 +34,14 @@ export function buildPayload(
   if (data.authorAvatarUrl !== null) {
     payload.authorAvatarUrl = data.authorAvatarUrl;
   }
+  if (data.authorAvatarRaw !== null) {
+    payload.authorAvatarRaw = data.authorAvatarRaw;
+  }
   if (data.theme !== null) payload.theme = data.theme;
   if (data.font !== null) payload.font = data.font;
   if (data.watermark !== null) payload.watermark = data.watermark;
+  if (data.watermarkUrl !== null) payload.watermarkUrl = data.watermarkUrl;
+  if (data.watermarkRaw !== null) payload.watermarkRaw = data.watermarkRaw;
   if (Object.keys(options).length > 0) payload.options = options;
   return payload;
 }

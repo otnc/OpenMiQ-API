@@ -45,14 +45,14 @@ await miq.getUsage();              // { limit, remaining, resetAt, requestCount,
 new OpenMiQ({ apiKey, baseUrl })
   .setText("...")
   .setUsername("...")
-  .setAvatar("https://...") // a URL only — the API doesn't accept raw image bytes
-  .setTheme("sunset")       // any CSS color the renderer accepts
+  .setAvatar("https://...")  // a URL/URL object, or raw image bytes (Uint8Array/Buffer) to upload directly
+  .setTheme("sunset")        // any CSS color the renderer accepts
   .setFont("pop")
-  .setColor()               // keep the avatar in color
+  .setColor()                // keep the avatar in color
   .setBold()
-  .setLayout("side")        // "side" | "new"
-  .setWatermark("...")      // overrides the server's default watermark (its LOGO_PATH image, if set); "" for none
-  .setFake();                // targets /api/fakequote instead of /api/quote
+  .setLayout("side")         // "side" | "new"
+  .setWatermark("...")       // a string is drawn as text (overrides the server's default watermark — its LOGO_PATH image, if set; "" for none); a URL or raw bytes are drawn as an image instead
+  .setFake();                 // targets /api/fakequote instead of /api/quote
 ```
 
 `setFromObject()` accepts the same fields as a plain object, and `getData()`/`clone()` are available for inspecting or branching a builder in progress.

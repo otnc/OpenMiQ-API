@@ -19,17 +19,26 @@ function buildTheme(input: QuoteRequest): Record<string, unknown> {
   return theme;
 }
 
-// The caller's own `watermark` wins when given, even an empty string (an
-// explicit "no watermark"). Otherwise the LOGO_PATH image, matching OpenMiQ
-// and OpenMiQ-misskey's own convention of drawing the configured logo in
-// place of the usual attribution. `undefined` when neither applies, leaving
-// makeitaquote's own default in place.
+// `watermarkRaw` wins when given, then `watermarkUrl`, then the caller's own text `watermark` (even an empty string — an explicit "no watermark").
+// Otherwise the LOGO_PATH image, matching OpenMiQ and OpenMiQ-misskey's own convention of drawing the configured logo in place of the usual attribution.
+// `undefined` when none of these apply, leaving makeitaquote's own default in place.
 function resolveWatermark(
   input: QuoteRequest,
   env: Env,
-): string | Buffer | undefined {
+): string | Buffer | URL | undefined {
+  if (input.watermarkRaw) return Buffer.from(input.watermarkRaw, "base64");
+  if (input.watermarkUrl) return new URL(input.watermarkUrl);
   if (input.watermark !== undefined) return input.watermark;
   return getLogoWatermark(env);
+}
+
+// `authorAvatarRaw` wins over `authorAvatarUrl` when both are given.
+function setAvatar(miq: MiQ, input: QuoteRequest): void {
+  if (input.authorAvatarRaw) {
+    miq.setAvatar(Buffer.from(input.authorAvatarRaw, "base64"));
+  } else if (input.authorAvatarUrl) {
+    miq.setAvatar(input.authorAvatarUrl);
+  }
 }
 
 export async function renderQuote(
@@ -39,7 +48,7 @@ export async function renderQuote(
   const miq = new MiQ();
   miq.setText(input.text);
   miq.setUsername(input.authorName);
-  if (input.authorAvatarUrl) miq.setAvatar(input.authorAvatarUrl);
+  setAvatar(miq, input);
   miq.setTheme(buildTheme(input));
   const watermark = resolveWatermark(input, env);
   if (watermark !== undefined) miq.setWatermark(watermark);
@@ -56,7 +65,7 @@ export async function renderFakeQuote(
   miq.setText(input.text);
   miq.setDisplayName(`(fake) ${input.authorName}`);
   miq.setUsername(input.authorName);
-  if (input.authorAvatarUrl) miq.setAvatar(input.authorAvatarUrl);
+  setAvatar(miq, input);
   miq.setTheme(buildTheme(input));
   const watermark = resolveWatermark(input, env);
   if (watermark !== undefined) miq.setWatermark(watermark);

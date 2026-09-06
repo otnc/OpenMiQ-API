@@ -20,12 +20,15 @@ export function emptyQuote(): QuoteData {
     text: "",
     authorName: "",
     authorAvatarUrl: null,
+    authorAvatarRaw: null,
     theme: null,
     font: null,
     color: null,
     bold: null,
     layout: null,
     watermark: null,
+    watermarkUrl: null,
+    watermarkRaw: null,
     fake: false,
   };
 }
@@ -38,17 +41,26 @@ export function normalizeAuthorName(name: unknown): string {
   return normalizeString(name, "authorName", MAX_AUTHOR_NAME_LENGTH);
 }
 
-/** The API only takes a URL, so raw image bytes are rejected here. */
-export function normalizeAuthorAvatarUrl(avatar: unknown): string | null {
-  if (avatar === null || avatar === undefined) return null;
+export interface NormalizedAvatar {
+  url: string | null;
+  /** Base64-encoded, ready for the wire as authorAvatarRaw. */
+  raw: string | null;
+}
+
+/** A URL/string sets `url`; raw bytes (Uint8Array/Buffer) set `raw` instead — always exactly one of the two, or neither for `null`/`undefined`. */
+export function normalizeAuthorAvatar(avatar: unknown): NormalizedAvatar {
+  if (avatar === null || avatar === undefined) return { url: null, raw: null };
   const normalized = normalizeAvatarSource(avatar, "authorAvatarUrl");
-  if (typeof normalized !== "string" && !(normalized instanceof URL)) {
-    throw new ValidationError(
-      "The OpenMiQ-API only accepts an avatar URL, not image data",
-      { field: "authorAvatarUrl" },
-    );
+  if (typeof normalized === "string" || normalized instanceof URL) {
+    return { url: String(normalized), raw: null };
   }
-  return String(normalized);
+  if (normalized instanceof Uint8Array) {
+    return { url: null, raw: Buffer.from(normalized).toString("base64") };
+  }
+  throw new ValidationError(
+    "authorAvatarUrl must be a string, URL, or raw image bytes",
+    { field: "authorAvatarUrl" },
+  );
 }
 
 export function normalizeTheme(theme: unknown): string | null {
@@ -61,14 +73,48 @@ export function normalizeFont(font: unknown): string | null {
   return normalizeString(font, "font", MAX_FONT_LENGTH);
 }
 
+export interface NormalizedWatermark {
+  text: string | null;
+  url: string | null;
+  /** Base64-encoded, ready for the wire as watermarkRaw. */
+  raw: string | null;
+}
+
 /**
- * `null` (the default) leaves the server's own default watermark in place —
- * its LOGO_PATH image, if the instance has one configured. An empty string
- * is a valid override: it asks for no watermark at all.
+ * `null`/`undefined` (the default) leaves the server's own default watermark
+ * in place — its LOGO_PATH image, if the instance has one configured. A
+ * plain string is drawn as text (`""` is a valid override: it asks for no
+ * watermark at all); a URL or raw bytes (Uint8Array/Buffer) are drawn as an
+ * image instead, the same rule makeitaquote's own `setWatermark()` follows.
  */
-export function normalizeWatermark(watermark: unknown): string | null {
-  if (watermark === null || watermark === undefined) return null;
-  return normalizeString(watermark, "watermark", MAX_WATERMARK_LENGTH);
+export function normalizeWatermarkValue(
+  watermark: unknown,
+): NormalizedWatermark {
+  if (watermark === null || watermark === undefined) {
+    return { text: null, url: null, raw: null };
+  }
+  if (typeof watermark === "string") {
+    return {
+      text: normalizeString(watermark, "watermark", MAX_WATERMARK_LENGTH),
+      url: null,
+      raw: null,
+    };
+  }
+  const normalized = normalizeAvatarSource(watermark, "watermark");
+  if (normalized instanceof URL) {
+    return { text: null, url: String(normalized), raw: null };
+  }
+  if (normalized instanceof Uint8Array) {
+    return {
+      text: null,
+      url: null,
+      raw: Buffer.from(normalized).toString("base64"),
+    };
+  }
+  throw new ValidationError(
+    "watermark must be a string, URL, or raw image bytes",
+    { field: "watermark" },
+  );
 }
 
 export function normalizeLayout(layout: unknown): "side" | "new" | null {
@@ -105,7 +151,9 @@ export function applyInput(target: QuoteData, input: QuoteInput): QuoteData {
     next.authorName = normalizeAuthorName(input.authorName);
   }
   if (input.authorAvatarUrl !== undefined) {
-    next.authorAvatarUrl = normalizeAuthorAvatarUrl(input.authorAvatarUrl);
+    const avatar = normalizeAuthorAvatar(input.authorAvatarUrl);
+    next.authorAvatarUrl = avatar.url;
+    next.authorAvatarRaw = avatar.raw;
   }
   if (input.theme !== undefined) next.theme = normalizeTheme(input.theme);
   if (input.font !== undefined) next.font = normalizeFont(input.font);
@@ -115,7 +163,10 @@ export function applyInput(target: QuoteData, input: QuoteInput): QuoteData {
   if (input.bold !== undefined) next.bold = normalizeFlag(input.bold, "bold");
   if (input.layout !== undefined) next.layout = normalizeLayout(input.layout);
   if (input.watermark !== undefined) {
-    next.watermark = normalizeWatermark(input.watermark);
+    const watermark = normalizeWatermarkValue(input.watermark);
+    next.watermark = watermark.text;
+    next.watermarkUrl = watermark.url;
+    next.watermarkRaw = watermark.raw;
   }
   if (input.fake !== undefined) {
     assertBoolean(input.fake, "fake");
