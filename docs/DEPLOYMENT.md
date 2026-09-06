@@ -82,7 +82,31 @@ pnpm run build
    certbotのnginxプラグインが、上記80番ブロックを複製して`ssl_certificate`等を追加した443番ブロックをその場で生成し、元の80番ブロックは443へのリダイレクトに書き換える。
 3. 自動更新の確認: `sudo certbot renew --dry-run`（更新自体はインストール時に登録される`certbot.timer`/cronが行う）
 
-## 5. pm2でプロセス起動
+## 5. Anubis（任意・AIスクレイパー対策）
+
+[Anubis](https://anubis.techaro.lol/)は、Webページの前段に立ってJSチャレンジ（Proof of Work）を課すことで、AI企業等のスクレイパーBotを遮断するリバースプロキシ。nginx（TLS終端・ルーティング）と`apps/web`（SvelteKitのWeb UI）の間に挟んで使う。
+
+**`apps/api`（`/api/`配下）はAnubisの対象外とすること。** APIキーで叩く外部クライアント（`@makeitaquote/openmiq`等のnpmパッケージ、`/playground`ページ自身のサーバーサイドプロキシ含む）はJSチャレンジを解けないため、Anubisを通すとAPI自体が使えなくなる。上記§4のnginx設定は`/api/`を直接`apps/api`（9413番）へ、`/`のみをAnubis経由で`apps/web`（9414番）へ振り分ける構成になっている。
+
+1. AnubisはDockerを使わないこのデプロイに合わせ、ネイティブパッケージ（`.deb`/`.rpm`）でインストールする。[GitHub Releases](https://github.com/TecharoHQ/anubis/releases)から自分のOS/アーキテクチャ向けのパッケージをダウンロードし、`sudo apt install ./anubis-*.deb`（またはrpm系なら`dnf`/`yum`/`rpm`）でインストールする。インストール後、`systemctl`のテンプレートユニット`anubis@.service`と、デフォルト設定`/etc/anubis/default.env`が配置される（詳細は[Anubis公式のnative install手順](https://anubis.techaro.lol/docs/admin/native-install)を参照）。
+2. このデプロイ用の設定ファイルを作成する:
+   ```bash
+   sudo cp deploy/anubis/openmiq-web.env /etc/anubis/openmiq-web.env
+   ```
+   [`deploy-example/anubis/openmiq-web.env`](../deploy-example/anubis/openmiq-web.env)（`deploy/`にコピー済みのはず。まだなら`cp -r deploy-example deploy`）が`TARGET=http://127.0.0.1:9414`（`apps/web`）・Unixソケット`BIND=unix:/run/anubis/openmiq-web.sock`を既定値としており、上記§4のnginx設定の`upstream anubis`ブロックとソケットパスが一致するようになっている。両方変更する場合は必ず一致させること。
+3. サービスを起動:
+   ```bash
+   sudo systemctl enable --now anubis@openmiq-web.service
+   ```
+4. 動作確認:
+   ```bash
+   curl http://127.0.0.1:9998/metrics   # Anubis自身のメトリクス（METRICS_BIND）
+   ```
+   ブラウザで自分のドメインを開き、一瞬チャレンジページが表示されてから元のページに遷移すれば成功。`/api/`配下（`curl`で`/api/about`等）はチャレンジ無しで即座に応答することも確認しておく。
+
+Anubisを使わない場合はこの節をスキップし、[`deploy-example/nginx/openmiq-api.conf`](../deploy-example/nginx/openmiq-api.conf)内のコメントに従って`location /`の`proxy_pass`を`http://127.0.0.1:9414;`に戻す（`upstream anubis`ブロックごと削除して構わない）。
+
+## 6. pm2でプロセス起動
 
 ```bash
 pnpm run pm2:start
@@ -97,7 +121,7 @@ pm2 startup   # 表示されたコマンドをsudoで実行
 pm2 save
 ```
 
-## 6. Discord Developer Portalへの登録
+## 7. Discord Developer Portalへの登録
 
 ドメインが疎通するようになった後（HTTPSでアクセスできる状態になってから）:
 
@@ -106,9 +130,10 @@ pm2 save
 3. **OAuth2** → Redirectsに `https://miq.example.com/api/auth/discord/callback` を追加して保存する。**`miq.example.com`は必ず自分の実際のドメイン（`APP_BASE_URL`の値）に読み替えること** — サーバーは`redirect_uri`として`${APP_BASE_URL}/api/auth/discord/callback`を1文字違わず送るため、`.env`の`APP_BASE_URL`とここに登録するURLのプロトコル・ドメイン・パス・末尾スラッシュが完全一致していないと、Discordが`OAuth2 redirect_uri is invalid`で拒否する
 4. まだ済んでいなければ、審査用Webhookを作成し、そのURLを`.env`の`DISCORD_REVIEW_WEBHOOK_URL`に設定してpm2を再起動する（[README.mdのDiscord setup](../README.md#discord-setup)手順1〜5と同じ内容）。**チャンネル設定のIntegrations → Webhooksから作成しないこと** — その方法で作ったWebhookは「application-owned」にならず、Approve/DenyボタンをDiscordが黙って無視する（メッセージ自体はエラー無く届くため気づきにくい）。必ずBotトークンで`POST /channels/{channel.id}/webhooks`を叩いて作成する（README手順5参照）
 
-## 7. 動作確認
+## 8. 動作確認
 
 - `https://miq.example.com/api/about` — 帰属表示が返ることを確認
 - `https://miq.example.com/` — Web Consoleのトップページが表示されることを確認
 - `https://miq.example.com/api/docs` — Swagger UIが表示されることを確認
+- `https://miq.example.com/playground` — フォームに入力して送信し、生成された画像と、実際に送信されたリクエストJSONの両方が表示されることを確認（APIキーが必要 — Web Console `/console/api-keys`から発行）
 - Discordアカウントでログイン → 申請提出 → 審査用Webhookにメッセージが届き、Approve/Denyボタンが**実際に表示され**機能することを確認（PLAN.md Phase 6参照）。ボタンが表示されない場合は上記手順4の「application-ownedなWebhookか」を再確認する

@@ -20,6 +20,7 @@ A self-hosted **Web API** that turns a message into a quote image over HTTP. Bas
 - Discord OAuth2 is used only for **API Console account linking and admin approval**, not for posting quotes.
 - Adds a Web Console (Discord linking, applications, API key issuance/management) and an Admin dashboard (approve/deny applications, revoke/ban users, manage every user's API keys) that have no equivalent in the original bot.
 - Application review can be approved/denied either from the Admin dashboard or from the Discord webhook message it posts (both act on the same underlying state, so the buttons stay in sync and keep working across restarts — no Gateway bot required).
+- Adds a `/playground` page where anyone with an API key can try `POST /api/quote`/`/api/fakequote` from the browser and see the exact request JSON it sends, alongside the result.
 
 ## Setup
 
@@ -77,8 +78,9 @@ This is written for a single VPS running both `apps/api` and `apps/web` behind n
 1. Point your domain's DNS A (and AAAA, if applicable) record at the server's IP.
 2. Set `API_HOST=127.0.0.1` and `HOST=127.0.0.1` in `.env` so neither process is reachable except through nginx, then install nginx and route `/api/` to `apps/api` (`API_PORT`, `9413` by default) and everything else to `apps/web` (`PORT`, `9414` by default).
 3. Run `sudo certbot --nginx -d <your-domain>` to obtain a certificate; its nginx plugin wires up the HTTPS server block and the 80→443 redirect. Renewal is handled by the `certbot.timer`/cron entry it installs.
-4. Run `pnpm run build && pnpm run pm2:start` to start both processes under pm2.
-5. Finish the [Discord setup](#discord-setup) steps that require HTTPS (Interactions Endpoint URL, OAuth2 redirect URI) now that the domain resolves.
+4. Optionally, install [Anubis](https://anubis.techaro.lol/) in front of `apps/web` only (never `/api/`) to deter AI scraper bots — see docs/DEPLOYMENT.md step 5 and [deploy-example/anubis/openmiq-web.env](./deploy-example/anubis/openmiq-web.env).
+5. Run `pnpm run build && pnpm run pm2:start` to start both processes under pm2.
+6. Finish the [Discord setup](#discord-setup) steps that require HTTPS (Interactions Endpoint URL, OAuth2 redirect URI) now that the domain resolves.
 
 See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for the full runbook and a ready-to-copy nginx config at [deploy-example/nginx/openmiq-api.conf](./deploy-example/nginx/openmiq-api.conf).
 
@@ -105,7 +107,8 @@ Both apps read from a single `.env` at the project root (see `.env.example`) —
 | `DISCORD_PUBLIC_KEY` | Verifies signatures on incoming Discord Interactions requests |
 | `DISCORD_REVIEW_WEBHOOK_URL` | Webhook URL that application-review messages (with Approve/Deny buttons) are posted to |
 | `ADMIN_DISCORD_IDS` | Comma-separated Discord user IDs allowed to use the Admin dashboard/endpoints |
-| `DISCORD_BOT_TOKEN` | Required. Used to fetch Discord avatars by user id: the logged-in user's own avatar in the header, every avatar in the Admin user list, and the homepage's sample quote image (the first `ADMIN_DISCORD_IDS` entry's avatar, fetched once at startup). Also needed to create an application-owned `DISCORD_REVIEW_WEBHOOK_URL` (see [Discord setup](#discord-setup) step 5) — without that, Approve/Deny buttons silently don't appear |
+| `DISCORD_BOT_TOKEN` | Required. Used to fetch Discord avatars by user id: the logged-in user's own avatar in the header, every avatar in the Admin user list, and the homepage's sample quote image (the first `ADMIN_DISCORD_IDS` entry's avatar, fetched once at startup). Also needed to create an application-owned `DISCORD_REVIEW_WEBHOOK_URL` (see [Discord setup](#discord-setup) step 5) — without that, Approve/Deny buttons silently don't appear. Also used to DM a user directly when their application is approved/denied or their access is revoked/banned (best-effort — a failed DM never blocks the admin action) |
+| `DISCORD_INVITE_URL` | Optional invite link to this instance's own Discord community server (unrelated to the Discord integration above). When set, the home page and the application form show a "join our Discord" note; left unset, that note doesn't render at all |
 | `APP_BASE_URL` | This service's own public URL, used for the OAuth2 callback and Interactions Endpoint |
 | `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | Default per-API-key rate limit window (ms) and request cap (default `60000`/`60`) |
 | `ICON_PATH` / `LOGO_PATH` | Local image paths served by `GET /api/branding/icon`/`logo` — a relative path is resolved against the project root, same as `.env` itself. **Unset = 404, on every deployment including the original one** — there's no fallback to the bundled `.github/assets/icon.png`/`logo.png`, since those identify the original OpenMiQ project and author specifically (see [License](#license) for the reuse restrictions on those files). Set these explicitly, even to that same path (`ICON_PATH=.github/assets/icon.png`), if you want an icon/logo served. `LOGO_PATH` is also drawn as the default watermark on generated quotes (matching OpenMiQ and OpenMiQ-misskey's own convention) unless a request's own `watermark` field overrides it — see `GET /api/docs` for the full `POST /api/quote` schema |

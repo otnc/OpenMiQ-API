@@ -20,6 +20,7 @@ _[English](./README.md)_
 - Discord OAuth2は**API Consoleのアカウント連携と管理者による承認**にのみ使用し、クォート投稿には使用しません。
 - 本家Botには存在しないWeb Console（Discord連携、申請、APIキーの発行・管理）とAdminダッシュボード（申請の承認/却下、ユーザーの取消/BAN、全ユーザーのAPIキー管理）を追加しています。
 - 申請の承認/却下は、Adminダッシュボードから行っても、審査用Webhookに投稿されるDiscordメッセージのボタンから行っても、どちらも同じ処理を呼び出すため状態が食い違うことはなく、再起動をまたいでもボタンは機能し続けます（Gatewayへの常駐接続は不要）。
+- `/playground`ページを追加しています。APIキーさえあればブラウザ上で`POST /api/quote`/`/api/fakequote`を試せ、実際に送信されるリクエストJSONと結果を並べて確認できます。
 
 ## セットアップ
 
@@ -77,8 +78,9 @@ pnpm run pm2:start      # pm2で両プロセスを起動（ecosystem.config.cjs�
 1. ドメインのDNS Aレコード（必要ならAAAAも）をサーバーのIPに向けます。
 2. `.env`で`API_HOST=127.0.0.1`・`HOST=127.0.0.1`を設定し、nginx以外から両プロセスに直接到達できないようにした上で、nginxをインストールして`/api/`をapps/api（`API_PORT`、既定`9413`）に、それ以外をapps/web（`PORT`、既定`9414`）にルーティングします。
 3. `sudo certbot --nginx -d <your-domain>`を実行して証明書を取得します。nginxプラグインがHTTPSのserver blockと80→443リダイレクトを自動で構成します。更新はインストール時に登録される`certbot.timer`/cronに任せます。
-4. `pnpm run build && pnpm run pm2:start`で両プロセスを起動します。
-5. ドメインが疎通するようになったら、HTTPSが前提の[Discordの設定](#discordの設定)手順（Interactions Endpoint URL、OAuth2リダイレクトURI）を完了させます。
+4. 任意で、`apps/web`のみの前段（`/api/`は対象外）に[Anubis](https://anubis.techaro.lol/)を導入し、AIスクレイパーBotを遮断できます — 詳細はdocs/DEPLOYMENT.md §5と[deploy-example/anubis/openmiq-web.env](./deploy-example/anubis/openmiq-web.env)を参照してください。
+5. `pnpm run build && pnpm run pm2:start`で両プロセスを起動します。
+6. ドメインが疎通するようになったら、HTTPSが前提の[Discordの設定](#discordの設定)手順（Interactions Endpoint URL、OAuth2リダイレクトURI）を完了させます。
 
 詳しい手順は[docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)を、そのままコピーして使えるnginx設定は[deploy-example/nginx/openmiq-api.conf](./deploy-example/nginx/openmiq-api.conf)を参照してください。
 
@@ -105,7 +107,8 @@ pnpm run pm2:stop
 | `DISCORD_PUBLIC_KEY` | 受信したDiscord Interactionsリクエストの署名検証に使用 |
 | `DISCORD_REVIEW_WEBHOOK_URL` | 審査用メッセージ（Approve/Deniedボタン付き）の投稿先Webhook URL |
 | `ADMIN_DISCORD_IDS` | Adminダッシュボード/管理エンドポイントの利用を許可するDiscordユーザーIDのカンマ区切りリスト |
-| `DISCORD_BOT_TOKEN` | 必須。Discordユーザーのアバターをユーザーidから取得するために使用（ログイン中ユーザー自身のヘッダーアバター、Admin画面のユーザー一覧の各アバター、トップページのサンプルクォート画像 — `ADMIN_DISCORD_IDS`の先頭ユーザーのアバター、起動時に一度だけ取得）。application-owned な`DISCORD_REVIEW_WEBHOOK_URL`の作成にも必要（[Discordの設定](#discordの設定)手順5参照）。これを怠るとApprove/Denyボタンが黙って表示されなくなる |
+| `DISCORD_BOT_TOKEN` | 必須。Discordユーザーのアバターをユーザーidから取得するために使用（ログイン中ユーザー自身のヘッダーアバター、Admin画面のユーザー一覧の各アバター、トップページのサンプルクォート画像 — `ADMIN_DISCORD_IDS`の先頭ユーザーのアバター、起動時に一度だけ取得）。application-owned な`DISCORD_REVIEW_WEBHOOK_URL`の作成にも必要（[Discordの設定](#discordの設定)手順5参照）。これを怠るとApprove/Denyボタンが黙って表示されなくなる。申請の承認/却下、アクセス取り消し/BAN時に対象ユーザーへDiscord DMを送るのにも使用（ベストエフォート — DM送信に失敗しても管理操作自体は継続する） |
+| `DISCORD_INVITE_URL` | 任意。このインスタンス独自のDiscordコミュニティサーバーへの招待リンク（上記のDiscord連携とは無関係）。設定するとトップページと申請フォームに「Discordサーバーに参加する」旨のメッセージが表示される。未設定なら何も表示されない |
 | `APP_BASE_URL` | 本サービス自身の公開URL。OAuth2コールバックとInteractions Endpointに使用 |
 | `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | APIキーごとの既定レート制限のウィンドウ（ms）と上限リクエスト数（既定 `60000`/`60`） |
 | `ICON_PATH` / `LOGO_PATH` | `GET /api/branding/icon`/`logo`が配信するローカル画像パス。相対パスは`.env`自体と同じくプロジェクトルート基準で解決される。**未設定時は本家デプロイも含めて全デプロイで404**になる — 同梱の`.github/assets/icon.png`/`logo.png`への自動フォールバックは無い（これらの資産は本家OpenMiQプロジェクト・著作者を特定するものであるため。再利用に関する制約は[License](#license)参照）。アイコン・ロゴを表示したい場合は、同じパス（`ICON_PATH=.github/assets/icon.png`）を指すとしても明示的にこの変数を設定すること。`LOGO_PATH`は生成されるクォート画像の既定watermarkとしても使われる（OpenMiQ本体・OpenMiQ-misskeyと同じ慣習）。リクエスト自体で`watermark`フィールドを指定した場合はそちらが優先される — `POST /api/quote`の詳細なスキーマは`GET /api/docs`参照 |
