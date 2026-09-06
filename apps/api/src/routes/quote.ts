@@ -1,4 +1,5 @@
-import { Hono, type Context } from "hono";
+import type { Context } from "hono";
+import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import { quoteRequestSchema, type QuoteRequest } from "@openmiq/shared";
 import { hostedImages } from "@openmiq/db";
@@ -11,10 +12,91 @@ import { newSecretToken } from "../lib/ids.ts";
 
 type RenderFn = (input: QuoteRequest, env: Env) => Promise<Buffer>;
 
+// Documentation only — the actual request/response handling below is
+// unchanged, hand-rolled Hono. `registerPath()` just adds these to the
+// generated OpenAPI document (GET /api/docs); it does not run any of
+// zod-openapi's own request validation, so the exact error shapes below
+// (e.g. `{ error: "invalid_request", issues }`) stay exactly what they were.
+const authErrorSchema = z.object({ error: z.string() }).openapi({
+  description:
+    "Authentication/authorization failure — see AUTH_ERROR_STATUS in apiKeyAuth.ts for the possible `error` values.",
+});
+const invalidRequestSchema = z.object({
+  error: z.literal("invalid_request"),
+  issues: z.array(z.any()),
+});
+const hostedResultSchema = z.object({ url: z.url() });
+const pngSchema = z.string().openapi({
+  format: "binary",
+  description: "PNG image bytes",
+});
+
+function renderRoute(path: "/api/quote" | "/api/fakequote", summary: string) {
+  return createRoute({
+    method: "post",
+    path,
+    summary,
+    security: [{ ApiKeyAuth: [] }],
+    request: {
+      body: {
+        content: { "application/json": { schema: quoteRequestSchema } },
+      },
+    },
+    responses: {
+      200: {
+        description: "The rendered quote image (one round trip)",
+        content: { "image/png": { schema: pngSchema } },
+      },
+      201: {
+        description: "The uploaded image's URL (`options.hosted: true`)",
+        content: { "application/json": { schema: hostedResultSchema } },
+      },
+      400: {
+        description: "The request body failed validation",
+        content: { "application/json": { schema: invalidRequestSchema } },
+      },
+      401: {
+        description: "Missing, invalid, revoked or expired API key",
+        content: { "application/json": { schema: authErrorSchema } },
+      },
+      403: {
+        description: "Account not approved, or reconsent required",
+        content: { "application/json": { schema: authErrorSchema } },
+      },
+      429: {
+        description: "Rate limit exceeded for this API key",
+        content: { "application/json": { schema: authErrorSchema } },
+      },
+    },
+  });
+}
+
 export function createQuoteApp(env: Env) {
-  const app = new Hono();
+  const app = new OpenAPIHono();
   const db = getDb(env);
   const imageStore = createImageStore(env);
+
+  app.openAPIRegistry.registerPath(
+    renderRoute("/api/quote", "Render a quote image"),
+  );
+  app.openAPIRegistry.registerPath(
+    renderRoute("/api/fakequote", "Render a quote image marked as fabricated"),
+  );
+  app.openAPIRegistry.registerPath(
+    createRoute({
+      method: "get",
+      path: "/api/images/{id}",
+      summary: "Fetch a hosted quote image",
+      request: { params: z.object({ id: z.string() }) },
+      responses: {
+        200: {
+          description: "The hosted image",
+          content: { "image/png": { schema: pngSchema } },
+        },
+        404: { description: "Not found, or its TTL has expired" },
+      },
+    }),
+  );
 
   async function handleRender(c: Context, render: RenderFn) {
     const body = await c.req.json().catch(() => null);

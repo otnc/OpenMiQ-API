@@ -24,6 +24,14 @@ export function createApp(env: Env) {
 
   app.use("*", sessionMiddleware(env));
 
+  app.openAPIRegistry.registerComponent("securitySchemes", "ApiKeyAuth", {
+    type: "apiKey",
+    in: "header",
+    name: "X-API-Key",
+    description:
+      "An API key issued from your OpenMiQ-API instance's Web Console.",
+  });
+
   app.route("/", aboutApp);
   app.route("/", createBrandingApp(env));
   app.route("/", createAuthApp(env));
