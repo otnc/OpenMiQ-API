@@ -82,9 +82,16 @@
           type="password"
           autocomplete="off"
           bind:value={apiKey}
-          placeholder={tr.playground.apiKeyPlaceholder}
+          placeholder={data.playgroundSharedKeyAvailable
+            ? tr.playground.apiKeyOptionalPlaceholder
+            : tr.playground.apiKeyPlaceholder}
         />
         <p class="text-muted-foreground text-xs">{tr.playground.apiKeyHint}</p>
+        {#if data.playgroundSharedKeyAvailable}
+          <p class="text-muted-foreground text-xs">
+            {tr.playground.apiKeySharedHint}
+          </p>
+        {/if}
       </div>
 
       <div class="space-y-1">
@@ -191,10 +198,13 @@
         <input type="hidden" name="apiKey" value={apiKey} />
         <input type="hidden" name="fake" value={fake} />
         <input type="hidden" name="requestJson" value={requestJson} />
-        <Button type="submit" disabled={sending || !apiKey}>
+        <Button
+          type="submit"
+          disabled={sending || (!apiKey && !data.playgroundSharedKeyAvailable)}
+        >
           {sending ? tr.playground.sending : tr.playground.send}
         </Button>
-        {#if !apiKey}
+        {#if !apiKey && !data.playgroundSharedKeyAvailable}
           <p class="text-muted-foreground mt-1 text-xs">
             {tr.playground.apiKeyRequired}
           </p>

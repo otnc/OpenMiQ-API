@@ -13,6 +13,16 @@ const envSchema = z.object({
   // Optional invite link for this instance's own Discord server — unrelated to DISCORD_REVIEW_WEBHOOK_URL/DISCORD_BOT_TOKEN above, which are about this app's own Discord integration, not a community server.
   // Surfaced by GET /api/about when set, so the Web UI can show a join invitation; left unset, that invitation just doesn't render anywhere.
   DISCORD_INVITE_URL: z.url().optional(),
+  // Optional. The plaintext of a real API key (issued the normal way, from the Web Console) that /playground falls back to when a visitor leaves its own API key field blank, so anyone can try the API without signing up first.
+  // Unset = the playground still works, but only for visitors who supply their own key. Every visitor sharing this one key's rate-limit window is the tradeoff for that convenience — PLAYGROUND_RATE_LIMIT_MAX below exists to keep any single visitor from exhausting it for everyone else.
+  PLAYGROUND_API_KEY: z.string().optional(),
+  // A per-IP-address limit, separate from and in addition to PLAYGROUND_API_KEY's own rate limit — only applies to anonymous (no-API-key) /playground requests. Kept deliberately small; this is a shared demo key, not a real allocation.
+  PLAYGROUND_RATE_LIMIT_WINDOW_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(60_000),
+  PLAYGROUND_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
   ADMIN_DISCORD_IDS: z
     .string()
     .default("")

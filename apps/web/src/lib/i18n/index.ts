@@ -122,7 +122,9 @@ interface Translations {
     description: string;
     apiKeyLabel: string;
     apiKeyPlaceholder: string;
+    apiKeyOptionalPlaceholder: string;
     apiKeyHint: string;
+    apiKeySharedHint: string;
     textLabel: string;
     usernameLabel: string;
     avatarLabel: string;
@@ -268,8 +270,12 @@ const en: Translations = {
       "Try generating a quote image right here, and see the exact request it sends — the same shape /api/quote and @makeitaquote/openmiq both expect.",
     apiKeyLabel: "API key",
     apiKeyPlaceholder: "openmiq_...",
+    apiKeyOptionalPlaceholder:
+      "openmiq_... (optional — leave blank to use the shared demo key)",
     apiKeyHint:
       "Only sent to this instance's own /api/quote — never stored anywhere but your browser.",
+    apiKeySharedHint:
+      "This instance provides a shared demo key for anonymous use, with its own low rate limit. Enter your own key instead for the full limit.",
     textLabel: "Text",
     usernameLabel: "Username",
     avatarLabel: "Avatar URL",
@@ -419,8 +425,11 @@ const ja: Translations = {
       "その場でクォート画像を生成して試せます。実際に送信されるリクエストの中身も確認できます — /api/quoteや@makeitaquote/openmiqが受け取るものと同じ形式です。",
     apiKeyLabel: "APIキー",
     apiKeyPlaceholder: "openmiq_...",
+    apiKeyOptionalPlaceholder: "openmiq_...（任意 — 空欄で共有デモキーを使用）",
     apiKeyHint:
       "このインスタンス自身の/api/quoteにのみ送信されます — ブラウザ以外のどこにも保存されません。",
+    apiKeySharedHint:
+      "このインスタンスは匿名利用向けの共有デモキーを提供していますが、その利用枠は小さめです。フルの利用枠を使いたい場合は自分のAPIキーを入力してください。",
     textLabel: "テキスト",
     usernameLabel: "ユーザー名",
     avatarLabel: "アバターURL",

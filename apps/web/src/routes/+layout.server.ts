@@ -18,12 +18,17 @@ export interface ConsoleMe {
 export const load: LayoutServerLoad = async (event) => {
   const [{ status, data }, about] = await Promise.all([
     apiJson<ConsoleMe>(event, "/api/console/me"),
-    apiJson<{ discordInviteUrl: string | null }>(event, "/api/about"),
+    apiJson<{
+      discordInviteUrl: string | null;
+      playgroundSharedKeyAvailable: boolean;
+    }>(event, "/api/about"),
   ]);
   return {
     locale: event.locals.locale,
     me: status === 200 ? data : null,
     discordInviteUrl: about.data?.discordInviteUrl ?? null,
+    playgroundSharedKeyAvailable:
+      about.data?.playgroundSharedKeyAvailable ?? false,
     // Absolute, not relative — og:image/og:url need a full URL for link previews to resolve it.
     // event.url.origin reflects the real public domain here since nginx forwards the original Host header (§14.3).
     siteUrl: event.url.origin,

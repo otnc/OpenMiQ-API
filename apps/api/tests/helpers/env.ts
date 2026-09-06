@@ -15,6 +15,8 @@ export function buildTestEnv(overrides: Partial<Env> = {}): Env {
     APP_BASE_URL: "http://localhost:9413",
     RATE_LIMIT_WINDOW_MS: 60_000,
     RATE_LIMIT_MAX: 60,
+    PLAYGROUND_RATE_LIMIT_WINDOW_MS: 60_000,
+    PLAYGROUND_RATE_LIMIT_MAX: 5,
     REAPPLY_COOLDOWN_DAYS: 1,
     MAX_API_KEYS_PER_USER: 10,
     STORAGE_DRIVER: "local",

@@ -12,6 +12,7 @@ import { createApiKeysConsoleApp } from "./routes/apiKeysConsole.ts";
 import { createApiKeysAdminApp } from "./routes/apiKeysAdmin.ts";
 import { createUsageApp } from "./routes/usage.ts";
 import { createQuoteApp } from "./routes/quote.ts";
+import { createPlaygroundApp } from "./routes/playground.ts";
 import { createAdminApp } from "./routes/admin.ts";
 import { createSampleQuoteApp } from "./routes/sampleQuote.ts";
 import { sessionMiddleware } from "./middleware/session.ts";
@@ -42,7 +43,9 @@ export function createApp(env: Env) {
   app.route("/", createApiKeysConsoleApp(env));
   app.route("/", createApiKeysAdminApp(env));
   app.route("/", createUsageApp(env));
-  app.route("/", createQuoteApp(env));
+  const quoteApp = createQuoteApp(env);
+  app.route("/", quoteApp);
+  app.route("/", createPlaygroundApp(env, quoteApp));
   app.route("/", createAdminApp(env));
   app.route("/", createSampleQuoteApp());
 

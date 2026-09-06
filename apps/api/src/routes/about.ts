@@ -12,6 +12,8 @@ const aboutResponseSchema = z.object({
   sourceUrl: z.url(),
   /** This instance's own Discord community server, if the deployment set one. */
   discordInviteUrl: z.url().nullable(),
+  /** Whether /playground can be used without an API key (PLAYGROUND_API_KEY is set) — never the key itself. */
+  playgroundSharedKeyAvailable: z.boolean(),
 });
 
 const aboutRoute = createRoute({
@@ -38,6 +40,7 @@ export function createAboutApp(env: Env) {
       },
       sourceUrl: "https://github.com/otnc/OpenMiQ-API",
       discordInviteUrl: env.DISCORD_INVITE_URL ?? null,
+      playgroundSharedKeyAvailable: Boolean(env.PLAYGROUND_API_KEY),
     });
   });
 }
