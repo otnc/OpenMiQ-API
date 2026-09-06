@@ -36,6 +36,7 @@ export function createConsoleApp(env: Env) {
       email: identity.email,
       avatarUrl,
       status,
+      isAdmin: env.ADMIN_DISCORD_IDS.includes(identity.discordId),
       reconsentRequired: user ? needsReconsent(env, user) : false,
       termsVersion: env.TERMS_VERSION,
       privacyVersion: env.PRIVACY_VERSION,

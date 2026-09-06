@@ -23,6 +23,14 @@
       <Card.Title>OpenMiQ-API</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4">
+      <a
+        href="/api/docs"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-muted-foreground hover:text-foreground text-sm underline"
+      >
+        {tr.common.apiDocs}
+      </a>
       {#if !data.me}
         <p class="text-muted-foreground">{tr.home.unlinked}</p>
         <Button href="/api/auth/discord">{tr.home.unlinkedCta}</Button>

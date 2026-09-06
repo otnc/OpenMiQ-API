@@ -7,6 +7,7 @@ export interface ConsoleMe {
   email: string;
   avatarUrl: string | null;
   status: "unlinked" | "pending" | "approved" | "denied" | "revoked" | "banned";
+  isAdmin: boolean;
   reconsentRequired: boolean;
   termsVersion: string;
   privacyVersion: string;

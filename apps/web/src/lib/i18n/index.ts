@@ -34,6 +34,7 @@ interface Translations {
     remaining: string;
     revoked: string;
     reconsentPending: string;
+    apiDocs: string;
   };
   home: {
     unlinked: string;
@@ -131,6 +132,7 @@ const en: Translations = {
     remaining: "Remaining",
     revoked: "Revoked",
     reconsentPending: "Reconsent pending",
+    apiDocs: "API docs",
   },
   home: {
     unlinked: "Link your Discord account to request API access.",
@@ -238,6 +240,7 @@ const ja: Translations = {
     remaining: "残り",
     revoked: "失効済み",
     reconsentPending: "再同意待ち",
+    apiDocs: "APIドキュメント",
   },
   home: {
     unlinked: "Discordアカウントを連携してAPI利用を申請してください。",

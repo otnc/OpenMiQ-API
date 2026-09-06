@@ -33,6 +33,14 @@
     <Card.Title>{tr.apiKeys.title}</Card.Title>
   </Card.Header>
   <Card.Content class="space-y-6">
+    <a
+      href="/api/docs"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="text-muted-foreground hover:text-foreground text-sm underline"
+    >
+      {tr.common.apiDocs}
+    </a>
     {#if form?.created}
       <div class="bg-accent rounded-md p-3 text-sm">
         <p class="mb-1">{tr.apiKeys.copyNotice}</p>

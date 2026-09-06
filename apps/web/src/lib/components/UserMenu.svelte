@@ -35,11 +35,13 @@
         {/snippet}
       </DropdownMenu.Item>
     {/if}
-    <DropdownMenu.Item>
-      {#snippet child({ props })}
-        <a {...props} href="/admin">{adminLabel}</a>
-      {/snippet}
-    </DropdownMenu.Item>
+    {#if me.isAdmin}
+      <DropdownMenu.Item>
+        {#snippet child({ props })}
+          <a {...props} href="/admin">{adminLabel}</a>
+        {/snippet}
+      </DropdownMenu.Item>
+    {/if}
     <DropdownMenu.Separator />
     <form method="POST" action="/api/auth/logout">
       <button
