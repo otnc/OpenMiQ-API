@@ -23,7 +23,8 @@ vi.mock("../src/services/logoWatermark.ts", () => ({
   getLogoWatermark: vi.fn(),
 }));
 
-const { renderQuote } = await import("../src/services/renderService.ts");
+const { renderQuote, renderFakeQuote } =
+  await import("../src/services/renderService.ts");
 const { getLogoWatermark } = await import("../src/services/logoWatermark.ts");
 
 const baseInput: QuoteRequest = {
@@ -103,6 +104,28 @@ describe("renderQuote display name / username", () => {
       buildTestEnv(),
     );
     expect(miqInstance.setDisplayName).toHaveBeenCalledWith("alice");
+    expect(miqInstance.setUsername).toHaveBeenCalledWith("alice123");
+  });
+});
+
+describe("renderFakeQuote display name / username", () => {
+  beforeEach(() => {
+    miqInstance.setDisplayName.mockClear();
+    miqInstance.setUsername.mockClear();
+  });
+
+  it("prefixes the display name with '(fake) ' but leaves the username line as authorName when authorUsername is omitted", async () => {
+    await renderFakeQuote(baseInput, buildTestEnv());
+    expect(miqInstance.setDisplayName).toHaveBeenCalledWith("(fake) alice");
+    expect(miqInstance.setUsername).toHaveBeenCalledWith("alice");
+  });
+
+  it("still uses authorUsername for the username line when given, unprefixed", async () => {
+    await renderFakeQuote(
+      { ...baseInput, authorUsername: "alice123" },
+      buildTestEnv(),
+    );
+    expect(miqInstance.setDisplayName).toHaveBeenCalledWith("(fake) alice");
     expect(miqInstance.setUsername).toHaveBeenCalledWith("alice123");
   });
 });

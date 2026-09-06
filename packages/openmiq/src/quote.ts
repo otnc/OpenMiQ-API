@@ -6,9 +6,7 @@ import {
 } from "@makeitaquote/utils/validation";
 import type { QuoteData, QuoteInput } from "./types.ts";
 
-// Matches the server's own quoteRequestSchema (packages/shared/src/quote.ts
-// in the OpenMiQ-API repo) — text/authorName limits, theme/font as opaque
-// strings, layout as the two literals the renderer accepts.
+// Matches the server's own quoteRequestSchema (packages/shared/src/quote.ts in the OpenMiQ-API repo) — text/authorName limits, theme/font as opaque strings, layout as the two literals the renderer accepts.
 const MAX_TEXT_LENGTH = 4000;
 const MAX_AUTHOR_NAME_LENGTH = 128;
 const MAX_THEME_LENGTH = 256;

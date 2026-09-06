@@ -46,8 +46,7 @@ export async function renderQuote(
   return miq.toBuffer("png");
 }
 
-// Matches OpenMiQ's /fakequote: same rendering, but the name is marked as
-// fabricated so a generated quote is never mistaken for a real one.
+// Matches OpenMiQ's /fakequote: same rendering, but the name is marked as fabricated so a generated quote is never mistaken for a real one.
 export async function renderFakeQuote(
   input: QuoteRequest,
   env: Env,
