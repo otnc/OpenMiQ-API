@@ -1,7 +1,7 @@
 import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import type { Env } from "./config/env.ts";
-import { aboutApp } from "./routes/about.ts";
+import { createAboutApp } from "./routes/about.ts";
 import { createBrandingApp } from "./routes/branding.ts";
 import { createAuthApp } from "./routes/auth.ts";
 import { createConsoleApp } from "./routes/console.ts";
@@ -32,7 +32,7 @@ export function createApp(env: Env) {
       "An API key issued from your OpenMiQ-API instance's Web Console.",
   });
 
-  app.route("/", aboutApp);
+  app.route("/", createAboutApp(env));
   app.route("/", createBrandingApp(env));
   app.route("/", createAuthApp(env));
   app.route("/", createConsoleApp(env));

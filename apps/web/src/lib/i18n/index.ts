@@ -40,6 +40,9 @@ interface Translations {
     unitDay: string;
     unitHour: string;
     unitMinute: string;
+    noteLabel: string;
+    discordInviteMessage: string;
+    discordInviteCta: string;
   };
   home: {
     unlinked: string;
@@ -143,6 +146,10 @@ const en: Translations = {
     unitDay: "d",
     unitHour: "h",
     unitMinute: "m",
+    noteLabel: "Note",
+    discordInviteMessage:
+      "Join our Discord server to chat with other users, get help, and hear about updates first.",
+    discordInviteCta: "Join the Discord server",
   },
   home: {
     unlinked: "Link your Discord account to request API access.",
@@ -256,6 +263,10 @@ const ja: Translations = {
     unitDay: "日",
     unitHour: "時間",
     unitMinute: "分",
+    noteLabel: "注記",
+    discordInviteMessage:
+      "Discordサーバーに参加すると、他のユーザーとの交流やサポート、最新情報をいち早く受け取れます。",
+    discordInviteCta: "Discordサーバーに参加する",
   },
   home: {
     unlinked: "Discordアカウントを連携してAPI利用を申請してください。",

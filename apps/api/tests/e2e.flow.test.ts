@@ -147,6 +147,11 @@ describe("apply -> approve -> issue key -> use API key", () => {
       { method: "POST", headers: { cookie: adminCookie } },
     );
     expect(approveRes.status).toBe(200);
+    expect(sendDirectMessage).toHaveBeenCalledWith(
+      env.DISCORD_BOT_TOKEN,
+      applicant.discordId,
+      expect.stringContaining("approved"),
+    );
 
     const meRes = await app.request("/api/console/me", {
       headers: { cookie: await sessionCookieHeader(env, applicant) },

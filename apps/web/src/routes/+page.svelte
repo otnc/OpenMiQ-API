@@ -2,6 +2,7 @@
   import { t } from "$lib/i18n/index.ts";
   import { Button } from "$lib/components/ui/button/index.ts";
   import * as Card from "$lib/components/ui/card/index.ts";
+  import NoteCallout from "$lib/components/NoteCallout.svelte";
 
   let { data } = $props();
   const tr = $derived(t(data.locale));
@@ -16,6 +17,23 @@
       class="mx-auto max-h-80 max-w-full rounded-lg shadow-sm"
       onerror={() => (sampleQuoteFailed = true)}
     />
+  {/if}
+
+  {#if data.discordInviteUrl}
+    <div class="mx-auto max-w-md">
+      <NoteCallout label={tr.common.noteLabel}>
+        <p>
+          {tr.common.discordInviteMessage}
+          <a
+            href={data.discordInviteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-primary font-medium underline"
+            >{tr.common.discordInviteCta}</a
+          >
+        </p>
+      </NoteCallout>
+    </div>
   {/if}
 
   <Card.Root class="mx-auto max-w-md">

@@ -7,13 +7,12 @@ const envSchema = z.object({
   DISCORD_CLIENT_SECRET: z.string().min(1),
   DISCORD_PUBLIC_KEY: z.string().min(1),
   DISCORD_REVIEW_WEBHOOK_URL: z.url(),
-  // Used to fetch a Discord user's profile/avatar by id without requiring
-  // that user to have logged in first — the homepage sample quote, the
-  // logged-in user's own avatar in the header, and every avatar in the
-  // Admin user list all go through this. Everything else in this app
-  // avoids a bot on purpose (HTTP Interactions instead of a Gateway
-  // connection); this is the one thing that genuinely needs one.
+  // Used to fetch a Discord user's profile/avatar by id without requiring that user to have logged in first — the homepage sample quote, the logged-in user's own avatar in the header, and every avatar in the Admin user list all go through this.
+  // Everything else in this app avoids a bot on purpose (HTTP Interactions instead of a Gateway connection); this is the one thing that genuinely needs one, and it's also how revoke/ban/approve/deny DM the affected user (see discordBotService.ts's sendDirectMessage()).
   DISCORD_BOT_TOKEN: z.string().min(1),
+  // Optional invite link for this instance's own Discord server — unrelated to DISCORD_REVIEW_WEBHOOK_URL/DISCORD_BOT_TOKEN above, which are about this app's own Discord integration, not a community server.
+  // Surfaced by GET /api/about when set, so the Web UI can show a join invitation; left unset, that invitation just doesn't render anywhere.
+  DISCORD_INVITE_URL: z.url().optional(),
   ADMIN_DISCORD_IDS: z
     .string()
     .default("")

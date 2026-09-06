@@ -8,6 +8,7 @@ import {
   sendReviewMessage,
   disableReviewButtons,
 } from "./discordWebhookService.ts";
+import { sendDirectMessage } from "./discordBotService.ts";
 import type { SessionIdentity } from "./sessionService.ts";
 import type { ApplicationInput } from "@openmiq/shared";
 
@@ -168,9 +169,7 @@ export interface ReviewResult {
   alreadyReviewed: boolean;
 }
 
-// Applies the admin's decision inside a single transaction so a duplicate
-// button press (or a race between the web UI and Discord) only ever takes
-// effect once (DESIGN.md §6.2).
+// Applies the admin's decision inside a single transaction so a duplicate button press (or a race between the web UI and Discord) only ever takes effect once (DESIGN.md §6.2).
 export function reviewApplication(
   db: Db,
   applicationId: string,
@@ -236,6 +235,16 @@ export async function notifyReviewResult(
   result: ReviewResult,
   action: ReviewAction,
 ): Promise<void> {
+  const dmContent =
+    action === "approve"
+      ? `Your OpenMiQ-API application has been approved! You can create API keys at ${env.APP_BASE_URL}/console/api-keys.`
+      : `Your OpenMiQ-API application has been denied. You can re-apply after the cooldown period at ${env.APP_BASE_URL}/console/apply.`;
+  await sendDirectMessage(
+    env.DISCORD_BOT_TOKEN,
+    result.user.discordId,
+    dmContent,
+  );
+
   if (!result.application.discordMessageId) return;
   const footer = `${action === "approve" ? "Approved" : "Denied"} by ${result.application.reviewedBy ?? "unknown"} at ${(result.application.reviewedAt ?? new Date()).toISOString()}`;
   await disableReviewButtons(

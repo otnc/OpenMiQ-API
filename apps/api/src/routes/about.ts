@@ -1,4 +1,5 @@
 import { createRoute, z, OpenAPIHono } from "@hono/zod-openapi";
+import type { Env } from "../config/env.ts";
 
 const aboutResponseSchema = z.object({
   name: z.string(),
@@ -9,6 +10,8 @@ const aboutResponseSchema = z.object({
     url: z.url(),
   }),
   sourceUrl: z.url(),
+  /** This instance's own Discord community server, if the deployment set one. */
+  discordInviteUrl: z.url().nullable(),
 });
 
 const aboutRoute = createRoute({
@@ -23,15 +26,18 @@ const aboutRoute = createRoute({
   },
 });
 
-export const aboutApp = new OpenAPIHono().openapi(aboutRoute, (c) => {
-  return c.json({
-    name: "OpenMiQ-API",
-    version: "0.1.0",
-    basedOn: {
-      name: "OpenMiQ",
-      author: "otoneko.",
-      url: "https://github.com/otnc/OpenMiQ",
-    },
-    sourceUrl: "https://github.com/otnc/OpenMiQ-API",
+export function createAboutApp(env: Env) {
+  return new OpenAPIHono().openapi(aboutRoute, (c) => {
+    return c.json({
+      name: "OpenMiQ-API",
+      version: "0.1.0",
+      basedOn: {
+        name: "OpenMiQ",
+        author: "otoneko.",
+        url: "https://github.com/otnc/OpenMiQ",
+      },
+      sourceUrl: "https://github.com/otnc/OpenMiQ-API",
+      discordInviteUrl: env.DISCORD_INVITE_URL ?? null,
+    });
   });
-});
+}

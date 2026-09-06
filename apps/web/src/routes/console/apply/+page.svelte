@@ -4,6 +4,7 @@
   import { Button } from "$lib/components/ui/button/index.ts";
   import { Label } from "$lib/components/ui/label/index.ts";
   import * as Card from "$lib/components/ui/card/index.ts";
+  import NoteCallout from "$lib/components/NoteCallout.svelte";
   import type { PageData, ActionData } from "./$types.ts";
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -19,6 +20,23 @@
     });
   });
 </script>
+
+{#if data.discordInviteUrl}
+  <div class="mx-auto mb-4 max-w-xl">
+    <NoteCallout label={tr.common.noteLabel}>
+      <p>
+        {tr.common.discordInviteMessage}
+        <a
+          href={data.discordInviteUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-primary font-medium underline"
+          >{tr.common.discordInviteCta}</a
+        >
+      </p>
+    </NoteCallout>
+  </div>
+{/if}
 
 <Card.Root class="mx-auto max-w-xl">
   <Card.Header>
