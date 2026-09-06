@@ -93,7 +93,7 @@ pnpm run build
    ```bash
    sudo cp deploy/anubis/openmiq-web.env /etc/anubis/openmiq-web.env
    ```
-   [`deploy-example/anubis/openmiq-web.env`](../deploy-example/anubis/openmiq-web.env)（`deploy/`にコピー済みのはず。まだなら`cp -r deploy-example deploy`）が`TARGET=http://127.0.0.1:9414`（`apps/web`）・Unixソケット`BIND=unix:/run/anubis/openmiq-web.sock`を既定値としており、上記§4のnginx設定の`upstream anubis`ブロックとソケットパスが一致するようになっている。両方変更する場合は必ず一致させること。
+   [`deploy-example/anubis/openmiq-web.env`](../deploy-example/anubis/openmiq-web.env)（`deploy/`にコピー済みのはず。まだなら`cp -r deploy-example deploy`）が`TARGET=http://127.0.0.1:9414`（`apps/web`）・`BIND=127.0.0.1:8923`（TCP、ループバックのみ）を既定値としており、上記§4のnginx設定の`upstream anubis`ブロックとポート番号が一致するようになっている。Unixソケットにしたい場合は要注意 — ネイティブパッケージの`anubis@.service`は`DynamicUser=yes`で動くため、ソケットファイルの所有グループが実行毎に変わる一時的なものになり、nginx側をそのグループに追加できない。両方変更する場合は必ず一致させること。
 3. サービスを起動:
    ```bash
    sudo systemctl enable --now anubis@openmiq-web.service
