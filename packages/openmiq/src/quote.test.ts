@@ -46,12 +46,9 @@ describe("normalizeAuthorAvatar", () => {
     expect(normalizeAuthorAvatar(undefined)).toEqual({ url: null, raw: null });
   });
 
-  it("base64-encodes raw image bytes as .raw", () => {
+  it("passes raw image bytes through as .raw, unchanged", () => {
     const bytes = new Uint8Array([1, 2, 3]);
-    expect(normalizeAuthorAvatar(bytes)).toEqual({
-      url: null,
-      raw: Buffer.from(bytes).toString("base64"),
-    });
+    expect(normalizeAuthorAvatar(bytes)).toEqual({ url: null, raw: bytes });
   });
 
   it("rejects anything else", () => {
@@ -74,12 +71,12 @@ describe("normalizeWatermarkValue", () => {
     ).toEqual({ text: null, url: "https://example.com/logo.png", raw: null });
   });
 
-  it("base64-encodes raw bytes as an image watermark", () => {
+  it("passes raw bytes through as an image watermark, unchanged", () => {
     const bytes = new Uint8Array([4, 5, 6]);
     expect(normalizeWatermarkValue(bytes)).toEqual({
       text: null,
       url: null,
-      raw: Buffer.from(bytes).toString("base64"),
+      raw: bytes,
     });
   });
 

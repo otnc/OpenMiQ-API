@@ -1,4 +1,4 @@
-/** A URL/string identifying an avatar or watermark image, or raw image bytes to upload directly (sent as base64 — see authorAvatarRaw/watermarkRaw on QuoteData). */
+/** A URL/string identifying an avatar or watermark image, or raw image bytes (uploaded via POST /api/uploads at send time — see authorAvatarRaw/watermarkRaw on QuoteData — to get a URL, rather than embedded in the /api/quote request itself). */
 export type AvatarSource = string | URL | Uint8Array;
 
 /** The normalized quote, after validation. Avatar/watermark image fields come in URL/raw pairs — at most one of each pair is ever set, since setAvatar()/setWatermark() clear its sibling whenever the other is used. */
@@ -6,8 +6,8 @@ export interface QuoteData {
   text: string;
   authorName: string;
   authorAvatarUrl: string | null;
-  /** Base64-encoded raw image bytes, sent as authorAvatarRaw. Mutually exclusive with authorAvatarUrl. */
-  authorAvatarRaw: string | null;
+  /** Raw image bytes pending upload — resolved to authorAvatarUrl via POST /api/uploads the next time toBuffer()/toURL() runs. Mutually exclusive with authorAvatarUrl. */
+  authorAvatarRaw: Uint8Array | null;
   theme: string | null;
   font: string | null;
   color: boolean | null;
@@ -17,8 +17,8 @@ export interface QuoteData {
   watermark: string | null;
   /** An image watermark by URL. Mutually exclusive with watermark/watermarkRaw. */
   watermarkUrl: string | null;
-  /** An image watermark by base64-encoded raw bytes, sent as watermarkRaw. Mutually exclusive with watermark/watermarkUrl. */
-  watermarkRaw: string | null;
+  /** Raw image bytes pending upload — resolved to watermarkUrl via POST /api/uploads the next time toBuffer()/toURL() runs. Mutually exclusive with watermark/watermarkUrl. */
+  watermarkRaw: Uint8Array | null;
   /** When true, targets `/api/fakequote` instead of `/api/quote`. */
   fake: boolean;
 }

@@ -1,0 +1,1 @@
+ALTER TABLE `hosted_images` ADD `content_type` text DEFAULT 'image/png' NOT NULL;

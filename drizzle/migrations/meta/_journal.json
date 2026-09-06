@@ -8,6 +8,13 @@
       "when": 1788577805762,
       "tag": "0000_superb_meltdown",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788685011626,
+      "tag": "0001_pale_karen_page",
+      "breakpoints": true
     }
   ]
 }

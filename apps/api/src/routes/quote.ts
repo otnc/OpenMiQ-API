@@ -145,7 +145,9 @@ export function createQuoteApp(env: Env) {
 
     const buffer = await imageStore.get(id);
     if (!buffer) return c.text("Not found", 404);
-    return c.body(new Uint8Array(buffer), 200, { "Content-Type": "image/png" });
+    return c.body(new Uint8Array(buffer), 200, {
+      "Content-Type": record.contentType,
+    });
   });
 
   return app;

@@ -3,18 +3,20 @@ import { eq } from "drizzle-orm";
 import { users, hostedImages } from "@openmiq/db";
 import { createApp } from "../src/app.ts";
 import { createQuoteApp } from "../src/routes/quote.ts";
+import { createUploadsApp } from "../src/routes/uploads.ts";
 import { createPlaygroundApp } from "../src/routes/playground.ts";
 import { createPlaygroundKeyManager } from "../src/services/playgroundKeyService.ts";
 import { buildTestEnv } from "./helpers/env.ts";
 import { createTestDbFile } from "./helpers/testDbFile.ts";
 import { getDb } from "../src/db.ts";
 
-// Builds just the two pieces under test, with a key manager this test controls directly (rotate() awaited up front) — going through createApp() itself would race its own fire-and-forget initial rotate().
+// Builds just the pieces under test, with a key manager this test controls directly (rotate() awaited up front) — going through createApp() itself would race its own fire-and-forget initial rotate().
 function buildPlaygroundApp(env: ReturnType<typeof buildTestEnv>) {
   const db = getDb(env);
   const quoteApp = createQuoteApp(env);
+  const uploadsApp = createUploadsApp(env);
   const keyManager = createPlaygroundKeyManager(db, env);
-  const app = createPlaygroundApp(env, quoteApp, keyManager);
+  const app = createPlaygroundApp(env, quoteApp, uploadsApp, keyManager);
   return { app, keyManager, db };
 }
 
@@ -186,4 +188,64 @@ describe("POST /api/playground/quote (anonymous demo)", () => {
       .where(eq(users.discordId, "system:playground-shared"));
     expect(systemUsers).toHaveLength(1);
   }, 15_000);
+});
+
+describe("POST /api/playground/uploads (anonymous demo)", () => {
+  const { url: DATABASE_URL, cleanup } = createTestDbFile();
+  afterAll(cleanup);
+  const TINY_PNG = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+    "base64",
+  );
+
+  it("uploads through the shared key and returns a working URL, with no client-supplied X-API-Key", async () => {
+    const env = buildTestEnv({
+      DATABASE_URL,
+      PLAYGROUND_SHARED_KEY_LIMIT: 500,
+    });
+    const { app, keyManager } = buildPlaygroundApp(env);
+    await keyManager.rotate();
+
+    const form = new FormData();
+    form.append("file", new Blob([TINY_PNG], { type: "image/png" }), "a.png");
+    const res = await app.request("/api/playground/uploads", {
+      method: "POST",
+      headers: { "X-Forwarded-For": "203.0.113.50" },
+      body: form,
+    });
+    expect(res.status).toBe(201);
+    const { url } = await res.json();
+    expect(url).toMatch(/\/api\/images\/.+$/);
+  });
+
+  it("shares the same IP/usage limits as /api/playground/quote", async () => {
+    const env = buildTestEnv({
+      DATABASE_URL,
+      PLAYGROUND_SHARED_KEY_LIMIT: 500,
+      PLAYGROUND_RATE_LIMIT_MAX: 1,
+    });
+    const { app, keyManager } = buildPlaygroundApp(env);
+    await keyManager.rotate();
+    const ip = "203.0.113.51";
+
+    const form = () => {
+      const f = new FormData();
+      f.append("file", new Blob([TINY_PNG], { type: "image/png" }), "a.png");
+      return f;
+    };
+
+    const first = await app.request("/api/playground/uploads", {
+      method: "POST",
+      headers: { "X-Forwarded-For": ip },
+      body: form(),
+    });
+    expect(first.status).toBe(201);
+
+    const second = await app.request("/api/playground/uploads", {
+      method: "POST",
+      headers: { "X-Forwarded-For": ip },
+      body: form(),
+    });
+    expect(second.status).toBe(429);
+  });
 });

@@ -121,8 +121,20 @@ describe("OpenMiQ requests", () => {
     expect(body.watermark).toBeUndefined();
   });
 
-  it("uploads raw avatar/watermark bytes as base64", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(pngResponse());
+  it("uploads raw avatar/watermark bytes via POST /api/uploads, then sends the URLs it gets back", async () => {
+    function uploadResponse(url: string): Response {
+      return new Response(JSON.stringify({ url }), {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(uploadResponse(`${BASE_URL}/api/images/avatar-id`))
+      .mockResolvedValueOnce(
+        uploadResponse(`${BASE_URL}/api/images/watermark-id`),
+      )
+      .mockResolvedValueOnce(pngResponse());
     vi.stubGlobal("fetch", fetchMock);
 
     await new OpenMiQ({ apiKey: "k", baseUrl: BASE_URL })
@@ -132,13 +144,20 @@ describe("OpenMiQ requests", () => {
       .setWatermark(new Uint8Array([4, 5, 6]))
       .toBuffer();
 
-    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    const body = JSON.parse(init.body as string);
-    expect(body.authorAvatarRaw).toBe(
-      Buffer.from([1, 2, 3]).toString("base64"),
-    );
-    expect(body.watermarkRaw).toBe(Buffer.from([4, 5, 6]).toString("base64"));
-    expect(body.authorAvatarUrl).toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    const [uploadAvatarUrl, uploadAvatarInit] = fetchMock.mock.calls[0] as [
+      string,
+      RequestInit,
+    ];
+    expect(uploadAvatarUrl).toBe(`${BASE_URL}/api/uploads`);
+    expect(uploadAvatarInit.body).toBeInstanceOf(FormData);
+
+    const [, quoteInit] = fetchMock.mock.calls[2] as [string, RequestInit];
+    const body = JSON.parse(quoteInit.body as string);
+    expect(body.authorAvatarUrl).toBe(`${BASE_URL}/api/images/avatar-id`);
+    expect(body.watermarkUrl).toBe(`${BASE_URL}/api/images/watermark-id`);
+    expect(body.authorAvatarRaw).toBeUndefined();
+    expect(body.watermarkRaw).toBeUndefined();
     expect(body.watermark).toBeUndefined();
   });
 

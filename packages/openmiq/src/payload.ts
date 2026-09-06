@@ -17,6 +17,7 @@ export function pathFor(data: QuoteData): string {
   return data.fake ? FAKEQUOTE_PATH : QUOTE_PATH;
 }
 
+// Expects `data.authorAvatarRaw`/`data.watermarkRaw` to already be resolved to `null` — client.ts's #resolveUploads() does that (uploading each via POST /api/uploads and filling in authorAvatarUrl/watermarkUrl instead) before ever calling this, since raw bytes have no field of their own on the wire.
 export function buildPayload(
   data: QuoteData,
   hosted: boolean,
@@ -34,14 +35,10 @@ export function buildPayload(
   if (data.authorAvatarUrl !== null) {
     payload.authorAvatarUrl = data.authorAvatarUrl;
   }
-  if (data.authorAvatarRaw !== null) {
-    payload.authorAvatarRaw = data.authorAvatarRaw;
-  }
   if (data.theme !== null) payload.theme = data.theme;
   if (data.font !== null) payload.font = data.font;
   if (data.watermark !== null) payload.watermark = data.watermark;
   if (data.watermarkUrl !== null) payload.watermarkUrl = data.watermarkUrl;
-  if (data.watermarkRaw !== null) payload.watermarkRaw = data.watermarkRaw;
   if (Object.keys(options).length > 0) payload.options = options;
   return payload;
 }

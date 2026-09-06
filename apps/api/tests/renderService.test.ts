@@ -83,49 +83,20 @@ describe("renderQuote watermark precedence", () => {
       new URL("https://example.com/logo.png"),
     );
   });
-
-  it("draws watermarkRaw as an image, overriding both watermark and watermarkUrl", async () => {
-    const raw = Buffer.from("raw-logo-bytes").toString("base64");
-    await renderQuote(
-      {
-        ...baseInput,
-        watermark: "ignored text",
-        watermarkUrl: "https://example.com/ignored.png",
-        watermarkRaw: raw,
-      },
-      buildTestEnv(),
-    );
-    expect(setWatermark).toHaveBeenCalledWith(Buffer.from(raw, "base64"));
-  });
 });
 
-describe("renderQuote avatar precedence", () => {
+describe("renderQuote avatar", () => {
   beforeEach(() => {
     miqInstance.setAvatar.mockClear();
   });
 
-  it("uses authorAvatarUrl when authorAvatarRaw is absent", async () => {
+  it("passes authorAvatarUrl straight through", async () => {
     await renderQuote(
       { ...baseInput, authorAvatarUrl: "https://example.com/a.png" },
       buildTestEnv(),
     );
     expect(miqInstance.setAvatar).toHaveBeenCalledWith(
       "https://example.com/a.png",
-    );
-  });
-
-  it("prefers authorAvatarRaw over authorAvatarUrl when both are given", async () => {
-    const raw = Buffer.from("raw-avatar-bytes").toString("base64");
-    await renderQuote(
-      {
-        ...baseInput,
-        authorAvatarUrl: "https://example.com/ignored.png",
-        authorAvatarRaw: raw,
-      },
-      buildTestEnv(),
-    );
-    expect(miqInstance.setAvatar).toHaveBeenCalledWith(
-      Buffer.from(raw, "base64"),
     );
   });
 });

@@ -35,7 +35,7 @@ export const actions: Actions = {
     const fake = form.get("fake") === "true";
     const requestJson = stripHosted(String(form.get("requestJson") ?? ""));
 
-    // No key supplied: fall back to the anonymous demo route, which only exists (see apps/api's playground.ts) when the instance configured PLAYGROUND_API_KEY — a 404 there means it didn't, so this visitor really does need their own key.
+    // No key supplied: fall back to the anonymous demo route, which only exists (see apps/api's playground.ts) when the instance configured PLAYGROUND_SHARED_KEY_LIMIT above 0 — a 404 there means it didn't, so this visitor really does need their own key.
     const path = apiKey
       ? fake
         ? "/api/fakequote"

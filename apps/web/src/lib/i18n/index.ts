@@ -147,6 +147,7 @@ interface Translations {
     urlPlaceholder: string;
     fakeLabel: string;
     noHostedNote: string;
+    uploading: string;
     send: string;
     sending: string;
     requestLabel: string;
@@ -304,6 +305,7 @@ const en: Translations = {
     fakeLabel: "Mark as fake (POST /api/fakequote)",
     noHostedNote:
       "Images generated here are never uploaded or saved to server storage — hosted requests are disabled in the playground to prevent spam.",
+    uploading: "Uploading...",
     send: "Send request",
     sending: "Sending...",
     requestLabel: "Request",
@@ -463,6 +465,7 @@ const ja: Translations = {
     fakeLabel: "偽物として送信する（POST /api/fakequote）",
     noHostedNote:
       "ここで生成した画像はサーバーにアップロード・保存されません — スパム防止のため、プレイグラウンドではホスト（hosted）リクエストを無効化しています。",
+    uploading: "アップロード中...",
     send: "リクエスト送信",
     sending: "送信中...",
     requestLabel: "リクエスト",

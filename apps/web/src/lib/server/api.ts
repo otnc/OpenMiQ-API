@@ -17,7 +17,12 @@ export async function apiFetch(
   if (event.locals.clientIp) {
     headers.set("x-forwarded-for", event.locals.clientIp);
   }
-  if (init.body && !headers.has("content-type")) {
+  // A FormData body (file uploads) must NOT get this default — fetch only sets the multipart Content-Type (with its required boundary) itself when it serializes the body, so forcing application/json here would corrupt it.
+  if (
+    init.body &&
+    !(init.body instanceof FormData) &&
+    !headers.has("content-type")
+  ) {
     headers.set("content-type", "application/json");
   }
   return event.fetch(`${baseUrl()}${path}`, { ...init, headers });

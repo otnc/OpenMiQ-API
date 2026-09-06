@@ -93,11 +93,11 @@ export const rateLimitCounters = sqliteTable("rate_limit_counters", {
   count: integer("count").notNull().default(0),
 });
 
-// Tracks hosted: true image uploads so GET /api/images/:id can answer 404
-// without a round trip to R2; actual deletion is left to the bucket's
-// lifecycle rule (DESIGN.md §8.6).
+// Tracks hosted: true image uploads so GET /api/images/:id can answer 404 without a round trip to R2; actual deletion is left to the bucket's lifecycle rule (DESIGN.md §8.6).
+// Also backs POST /api/uploads (an avatar/watermark image staged for a following /api/quote call) — same storage, expiry and 404-on-miss behavior, just not necessarily a rendered quote, hence contentType instead of assuming image/png.
 export const hostedImages = sqliteTable("hosted_images", {
   id: text("id").primaryKey(),
+  contentType: text("content_type").notNull().default("image/png"),
   storedAt: integer("stored_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),

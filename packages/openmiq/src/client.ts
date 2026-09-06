@@ -5,7 +5,7 @@ import {
   type HttpClient,
   TimeoutError,
 } from "@makeitaquote/utils/http";
-import { USAGE_PATH } from "./endpoints.ts";
+import { UPLOAD_PATH, USAGE_PATH } from "./endpoints.ts";
 import { OpenMiQApiError } from "./errors.ts";
 import { fromNote } from "./note.ts";
 import {
@@ -97,7 +97,7 @@ export class OpenMiQ {
     return this;
   }
 
-  /** A string/URL sets an avatar by address; raw image bytes (Uint8Array/Buffer) upload it directly instead — either way, clears whichever form was set before. */
+  /** A string/URL sets an avatar by address; raw image bytes (Uint8Array/Buffer) are staged for upload instead — actually sent (POST /api/uploads, then that URL used as authorAvatarUrl) the next time toBuffer()/toURL() runs, not here. Either way, clears whichever form was set before. */
   setAvatar(avatar: string | URL | Uint8Array | null): this {
     const normalized = normalizeAuthorAvatar(avatar);
     this.#data.authorAvatarUrl = normalized.url;
@@ -131,12 +131,9 @@ export class OpenMiQ {
   }
 
   /**
-   * Overrides the server's default watermark for this quote. `null` (the
-   * default): let the server decide — its LOGO_PATH image, if configured.
-   * A string is drawn as text (pass `""` to explicitly ask for no
-   * watermark); a URL or raw image bytes (Uint8Array/Buffer) are drawn as
-   * an image instead, the same rule makeitaquote's own `setWatermark()`
-   * follows. Either way, clears whichever form was set before.
+   * Overrides the server's default watermark for this quote. `null` (the default): let the server decide — its LOGO_PATH image, if configured.
+   * A string is drawn as text (pass `""` to explicitly ask for no watermark); a URL is drawn as an image instead; raw image bytes (Uint8Array/Buffer) are staged for upload and drawn as an image too, the same rule makeitaquote's own `setWatermark()` follows for the string/URL/bytes split — but actually sent (POST /api/uploads, then that URL used as watermarkUrl) the next time toBuffer()/toURL() runs, not here.
+   * Either way, clears whichever form was set before.
    */
   setWatermark(watermark: string | URL | Uint8Array | null): this {
     const normalized = normalizeWatermarkValue(watermark);
@@ -270,7 +267,9 @@ export class OpenMiQ {
    *
    * One round trip by default. Pass `{ hosted: true }` to go through the
    * hosted path instead — the image is uploaded to the API's storage first,
-   * then downloaded back, matching what `toURL()` does.
+   * then downloaded back, matching what `toURL()` does. Either way, a raw
+   * `setAvatar()`/`setWatermark()` adds one more round trip each, to POST
+   * /api/uploads first — see those methods.
    */
   async toBuffer(options: { hosted?: boolean } = {}): Promise<Buffer> {
     assertRenderable(this.#data);
@@ -283,10 +282,11 @@ export class OpenMiQ {
         throw toApiError(cause, path, "Failed to download the hosted image");
       }
     }
+    const data = await this.#resolveUploads();
     let response: Response;
     try {
       response = await this.#http.post(`${this.#baseUrl}${path}`, {
-        json: buildPayload(this.#data, false),
+        json: buildPayload(data, false),
         ...this.#requestOptions(),
       });
     } catch (cause) {
@@ -324,10 +324,11 @@ export class OpenMiQ {
   }
 
   async #postForHosted(path: string): Promise<{ url: string }> {
+    const data = await this.#resolveUploads();
     let response: Response;
     try {
       response = await this.#http.post(`${this.#baseUrl}${path}`, {
-        json: buildPayload(this.#data, true),
+        json: buildPayload(data, true),
         ...this.#requestOptions(),
       });
     } catch (cause) {
@@ -335,6 +336,38 @@ export class OpenMiQ {
     }
     const parsed = await this.#parseJson(response, path);
     return parseHostedResult(parsed, path);
+  }
+
+  /**
+   * Uploads any pending raw avatar/watermark bytes (POST /api/uploads) and returns a copy of `#data` with authorAvatarRaw/watermarkRaw resolved into authorAvatarUrl/watermarkUrl — `#data` itself is untouched, so a raw `setAvatar()`/`setWatermark()` survives a `clone()` and gets re-uploaded (not reused) on each subsequent `toBuffer()`/`toURL()` call.
+   */
+  async #resolveUploads(): Promise<QuoteData> {
+    let data = this.#data;
+    if (data.authorAvatarRaw) {
+      const url = await this.#upload(data.authorAvatarRaw);
+      data = { ...data, authorAvatarUrl: url, authorAvatarRaw: null };
+    }
+    if (data.watermarkRaw) {
+      const url = await this.#upload(data.watermarkRaw);
+      data = { ...data, watermarkUrl: url, watermarkRaw: null };
+    }
+    return data;
+  }
+
+  async #upload(bytes: Uint8Array): Promise<string> {
+    const form = new FormData();
+    form.append("file", new Blob([Buffer.from(bytes)]), "upload");
+    let response: Response;
+    try {
+      response = await this.#http.post(`${this.#baseUrl}${UPLOAD_PATH}`, {
+        json: form,
+        ...this.#requestOptions(),
+      });
+    } catch (cause) {
+      throw toApiError(cause, UPLOAD_PATH, "Failed to upload image");
+    }
+    const parsed = await this.#parseJson(response, UPLOAD_PATH);
+    return parseHostedResult(parsed, UPLOAD_PATH).url;
   }
 
   async #parseJson(response: Response, endpoint: string): Promise<unknown> {

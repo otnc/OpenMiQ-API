@@ -57,6 +57,8 @@ new OpenMiQ({ apiKey, baseUrl })
 
 `setFromObject()` accepts the same fields as a plain object, and `getData()`/`clone()` are available for inspecting or branching a builder in progress.
 
+Raw avatar/watermark bytes aren't embedded in the `/api/quote` request itself — the request stays a small JSON body no matter the image size, and a reverse proxy in front of a self-hosted instance never has to be reconfigured to accept a bigger one. Each `toBuffer()`/`toURL()` call `POST`s them to `/api/uploads` first (one extra round trip per raw image) and sends the URL it gets back as `authorAvatarUrl`/`watermarkUrl` instead.
+
 ### From a Discord message, Misskey note, or tweet
 
 ```ts

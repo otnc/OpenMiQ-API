@@ -43,8 +43,8 @@ export function normalizeAuthorName(name: unknown): string {
 
 export interface NormalizedAvatar {
   url: string | null;
-  /** Base64-encoded, ready for the wire as authorAvatarRaw. */
-  raw: string | null;
+  /** Raw bytes, pending upload at send time (see client.ts's #resolveUploads()). */
+  raw: Uint8Array | null;
 }
 
 /** A URL/string sets `url`; raw bytes (Uint8Array/Buffer) set `raw` instead — always exactly one of the two, or neither for `null`/`undefined`. */
@@ -55,7 +55,7 @@ export function normalizeAuthorAvatar(avatar: unknown): NormalizedAvatar {
     return { url: String(normalized), raw: null };
   }
   if (normalized instanceof Uint8Array) {
-    return { url: null, raw: Buffer.from(normalized).toString("base64") };
+    return { url: null, raw: normalized };
   }
   throw new ValidationError(
     "authorAvatarUrl must be a string, URL, or raw image bytes",
@@ -76,8 +76,8 @@ export function normalizeFont(font: unknown): string | null {
 export interface NormalizedWatermark {
   text: string | null;
   url: string | null;
-  /** Base64-encoded, ready for the wire as watermarkRaw. */
-  raw: string | null;
+  /** Raw bytes, pending upload at send time (see client.ts's #resolveUploads()). */
+  raw: Uint8Array | null;
 }
 
 /**
@@ -105,11 +105,7 @@ export function normalizeWatermarkValue(
     return { text: null, url: String(normalized), raw: null };
   }
   if (normalized instanceof Uint8Array) {
-    return {
-      text: null,
-      url: null,
-      raw: Buffer.from(normalized).toString("base64"),
-    };
+    return { text: null, url: null, raw: normalized };
   }
   throw new ValidationError(
     "watermark must be a string, URL, or raw image bytes",

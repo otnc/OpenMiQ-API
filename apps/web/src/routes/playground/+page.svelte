@@ -43,45 +43,67 @@
   type AvatarMode = "url" | "upload";
   let avatarMode = $state<AvatarMode>("url");
   let authorAvatarUrl = $state("");
-  let authorAvatarRaw = $state<string | null>(null);
   let avatarFileName = $state("");
+  let avatarUploading = $state(false);
+  let avatarUploadError = $state("");
 
   type WatermarkMode = "default" | "text" | "url" | "upload";
   let watermarkMode = $state<WatermarkMode>("default");
   let watermark = $state("");
   let watermarkUrl = $state("");
-  let watermarkRaw = $state<string | null>(null);
   let watermarkFileName = $state("");
+  let watermarkUploading = $state(false);
+  let watermarkUploadError = $state("");
 
-  // FileReader, not an arrayBuffer()+btoa() chunking dance — readAsDataURL() already base64-encodes for us; the part after the comma is exactly what authorAvatarRaw/watermarkRaw want on the wire.
-  function fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        resolve(result.slice(result.indexOf(",") + 1));
-      };
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(file);
+  // POSTs to this same origin's own /playground/upload (not straight to the API) so it can pick between the real /api/uploads and the anonymous /api/playground/uploads the same way the "Send" button below does — see +page.server.ts's own comment on that choice.
+  // Returns the URL to use as authorAvatarUrl/watermarkUrl; never the raw bytes, which is the whole point (see +page.server.ts's stripHosted comment for the sibling reasoning on why nothing here ever embeds image bytes in the quote request itself).
+  async function uploadFile(file: File): Promise<string> {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("apiKey", apiKey);
+    const response = await fetch("/playground/upload", {
+      method: "POST",
+      body: form,
     });
+    const body = await response.json();
+    if (!response.ok) {
+      throw new Error(body?.error ?? "upload_failed");
+    }
+    return body.url as string;
   }
 
   async function onAvatarFile(event: Event) {
     const file = (event.currentTarget as HTMLInputElement).files?.[0];
     if (!file) return;
     avatarFileName = file.name;
-    authorAvatarRaw = await fileToBase64(file);
+    avatarUploadError = "";
+    avatarUploading = true;
+    try {
+      authorAvatarUrl = await uploadFile(file);
+    } catch (error) {
+      avatarUploadError = String((error as Error).message ?? error);
+    } finally {
+      avatarUploading = false;
+    }
   }
 
   async function onWatermarkFile(event: Event) {
     const file = (event.currentTarget as HTMLInputElement).files?.[0];
     if (!file) return;
     watermarkFileName = file.name;
-    watermarkRaw = await fileToBase64(file);
+    watermarkUploadError = "";
+    watermarkUploading = true;
+    try {
+      watermarkUrl = await uploadFile(file);
+    } catch (error) {
+      watermarkUploadError = String((error as Error).message ?? error);
+    } finally {
+      watermarkUploading = false;
+    }
   }
 
   // Mirrors apps/api's own buildPayload() (packages/openmiq/src/payload.ts) — every optional field is left out entirely rather than sent empty, the same rule @makeitaquote/openmiq's builder follows.
-  // No `hosted` option here: the playground never asks for it (+page.server.ts strips it even if it somehow arrived) — see that file's comment for why.
+  // No `hosted` option here: the playground never asks for it (+page.server.ts strips it even if it somehow arrived) — see that file's comment for why. Avatar/watermark are always sent as URLs, whether typed in directly or resolved from an upload above — never as raw bytes, so this stays small and readable regardless of image size.
   const requestBody = $derived.by(() => {
     const options: Record<string, unknown> = {};
     if (color) options.color = true;
@@ -89,42 +111,19 @@
     if (layout !== "default") options.layout = layout;
 
     const body: Record<string, unknown> = { authorName, text };
-    if (avatarMode === "upload" && authorAvatarRaw) {
-      body.authorAvatarRaw = authorAvatarRaw;
-    } else if (avatarMode === "url" && authorAvatarUrl) {
-      body.authorAvatarUrl = authorAvatarUrl;
-    }
+    if (authorAvatarUrl) body.authorAvatarUrl = authorAvatarUrl;
     if (theme) body.theme = theme;
     if (font) body.font = font;
     if (watermarkMode === "text") body.watermark = watermark;
-    else if (watermarkMode === "url" && watermarkUrl) {
-      body.watermarkUrl = watermarkUrl;
-    } else if (watermarkMode === "upload" && watermarkRaw) {
-      body.watermarkRaw = watermarkRaw;
-    }
+    else if (watermarkUrl) body.watermarkUrl = watermarkUrl;
     if (Object.keys(options).length > 0) body.options = options;
     return body;
   });
 
-  // The actual request — sent as-is, raw image bytes included in full.
   const requestJson = $derived(JSON.stringify(requestBody, null, 2));
-
-  // What's shown on screen: raw base64 fields collapsed to a placeholder, since dumping a multi-KB (or multi-MB) string into the preview would defeat the point of a *readable* example.
-  // The hidden field submitted below still uses the untouched requestJson above.
-  const requestJsonForDisplay = $derived.by(() => {
-    const display: Record<string, unknown> = { ...requestBody };
-    for (const key of ["authorAvatarRaw", "watermarkRaw"] as const) {
-      const value = display[key];
-      if (typeof value === "string") {
-        display[key] = `<base64, ${value.length} chars>`;
-      }
-    }
-    return JSON.stringify(display, null, 2);
-  });
-
   const endpointPath = $derived(fake ? "/api/fakequote" : "/api/quote");
   const curlExample = $derived(
-    `curl -X POST "${data.siteUrl}${endpointPath}" \\\n  -H "X-API-Key: ${apiKey || "<your API key>"}" \\\n  -H "Content-Type: application/json" \\\n  -d '${requestJsonForDisplay.replace(/\n\s*/g, " ")}'`,
+    `curl -X POST "${data.siteUrl}${endpointPath}" \\\n  -H "X-API-Key: ${apiKey || "<your API key>"}" \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify(requestBody)}'`,
   );
 </script>
 
@@ -227,8 +226,19 @@
             placeholder={tr.playground.urlPlaceholder}
           />
         {:else}
-          <Input type="file" accept="image/*" onchange={onAvatarFile} />
-          {#if avatarFileName}
+          <Input
+            type="file"
+            accept="image/*"
+            disabled={avatarUploading}
+            onchange={onAvatarFile}
+          />
+          {#if avatarUploading}
+            <p class="text-muted-foreground text-xs">
+              {tr.playground.uploading}
+            </p>
+          {:else if avatarUploadError}
+            <p class="text-destructive text-xs">{avatarUploadError}</p>
+          {:else if avatarFileName}
             <p class="text-muted-foreground text-xs">{avatarFileName}</p>
           {/if}
         {/if}
@@ -268,8 +278,19 @@
             placeholder={tr.playground.urlPlaceholder}
           />
         {:else if watermarkMode === "upload"}
-          <Input type="file" accept="image/*" onchange={onWatermarkFile} />
-          {#if watermarkFileName}
+          <Input
+            type="file"
+            accept="image/*"
+            disabled={watermarkUploading}
+            onchange={onWatermarkFile}
+          />
+          {#if watermarkUploading}
+            <p class="text-muted-foreground text-xs">
+              {tr.playground.uploading}
+            </p>
+          {:else if watermarkUploadError}
+            <p class="text-destructive text-xs">{watermarkUploadError}</p>
+          {:else if watermarkFileName}
             <p class="text-muted-foreground text-xs">{watermarkFileName}</p>
           {/if}
         {/if}
@@ -323,7 +344,10 @@
         <input type="hidden" name="requestJson" value={requestJson} />
         <Button
           type="submit"
-          disabled={sending || (!apiKey && !data.playgroundSharedKeyAvailable)}
+          disabled={sending ||
+            avatarUploading ||
+            watermarkUploading ||
+            (!apiKey && !data.playgroundSharedKeyAvailable)}
         >
           {sending ? tr.playground.sending : tr.playground.send}
         </Button>
