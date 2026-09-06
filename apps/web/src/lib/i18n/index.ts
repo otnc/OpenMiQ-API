@@ -140,6 +140,11 @@ interface Translations {
     boldLabel: string;
     watermarkLabel: string;
     watermarkPlaceholder: string;
+    watermarkDefault: string;
+    byText: string;
+    byUrl: string;
+    byUpload: string;
+    urlPlaceholder: string;
     fakeLabel: string;
     noHostedNote: string;
     send: string;
@@ -278,7 +283,7 @@ const en: Translations = {
       "This instance provides a shared demo key for anonymous use, with its own low rate limit. Enter your own key instead for the full limit.",
     textLabel: "Text",
     usernameLabel: "Username",
-    avatarLabel: "Avatar URL",
+    avatarLabel: "Avatar",
     themeLabel: "Theme",
     themePlaceholder: "e.g. sunset, or any CSS color",
     fontLabel: "Font",
@@ -290,7 +295,12 @@ const en: Translations = {
     colorLabel: "Keep avatar in color",
     boldLabel: "Bold text",
     watermarkLabel: "Watermark override",
-    watermarkPlaceholder: "Leave blank for the server's default",
+    watermarkPlaceholder: "Leave blank for no watermark text",
+    watermarkDefault: "Server default",
+    byText: "Text",
+    byUrl: "URL",
+    byUpload: "Upload",
+    urlPlaceholder: "https://...",
     fakeLabel: "Mark as fake (POST /api/fakequote)",
     noHostedNote:
       "Images generated here are never uploaded or saved to server storage — hosted requests are disabled in the playground to prevent spam.",
@@ -432,7 +442,7 @@ const ja: Translations = {
       "このインスタンスは匿名利用向けの共有デモキーを提供していますが、その利用枠は小さめです。フルの利用枠を使いたい場合は自分のAPIキーを入力してください。",
     textLabel: "テキスト",
     usernameLabel: "ユーザー名",
-    avatarLabel: "アバターURL",
+    avatarLabel: "アバター",
     themeLabel: "テーマ",
     themePlaceholder: "例: sunset、または任意のCSS色",
     fontLabel: "フォント",
@@ -444,7 +454,12 @@ const ja: Translations = {
     colorLabel: "アバターをカラーのまま表示",
     boldLabel: "太字",
     watermarkLabel: "透かしの上書き",
-    watermarkPlaceholder: "空欄でサーバーの既定値を使用",
+    watermarkPlaceholder: "空欄で透かし文字なし",
+    watermarkDefault: "サーバーの既定値",
+    byText: "テキスト",
+    byUrl: "URL",
+    byUpload: "アップロード",
+    urlPlaceholder: "https://...",
     fakeLabel: "偽物として送信する（POST /api/fakequote）",
     noHostedNote:
       "ここで生成した画像はサーバーにアップロード・保存されません — スパム防止のため、プレイグラウンドではホスト（hosted）リクエストを無効化しています。",

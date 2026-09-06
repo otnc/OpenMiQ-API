@@ -32,18 +32,56 @@
 
   let text = $state("Hello, world!");
   let authorName = $state("otoneko.");
-  let authorAvatarUrl = $state("");
   let theme = $state("");
   let font = $state("");
   let layout = $state<"default" | "side" | "new">("default");
   let color = $state(false);
   let bold = $state(false);
-  let watermark = $state("");
   let fake = $state(false);
   let sending = $state(false);
 
-  // Mirrors apps/api's own buildPayload() (src/routes/payload.ts) — every optional field is left out entirely rather than sent empty, the same rule @makeitaquote/openmiq's builder follows. No `hosted` option here:
-  // the playground never asks for it (+page.server.ts strips it even if it somehow arrived) — see that file's comment for why.
+  type AvatarMode = "url" | "upload";
+  let avatarMode = $state<AvatarMode>("url");
+  let authorAvatarUrl = $state("");
+  let authorAvatarRaw = $state<string | null>(null);
+  let avatarFileName = $state("");
+
+  type WatermarkMode = "default" | "text" | "url" | "upload";
+  let watermarkMode = $state<WatermarkMode>("default");
+  let watermark = $state("");
+  let watermarkUrl = $state("");
+  let watermarkRaw = $state<string | null>(null);
+  let watermarkFileName = $state("");
+
+  // FileReader, not an arrayBuffer()+btoa() chunking dance — readAsDataURL() already base64-encodes for us; the part after the comma is exactly what authorAvatarRaw/watermarkRaw want on the wire.
+  function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.slice(result.indexOf(",") + 1));
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function onAvatarFile(event: Event) {
+    const file = (event.currentTarget as HTMLInputElement).files?.[0];
+    if (!file) return;
+    avatarFileName = file.name;
+    authorAvatarRaw = await fileToBase64(file);
+  }
+
+  async function onWatermarkFile(event: Event) {
+    const file = (event.currentTarget as HTMLInputElement).files?.[0];
+    if (!file) return;
+    watermarkFileName = file.name;
+    watermarkRaw = await fileToBase64(file);
+  }
+
+  // Mirrors apps/api's own buildPayload() (packages/openmiq/src/payload.ts) — every optional field is left out entirely rather than sent empty, the same rule @makeitaquote/openmiq's builder follows.
+  // No `hosted` option here: the playground never asks for it (+page.server.ts strips it even if it somehow arrived) — see that file's comment for why.
   const requestBody = $derived.by(() => {
     const options: Record<string, unknown> = {};
     if (color) options.color = true;
@@ -51,18 +89,42 @@
     if (layout !== "default") options.layout = layout;
 
     const body: Record<string, unknown> = { authorName, text };
-    if (authorAvatarUrl) body.authorAvatarUrl = authorAvatarUrl;
+    if (avatarMode === "upload" && authorAvatarRaw) {
+      body.authorAvatarRaw = authorAvatarRaw;
+    } else if (avatarMode === "url" && authorAvatarUrl) {
+      body.authorAvatarUrl = authorAvatarUrl;
+    }
     if (theme) body.theme = theme;
     if (font) body.font = font;
-    if (watermark) body.watermark = watermark;
+    if (watermarkMode === "text") body.watermark = watermark;
+    else if (watermarkMode === "url" && watermarkUrl) {
+      body.watermarkUrl = watermarkUrl;
+    } else if (watermarkMode === "upload" && watermarkRaw) {
+      body.watermarkRaw = watermarkRaw;
+    }
     if (Object.keys(options).length > 0) body.options = options;
     return body;
   });
 
+  // The actual request — sent as-is, raw image bytes included in full.
   const requestJson = $derived(JSON.stringify(requestBody, null, 2));
+
+  // What's shown on screen: raw base64 fields collapsed to a placeholder, since dumping a multi-KB (or multi-MB) string into the preview would defeat the point of a *readable* example.
+  // The hidden field submitted below still uses the untouched requestJson above.
+  const requestJsonForDisplay = $derived.by(() => {
+    const display: Record<string, unknown> = { ...requestBody };
+    for (const key of ["authorAvatarRaw", "watermarkRaw"] as const) {
+      const value = display[key];
+      if (typeof value === "string") {
+        display[key] = `<base64, ${value.length} chars>`;
+      }
+    }
+    return JSON.stringify(display, null, 2);
+  });
+
   const endpointPath = $derived(fake ? "/api/fakequote" : "/api/quote");
   const curlExample = $derived(
-    `curl -X POST "${data.siteUrl}${endpointPath}" \\\n  -H "X-API-Key: ${apiKey || "<your API key>"}" \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify(requestBody)}'`,
+    `curl -X POST "${data.siteUrl}${endpointPath}" \\\n  -H "X-API-Key: ${apiKey || "<your API key>"}" \\\n  -H "Content-Type: application/json" \\\n  -d '${requestJsonForDisplay.replace(/\n\s*/g, " ")}'`,
   );
 </script>
 
@@ -111,10 +173,6 @@
           <Input id="pg-username" bind:value={authorName} maxlength={128} />
         </div>
         <div class="space-y-1">
-          <Label for="pg-avatar">{tr.playground.avatarLabel}</Label>
-          <Input id="pg-avatar" bind:value={authorAvatarUrl} type="url" />
-        </div>
-        <div class="space-y-1">
           <Label for="pg-theme">{tr.playground.themeLabel}</Label>
           <Input
             id="pg-theme"
@@ -135,22 +193,87 @@
           <select
             id="pg-layout"
             bind:value={layout}
-            class="border-input flex h-8 w-full rounded-md border bg-transparent px-3 text-sm shadow-xs"
+            class="border-input dark:bg-input/30 text-foreground h-8 w-full rounded-lg border bg-transparent px-2.5 text-sm shadow-xs outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            <option value="default">{tr.playground.layoutDefault}</option>
-            <option value="side">{tr.playground.layoutSide}</option>
-            <option value="new">{tr.playground.layoutNew}</option>
+            <option value="default" class="bg-popover text-popover-foreground"
+              >{tr.playground.layoutDefault}</option
+            >
+            <option value="side" class="bg-popover text-popover-foreground"
+              >{tr.playground.layoutSide}</option
+            >
+            <option value="new" class="bg-popover text-popover-foreground"
+              >{tr.playground.layoutNew}</option
+            >
           </select>
         </div>
-        <div class="space-y-1">
-          <Label for="pg-watermark">{tr.playground.watermarkLabel}</Label>
+      </div>
+
+      <fieldset class="space-y-2 rounded-lg border p-3">
+        <legend class="text-sm font-medium">{tr.playground.avatarLabel}</legend>
+        <div class="flex gap-4 text-sm">
+          <label class="flex items-center gap-2">
+            <input type="radio" bind:group={avatarMode} value="url" />
+            {tr.playground.byUrl}
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="radio" bind:group={avatarMode} value="upload" />
+            {tr.playground.byUpload}
+          </label>
+        </div>
+        {#if avatarMode === "url"}
           <Input
-            id="pg-watermark"
+            bind:value={authorAvatarUrl}
+            type="url"
+            placeholder={tr.playground.urlPlaceholder}
+          />
+        {:else}
+          <Input type="file" accept="image/*" onchange={onAvatarFile} />
+          {#if avatarFileName}
+            <p class="text-muted-foreground text-xs">{avatarFileName}</p>
+          {/if}
+        {/if}
+      </fieldset>
+
+      <fieldset class="space-y-2 rounded-lg border p-3">
+        <legend class="text-sm font-medium"
+          >{tr.playground.watermarkLabel}</legend
+        >
+        <div class="flex flex-wrap gap-4 text-sm">
+          <label class="flex items-center gap-2">
+            <input type="radio" bind:group={watermarkMode} value="default" />
+            {tr.playground.watermarkDefault}
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="radio" bind:group={watermarkMode} value="text" />
+            {tr.playground.byText}
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="radio" bind:group={watermarkMode} value="url" />
+            {tr.playground.byUrl}
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="radio" bind:group={watermarkMode} value="upload" />
+            {tr.playground.byUpload}
+          </label>
+        </div>
+        {#if watermarkMode === "text"}
+          <Input
             bind:value={watermark}
             placeholder={tr.playground.watermarkPlaceholder}
           />
-        </div>
-      </div>
+        {:else if watermarkMode === "url"}
+          <Input
+            bind:value={watermarkUrl}
+            type="url"
+            placeholder={tr.playground.urlPlaceholder}
+          />
+        {:else if watermarkMode === "upload"}
+          <Input type="file" accept="image/*" onchange={onWatermarkFile} />
+          {#if watermarkFileName}
+            <p class="text-muted-foreground text-xs">{watermarkFileName}</p>
+          {/if}
+        {/if}
+      </fieldset>
 
       <div class="flex flex-wrap gap-4 text-sm">
         <label class="flex items-center gap-2">
