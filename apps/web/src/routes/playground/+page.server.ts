@@ -6,23 +6,34 @@ export interface PlaygroundResult {
   requestJson: string;
   status: number;
   imageDataUrl?: string;
-  hostedUrl?: string;
   error?: unknown;
 }
 
-// A thin, transparent proxy: forwards exactly the body the client already
-// built and showed as the "request JSON" preview to POST /api/quote or
-// /api/fakequote, then relays back whatever came back — image bytes as a
-// data: URL (form actions can only return serializable data, not a raw
-// Response), the hosted { url } JSON as-is, or an error body untouched. The
-// playground's whole point is showing the real request/response shape, so
-// this must never rewrite either one.
+// Forwards the body the client already built and showed as the "request JSON" preview to POST /api/quote or /api/fakequote, then relays back the image bytes as a data: URL (form actions can only return serializable data, not a raw Response) or an error body untouched.
+//
+// `options.hosted` is always stripped before forwarding, no matter what the client sent — the playground exists for people to freely experiment, including with API keys that aren't rate-limited the way a stranger's would be, so letting it write to R2/local storage would make it a trivial way to fill that storage with spam images. Forcing every playground request through the one-round-trip path (no server-side copy ever made, so there's never anything to fetch a `hosted: true` response's URL back down as image bytes for) closes that off entirely, not just in the UI.
+function stripHosted(requestJson: string): string {
+  let body: unknown;
+  try {
+    body = JSON.parse(requestJson);
+  } catch {
+    return requestJson;
+  }
+  if (body && typeof body === "object" && "options" in body) {
+    const options = (body as { options?: unknown }).options;
+    if (options && typeof options === "object" && "hosted" in options) {
+      delete (options as { hosted?: unknown }).hosted;
+    }
+  }
+  return JSON.stringify(body);
+}
+
 export const actions: Actions = {
   send: async (event) => {
     const form = await event.request.formData();
     const apiKey = String(form.get("apiKey") ?? "");
     const fake = form.get("fake") === "true";
-    const requestJson = String(form.get("requestJson") ?? "");
+    const requestJson = stripHosted(String(form.get("requestJson") ?? ""));
 
     if (!apiKey) {
       return fail(400, {
@@ -39,7 +50,6 @@ export const actions: Actions = {
       body: requestJson,
     });
 
-    const contentType = response.headers.get("content-type") ?? "";
     if (!response.ok) {
       const error = await response
         .json()
@@ -48,16 +58,6 @@ export const actions: Actions = {
         requestJson,
         status: response.status,
         error,
-      };
-      return result;
-    }
-
-    if (contentType.includes("application/json")) {
-      const body = (await response.json()) as { url: string };
-      const result: PlaygroundResult = {
-        requestJson,
-        status: response.status,
-        hostedUrl: body.url,
       };
       return result;
     }

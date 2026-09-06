@@ -139,14 +139,13 @@ interface Translations {
     watermarkLabel: string;
     watermarkPlaceholder: string;
     fakeLabel: string;
-    hostedLabel: string;
+    noHostedNote: string;
     send: string;
     sending: string;
     requestLabel: string;
     curlLabel: string;
     resultLabel: string;
     resultImageAlt: string;
-    hostedUrlLabel: string;
     errorLabel: string;
     apiKeyRequired: string;
   };
@@ -287,14 +286,14 @@ const en: Translations = {
     watermarkLabel: "Watermark override",
     watermarkPlaceholder: "Leave blank for the server's default",
     fakeLabel: "Mark as fake (POST /api/fakequote)",
-    hostedLabel: "Hosted (upload, return a URL instead of the image)",
+    noHostedNote:
+      "Images generated here are never uploaded or saved to server storage — hosted requests are disabled in the playground to prevent spam.",
     send: "Send request",
     sending: "Sending...",
     requestLabel: "Request",
     curlLabel: "As curl",
     resultLabel: "Result",
     resultImageAlt: "The generated quote image",
-    hostedUrlLabel: "Hosted at",
     errorLabel: "Error",
     apiKeyRequired: "An API key is required to send a request.",
   },
@@ -438,14 +437,14 @@ const ja: Translations = {
     watermarkLabel: "透かしの上書き",
     watermarkPlaceholder: "空欄でサーバーの既定値を使用",
     fakeLabel: "偽物として送信する（POST /api/fakequote）",
-    hostedLabel: "ホスト（アップロードして画像の代わりにURLを返す）",
+    noHostedNote:
+      "ここで生成した画像はサーバーにアップロード・保存されません — スパム防止のため、プレイグラウンドではホスト（hosted）リクエストを無効化しています。",
     send: "リクエスト送信",
     sending: "送信中...",
     requestLabel: "リクエスト",
     curlLabel: "curlで見る",
     resultLabel: "結果",
     resultImageAlt: "生成されたクォート画像",
-    hostedUrlLabel: "アップロード先",
     errorLabel: "エラー",
     apiKeyRequired: "リクエストの送信にはAPIキーが必要です。",
   },

@@ -13,8 +13,7 @@
   const API_KEY_STORAGE_KEY = "openmiq-playground-api-key";
 
   let apiKey = $state("");
-  // Loaded/persisted client-side only — the server action forwards it to
-  // /api/quote per request and never writes it anywhere itself.
+  // Loaded/persisted client-side only — the server action forwards it to /api/quote per request and never writes it anywhere itself.
   $effect(() => {
     try {
       apiKey = localStorage.getItem(API_KEY_STORAGE_KEY) ?? "";
@@ -41,18 +40,15 @@
   let bold = $state(false);
   let watermark = $state("");
   let fake = $state(false);
-  let hosted = $state(false);
   let sending = $state(false);
 
-  // Mirrors apps/api's own buildPayload() (src/routes/payload.ts) — every
-  // optional field is left out entirely rather than sent empty, the same
-  // rule @makeitaquote/openmiq's builder follows.
+  // Mirrors apps/api's own buildPayload() (src/routes/payload.ts) — every optional field is left out entirely rather than sent empty, the same rule @makeitaquote/openmiq's builder follows. No `hosted` option here:
+  // the playground never asks for it (+page.server.ts strips it even if it somehow arrived) — see that file's comment for why.
   const requestBody = $derived.by(() => {
     const options: Record<string, unknown> = {};
     if (color) options.color = true;
     if (bold) options.bold = true;
     if (layout !== "default") options.layout = layout;
-    if (hosted) options.hosted = true;
 
     const body: Record<string, unknown> = { authorName, text };
     if (authorAvatarUrl) body.authorAvatarUrl = authorAvatarUrl;
@@ -77,6 +73,7 @@
     </Card.Header>
     <Card.Content class="space-y-4">
       <p class="text-muted-foreground text-sm">{tr.playground.description}</p>
+      <p class="text-muted-foreground text-xs">{tr.playground.noHostedNote}</p>
 
       <div class="space-y-1">
         <Label for="pg-api-key">{tr.playground.apiKeyLabel}</Label>
@@ -158,10 +155,6 @@
           {tr.playground.boldLabel}
         </label>
         <label class="flex items-center gap-2">
-          <input type="checkbox" bind:checked={hosted} />
-          {tr.playground.hostedLabel}
-        </label>
-        <label class="flex items-center gap-2">
           <input type="checkbox" bind:checked={fake} />
           {tr.playground.fakeLabel}
         </label>
@@ -222,16 +215,6 @@
             alt={tr.playground.resultImageAlt}
             class="max-w-full rounded-lg shadow-sm"
           />
-        {:else if form.hostedUrl}
-          <p class="text-sm">
-            {tr.playground.hostedUrlLabel}
-            <a
-              href={form.hostedUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-primary underline">{form.hostedUrl}</a
-            >
-          </p>
         {:else if form.error}
           <p class="text-destructive text-sm font-medium">
             {tr.playground.errorLabel}{form.status ? ` (${form.status})` : ""}
