@@ -12,7 +12,7 @@ const aboutResponseSchema = z.object({
   sourceUrl: z.url(),
   /** This instance's own Discord community server, if the deployment set one. */
   discordInviteUrl: z.url().nullable(),
-  /** Whether /playground can be used without an API key (PLAYGROUND_API_KEY is set) — never the key itself. */
+  /** Whether /playground can be used without an API key (PLAYGROUND_SHARED_KEY_LIMIT > 0) — never the key itself, which isn't in config anywhere to begin with. */
   playgroundSharedKeyAvailable: z.boolean(),
 });
 
@@ -40,7 +40,7 @@ export function createAboutApp(env: Env) {
       },
       sourceUrl: "https://github.com/otnc/OpenMiQ-API",
       discordInviteUrl: env.DISCORD_INVITE_URL ?? null,
-      playgroundSharedKeyAvailable: Boolean(env.PLAYGROUND_API_KEY),
+      playgroundSharedKeyAvailable: env.PLAYGROUND_SHARED_KEY_LIMIT > 0,
     });
   });
 }

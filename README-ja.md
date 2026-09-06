@@ -109,8 +109,9 @@ pnpm run pm2:stop
 | `ADMIN_DISCORD_IDS` | Adminダッシュボード/管理エンドポイントの利用を許可するDiscordユーザーIDのカンマ区切りリスト |
 | `DISCORD_BOT_TOKEN` | 必須。Discordユーザーのアバターをユーザーidから取得するために使用（ログイン中ユーザー自身のヘッダーアバター、Admin画面のユーザー一覧の各アバター、トップページのサンプルクォート画像 — `ADMIN_DISCORD_IDS`の先頭ユーザーのアバター、起動時に一度だけ取得）。application-owned な`DISCORD_REVIEW_WEBHOOK_URL`の作成にも必要（[Discordの設定](#discordの設定)手順5参照）。これを怠るとApprove/Denyボタンが黙って表示されなくなる。申請の承認/却下、アクセス取り消し/BAN時に対象ユーザーへDiscord DMを送るのにも使用（ベストエフォート — DM送信に失敗しても管理操作自体は継続する） |
 | `DISCORD_INVITE_URL` | 任意。このインスタンス独自のDiscordコミュニティサーバーへの招待リンク（上記のDiscord連携とは無関係）。設定するとトップページと申請フォームに「Discordサーバーに参加する」旨のメッセージが表示される。未設定なら何も表示されない |
-| `PLAYGROUND_API_KEY` | 任意。実際のAPIキーの平文を設定すると、`/playground`でAPIキー欄を空欄にした訪問者がこのキーにフォールバックできるようになり、事前登録なしでAPIを試せるようになる。未設定でもプレイグラウンド自体は動作するが、自分のAPIキーを持つ訪問者しか使えない |
-| `PLAYGROUND_RATE_LIMIT_WINDOW_MS` / `PLAYGROUND_RATE_LIMIT_MAX` | 匿名（APIキー無し）の`/playground`リクエストにのみ適用される、IPアドレスごとの小さめな追加レート制限（`PLAYGROUND_API_KEY`自体のレート制限とは別枠）。1人の訪問者が共有キーの利用枠を使い尽くしてしまうのを防ぐ（既定`60000`/`5`） |
+| `PLAYGROUND_SHARED_KEY_LIMIT` | `/playground`でAPIキー欄を空欄にした訪問者は、このアプリが自前で生成・管理するキーにフォールバックできる（設定ファイルにキー自体が書き込まれることはない）。`0`（既定）で機能全体を無効化。正の数を指定すると、その共有キーがローテーション（`PLAYGROUND_SHARED_KEY_ROTATE_MINUTES`）ごとに処理できる匿名リクエスト数の上限になる |
+| `PLAYGROUND_SHARED_KEY_ROTATE_MINUTES` | 上記の共有キーを破棄し、新しく生成し直す間隔（既定`30`） |
+| `PLAYGROUND_RATE_LIMIT_WINDOW_MS` / `PLAYGROUND_RATE_LIMIT_MAX` | 匿名（APIキー無し）の`/playground`リクエストにのみ適用される、IPアドレスごとの小さめな追加レート制限（`PLAYGROUND_SHARED_KEY_LIMIT`の総枠とは別枠）。1人の訪問者が共有の割り当てを使い尽くしてしまうのを防ぐ（既定`60000`/`5`） |
 | `APP_BASE_URL` | 本サービス自身の公開URL。OAuth2コールバックとInteractions Endpointに使用 |
 | `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | APIキーごとの既定レート制限のウィンドウ（ms）と上限リクエスト数（既定 `60000`/`60`） |
 | `ICON_PATH` / `LOGO_PATH` | `GET /api/branding/icon`/`logo`が配信するローカル画像パス。相対パスは`.env`自体と同じくプロジェクトルート基準で解決される。**未設定時は本家デプロイも含めて全デプロイで404**になる — 同梱の`.github/assets/icon.png`/`logo.png`への自動フォールバックは無い（これらの資産は本家OpenMiQプロジェクト・著作者を特定するものであるため。再利用に関する制約は[License](#license)参照）。アイコン・ロゴを表示したい場合は、同じパス（`ICON_PATH=.github/assets/icon.png`）を指すとしても明示的にこの変数を設定すること。`LOGO_PATH`は生成されるクォート画像の既定watermarkとしても使われる（OpenMiQ本体・OpenMiQ-misskeyと同じ慣習）。リクエスト自体で`watermark`フィールドを指定した場合はそちらが優先される — `POST /api/quote`の詳細なスキーマは`GET /api/docs`参照 |

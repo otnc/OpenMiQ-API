@@ -13,10 +13,16 @@ const envSchema = z.object({
   // Optional invite link for this instance's own Discord server — unrelated to DISCORD_REVIEW_WEBHOOK_URL/DISCORD_BOT_TOKEN above, which are about this app's own Discord integration, not a community server.
   // Surfaced by GET /api/about when set, so the Web UI can show a join invitation; left unset, that invitation just doesn't render anywhere.
   DISCORD_INVITE_URL: z.url().optional(),
-  // Optional. The plaintext of a real API key (issued the normal way, from the Web Console) that /playground falls back to when a visitor leaves its own API key field blank, so anyone can try the API without signing up first.
-  // Unset = the playground still works, but only for visitors who supply their own key. Every visitor sharing this one key's rate-limit window is the tradeoff for that convenience — PLAYGROUND_RATE_LIMIT_MAX below exists to keep any single visitor from exhausting it for everyone else.
-  PLAYGROUND_API_KEY: z.string().optional(),
-  // A per-IP-address limit, separate from and in addition to PLAYGROUND_API_KEY's own rate limit — only applies to anonymous (no-API-key) /playground requests. Kept deliberately small; this is a shared demo key, not a real allocation.
+  // How many anonymous /playground requests the shared key this app manages itself may serve per rotation period (see PLAYGROUND_SHARED_KEY_ROTATE_MINUTES) before further ones are refused — not the key itself, which is never written to config anywhere (see playgroundKeyService.ts).
+  // 0 (default) disables the whole shared-key feature: no internal user/key is ever created, and /playground only works for visitors who supply their own key.
+  PLAYGROUND_SHARED_KEY_LIMIT: z.coerce.number().int().nonnegative().default(0),
+  // How often the shared key is thrown away and replaced with a freshly-generated one — a stopgap in case it ever leaks somewhere unexpected, and the natural way PLAYGROUND_SHARED_KEY_LIMIT's cap resets each period. Ignored when that's 0.
+  PLAYGROUND_SHARED_KEY_ROTATE_MINUTES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(30),
+  // A per-IP-address limit, separate from and in addition to PLAYGROUND_SHARED_KEY_LIMIT's total — only applies to anonymous (no-API-key) /playground requests. Kept deliberately small; this is a shared demo key, not a real allocation.
   PLAYGROUND_RATE_LIMIT_WINDOW_MS: z.coerce
     .number()
     .int()

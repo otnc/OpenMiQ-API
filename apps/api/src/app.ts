@@ -13,9 +13,14 @@ import { createApiKeysAdminApp } from "./routes/apiKeysAdmin.ts";
 import { createUsageApp } from "./routes/usage.ts";
 import { createQuoteApp } from "./routes/quote.ts";
 import { createPlaygroundApp } from "./routes/playground.ts";
+import {
+  createPlaygroundKeyManager,
+  startPlaygroundKeyRotation,
+} from "./services/playgroundKeyService.ts";
 import { createAdminApp } from "./routes/admin.ts";
 import { createSampleQuoteApp } from "./routes/sampleQuote.ts";
 import { sessionMiddleware } from "./middleware/session.ts";
+import { getDb } from "./db.ts";
 
 // Assembles the full app from its route modules — factored out of index.ts
 // so tests can exercise the exact same wiring via `.request()` without
@@ -45,7 +50,10 @@ export function createApp(env: Env) {
   app.route("/", createUsageApp(env));
   const quoteApp = createQuoteApp(env);
   app.route("/", quoteApp);
-  app.route("/", createPlaygroundApp(env, quoteApp));
+  // Unlike generateSampleQuote (started from index.ts, not here, specifically to keep createApp()-based tests from making a real Discord call every run), starting this from createApp is safe by default: it's a no-op whenever PLAYGROUND_SHARED_KEY_LIMIT is unset (every test env unless one opts in), so route-level tests elsewhere never touch the DB or a timer for it.
+  const playgroundKeyManager = createPlaygroundKeyManager(getDb(env), env);
+  app.route("/", createPlaygroundApp(env, quoteApp, playgroundKeyManager));
+  startPlaygroundKeyRotation(playgroundKeyManager, env);
   app.route("/", createAdminApp(env));
   app.route("/", createSampleQuoteApp());
 
