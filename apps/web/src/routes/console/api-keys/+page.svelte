@@ -32,8 +32,7 @@
       copied = true;
       setTimeout(() => (copied = false), 2000);
     } catch {
-      // Clipboard access denied/unavailable — the key is still selectable
-      // as plain text, so this is a lost convenience, not a lost key.
+      // Clipboard access denied/unavailable — the key is still selectable as plain text, so this is a lost convenience, not a lost key.
     }
   }
 </script>

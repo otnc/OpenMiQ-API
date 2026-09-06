@@ -8,9 +8,8 @@
   let { data, form }: { data: PageData; form: ActionData } = $props();
   const tr = $derived(t(data.locale));
 
-  // Default to the diff view (DESIGN.md §16.4) when one is available —
-  // i.e. we know the version the user agreed to last and it's still in
-  // history. Otherwise there's nothing to diff against, so full text only.
+  // Default to the diff view (DESIGN.md §16.4) when one is available — i.e. we know the version the user agreed to last and it's still in history.
+  // Otherwise there's nothing to diff against, so full text only.
   let showFullText = $state(false);
 </script>
 

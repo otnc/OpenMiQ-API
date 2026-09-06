@@ -10,11 +10,8 @@
   const tr = $derived(t(data.locale));
   let logoFailed = $state(false);
 
-  // The sample quote (generated once at startup from the first
-  // ADMIN_DISCORD_IDS entry's avatar, GET /api/sample-quote) doubles as the
-  // OGP image — link previews (Discord, Slack, X/Twitter, etc.) show it
-  // instead of a generic favicon. Falls through to a 404 with no image if
-  // generation never ran (no admin configured); nothing else here degrades.
+  // The sample quote (generated once at startup from the first ADMIN_DISCORD_IDS entry's avatar, GET /api/sample-quote) doubles as the OGP image — link previews (Discord, Slack, X/Twitter, etc.) show it instead of a generic favicon.
+  // Falls through to a 404 with no image if generation never ran (no admin configured); nothing else here degrades.
   const ogImageUrl = $derived(`${data.siteUrl}/api/sample-quote`);
   const ogUrl = $derived(`${data.siteUrl}${page.url.pathname}`);
 </script>

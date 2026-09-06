@@ -29,16 +29,12 @@ function applyToDocument(preference: ThemePreference): void {
   document.documentElement.style.colorScheme = dark ? "dark" : "light";
 }
 
-// A tiny rune-backed store rather than a context — the toggle in
-// +layout.svelte and any other page that wants to read/set the theme all
-// share this one module-level instance, no provider needed.
+// A tiny rune-backed store rather than a context — the toggle in +layout.svelte and any other page that wants to read/set the theme all share this one module-level instance, no provider needed.
 class ThemeStore {
   preference = $state<ThemePreference>(readStored());
 
   constructor() {
-    // app.html's own inline script already applied the pre-hydration value
-    // to <html> to avoid a flash; this just keeps the two in sync and
-    // reacts to the OS theme changing while "system" is selected.
+    // app.html's own inline script already applied the pre-hydration value to <html> to avoid a flash; this just keeps the two in sync and reacts to the OS theme changing while "system" is selected.
     if (typeof window !== "undefined") {
       applyToDocument(this.preference);
       window

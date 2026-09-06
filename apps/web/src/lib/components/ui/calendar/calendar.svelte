@@ -5,9 +5,7 @@
   import { cn } from "$lib/utils.ts";
   import { buttonVariants } from "$lib/components/ui/button/index.ts";
 
-  // A single-date-only wrapper — the app never needs multi-select, and
-  // bits-ui's own CalendarRootProps is a single|multiple union too complex
-  // for svelte-check to narrow through a plain pass-through prop type.
+  // A single-date-only wrapper — the app never needs multi-select, and bits-ui's own CalendarRootProps is a single|multiple union too complex for svelte-check to narrow through a plain pass-through prop type.
   let {
     ref = $bindable(null),
     value = $bindable<DateValue | undefined>(),

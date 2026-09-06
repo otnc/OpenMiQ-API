@@ -32,9 +32,7 @@
     reasonLabel !== null && reasonRequired && reasonValue.trim().length === 0,
   );
 
-  // The <dialog> element (not open state) is the source of truth for
-  // showModal()/close() — this effect just keeps it in sync with `open`
-  // however that got toggled (a click here, or the caller setting it).
+  // The <dialog> element (not open state) is the source of truth for showModal()/close() — this effect just keeps it in sync with `open` however that got toggled (a click here, or the caller setting it).
   $effect(() => {
     if (open) dialogEl?.showModal();
     else dialogEl?.close();
