@@ -12,7 +12,7 @@ const ALLOWED_CONTENT_TYPES = new Set([
   "image/webp",
   "image/gif",
 ]);
-const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 
 const uploadResultSchema = z.object({ url: z.url() });
 const invalidRequestSchema = z.object({
@@ -109,9 +109,9 @@ export function createUploadsApp(env: Env) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const id = newSecretToken();
     await imageStore.put(id, buffer);
-    const expiresAt = env.HOSTED_IMAGE_TTL_HOURS
-      ? new Date(Date.now() + env.HOSTED_IMAGE_TTL_HOURS * 60 * 60 * 1000)
-      : null;
+    const expiresAt = new Date(
+      Date.now() + env.UPLOAD_TTL_HOURS * 60 * 60 * 1000,
+    );
     await db.insert(hostedImages).values({
       id,
       contentType: file.type,

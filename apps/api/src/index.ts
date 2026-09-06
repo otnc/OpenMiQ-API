@@ -2,14 +2,15 @@ import { serve } from "@hono/node-server";
 import { loadEnv } from "./config/env.ts";
 import { createApp } from "./app.ts";
 import { generateSampleQuote } from "./services/sampleQuoteService.ts";
+import { startHostedImageCleanup } from "./services/hostedImageCleanupService.ts";
 
 const env = loadEnv();
 const app = createApp(env);
 
-// Fire-and-forget: the homepage sample quote is best-effort and shouldn't
-// delay the server actually listening. generateSampleQuote() already
-// catches its own errors.
+// Fire-and-forget: the homepage sample quote is best-effort and shouldn't delay the server actually listening. generateSampleQuote() already catches its own errors.
 void generateSampleQuote(env);
+
+startHostedImageCleanup(env);
 
 serve(
   { fetch: app.fetch, port: env.API_PORT, hostname: env.API_HOST },

@@ -4,6 +4,7 @@ import { hostedImages, users } from "@openmiq/db";
 import { createApp } from "../src/app.ts";
 import { buildTestEnv } from "./helpers/env.ts";
 import { createTestDbFile } from "./helpers/testDbFile.ts";
+import { createTestImageDir } from "./helpers/testImageDir.ts";
 import { getDb } from "../src/db.ts";
 import { newId } from "../src/lib/ids.ts";
 import { createApiKey } from "../src/services/apiKeyService.ts";
@@ -14,10 +15,15 @@ const TINY_PNG = Buffer.from(
 );
 
 describe("POST /api/uploads", () => {
-  const { url: DATABASE_URL, cleanup } = createTestDbFile();
-  const env = buildTestEnv({ DATABASE_URL });
+  const { url: DATABASE_URL, cleanup: cleanupDb } = createTestDbFile();
+  const { dir: STORAGE_LOCAL_DIR, cleanup: cleanupImages } =
+    createTestImageDir();
+  const env = buildTestEnv({ DATABASE_URL, STORAGE_LOCAL_DIR });
   const app = createApp(env);
-  afterAll(cleanup);
+  afterAll(() => {
+    cleanupDb();
+    cleanupImages();
+  });
 
   async function issueApiKey(): Promise<string> {
     const db = getDb(env);

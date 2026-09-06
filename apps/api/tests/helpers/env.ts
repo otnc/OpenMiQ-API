@@ -23,6 +23,7 @@ export function buildTestEnv(overrides: Partial<Env> = {}): Env {
     MAX_API_KEYS_PER_USER: 10,
     STORAGE_DRIVER: "local",
     STORAGE_LOCAL_DIR: "./data/images",
+    UPLOAD_TTL_HOURS: 1,
     TERMS_VERSION: "1",
     PRIVACY_VERSION: "1",
     DEFAULT_LOCALE: "en",

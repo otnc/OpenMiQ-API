@@ -8,6 +8,7 @@ import { createPlaygroundApp } from "../src/routes/playground.ts";
 import { createPlaygroundKeyManager } from "../src/services/playgroundKeyService.ts";
 import { buildTestEnv } from "./helpers/env.ts";
 import { createTestDbFile } from "./helpers/testDbFile.ts";
+import { createTestImageDir } from "./helpers/testImageDir.ts";
 import { getDb } from "../src/db.ts";
 
 // Builds just the pieces under test, with a key manager this test controls directly (rotate() awaited up front) — going through createApp() itself would race its own fire-and-forget initial rotate().
@@ -191,8 +192,13 @@ describe("POST /api/playground/quote (anonymous demo)", () => {
 });
 
 describe("POST /api/playground/uploads (anonymous demo)", () => {
-  const { url: DATABASE_URL, cleanup } = createTestDbFile();
-  afterAll(cleanup);
+  const { url: DATABASE_URL, cleanup: cleanupDb } = createTestDbFile();
+  const { dir: STORAGE_LOCAL_DIR, cleanup: cleanupImages } =
+    createTestImageDir();
+  afterAll(() => {
+    cleanupDb();
+    cleanupImages();
+  });
   const TINY_PNG = Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
     "base64",
@@ -201,6 +207,7 @@ describe("POST /api/playground/uploads (anonymous demo)", () => {
   it("uploads through the shared key and returns a working URL, with no client-supplied X-API-Key", async () => {
     const env = buildTestEnv({
       DATABASE_URL,
+      STORAGE_LOCAL_DIR,
       PLAYGROUND_SHARED_KEY_LIMIT: 500,
     });
     const { app, keyManager } = buildPlaygroundApp(env);
@@ -221,6 +228,7 @@ describe("POST /api/playground/uploads (anonymous demo)", () => {
   it("shares the same IP/usage limits as /api/playground/quote", async () => {
     const env = buildTestEnv({
       DATABASE_URL,
+      STORAGE_LOCAL_DIR,
       PLAYGROUND_SHARED_KEY_LIMIT: 500,
       PLAYGROUND_RATE_LIMIT_MAX: 1,
     });

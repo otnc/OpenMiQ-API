@@ -52,13 +52,12 @@ const envSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().optional(),
   R2_BUCKET: z.string().optional(),
   HOSTED_IMAGE_TTL_HOURS: z.coerce.number().int().positive().optional(),
+  // A short, always-on TTL for POST /api/uploads specifically — those are staging files meant to be referenced by a following /api/quote call within minutes, not a hosting service, so they don't inherit HOSTED_IMAGE_TTL_HOURS's "unset = kept indefinitely" default. Enforced the same way as HOSTED_IMAGE_TTL_HOURS (see hostedImageCleanupService.ts).
+  UPLOAD_TTL_HOURS: z.coerce.number().int().positive().default(1),
   TERMS_VERSION: z.string().default("1"),
   PRIVACY_VERSION: z.string().default("1"),
   DEFAULT_LOCALE: z.enum(["en", "ja"]).default("en"),
-  // Named API_PORT/API_HOST, not PORT/HOST, because this env file is shared
-  // with apps/web (README.md "Configuration") and @sveltejs/adapter-node
-  // reads plain PORT/HOST itself — reusing those names here would make the
-  // two apps fight over one value.
+  // Named API_PORT/API_HOST, not PORT/HOST, because this env file is shared with apps/web (README.md "Configuration") and @sveltejs/adapter-node reads plain PORT/HOST itself — reusing those names here would make the two apps fight over one value.
   API_PORT: z.coerce.number().int().positive().default(9413),
   API_HOST: z.string().default("0.0.0.0"),
 });
@@ -66,10 +65,7 @@ const envSchema = z.object({
 export type Env = z.infer<typeof envSchema>;
 
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
-  // A key present in .env but left blank (e.g. `HOSTED_IMAGE_TTL_HOURS=`)
-  // means "unset", not the empty string — without this, z.coerce.number()
-  // would turn "" into 0 and fail validation instead of falling through to
-  // the field's own default/optional handling.
+  // A key present in .env but left blank (e.g. `HOSTED_IMAGE_TTL_HOURS=`) means "unset", not the empty string — without this, z.coerce.number() would turn "" into 0 and fail validation instead of falling through to the field's own default/optional handling.
   const normalized = Object.fromEntries(
     Object.entries(source).filter(([, value]) => value !== ""),
   );

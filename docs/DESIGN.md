@@ -418,7 +418,7 @@ Swagger UI: `GET /api/docs`（`@hono/swagger-ui`、`@hono/zod-openapi` が生成
 
 **`watermark`/`watermarkUrl`パラメータ（実装済み）**: OpenMiQ（Discordボット）・OpenMiQ-misskeyの両方が持つ「`LOGO_PATH`を設定していればそのロゴ画像をwatermarkとして描画する」慣習を踏襲する。優先順位は`watermarkUrl`（画像URL） > `watermark`（テキスト、空文字列も含む） > サーバー側の`LOGO_PATH`（§11、`getLogoWatermark()`）— いずれも未指定なら`setWatermark()`自体を呼ばず`makeitaquote`自体の既定に委ねる。`watermarkUrl`は`new URL(...)`にした上で`makeitaquote`の`setWatermark(watermark: string | AvatarSource): this`に渡す（`AvatarSource`としてURLを渡すと画像として描画される）。
 
-**`POST /api/uploads`（実装済み）**: `authorAvatarUrl`/`watermarkUrl`に渡す画像を、外部URLではなく手元のファイルから用意したい場合の窓口。`multipart/form-data`で`file`フィールド（`image/png`・`image/jpeg`・`image/webp`・`image/gif`、8MBまで）を受け取り、`hosted: true`の出力画像と同じ`ImageStore`/`hosted_images`テーブル・`GET /api/images/:id`経由で配信する（`hosted_images`に`content_type`列を追加し、出力画像以外のContent-Typeも正しく返せるようにした）。認証・レート制限は`/api/quote`と同じ`apiKeyAuthMiddleware`を通す。
+**`POST /api/uploads`（実装済み）**: `authorAvatarUrl`/`watermarkUrl`に渡す画像を、外部URLではなく手元のファイルから用意したい場合の窓口。`multipart/form-data`で`file`フィールド（`image/png`・`image/jpeg`・`image/webp`・`image/gif`、5MBまで）を受け取り、`hosted: true`の出力画像と同じ`ImageStore`/`hosted_images`テーブル・`GET /api/images/:id`経由で配信する（`hosted_images`に`content_type`列を追加し、出力画像以外のContent-Typeも正しく返せるようにした）。認証・レート制限は`/api/quote`と同じ`apiKeyAuthMiddleware`を通す。保存期間は`HOSTED_IMAGE_TTL_HOURS`ではなく専用の`UPLOAD_TTL_HOURS`（既定1時間）に従う（§8.6）。
 
 ### 8.6 画像ストレージ（`hosted: true`モード）
 
@@ -426,7 +426,8 @@ Swagger UI: `GET /api/docs`（`@hono/swagger-ui`、`@hono/zod-openapi` が生成
 - **ストレージ抽象化**: `ImageStore`インターフェース（`put(id, buffer): Promise<void>` / `get(id): Promise<Buffer|null>` / `delete(id): Promise<void>`）を定義し、`STORAGE_DRIVER`環境変数で実装を切り替える。
   - `r2`（**既定・決定**）: **Cloudflare R2**（S3互換）に保存。無料枠(10GB/月ストレージ)が大きく、何よりエグレス課金が無いため画像配信コストが実質ゼロに近い。署名付きリクエストは軽量な`aws4fetch`（`AwsClient`、§3.1）で実装し、`@aws-sdk/client-s3`のフル依存は避ける
   - `local`: `STORAGE_LOCAL_DIR`配下にファイルとして保存。追加インフラ不要で最小構成・オフライン開発向けに`ImageStore`実装として用意するが、大量の画像を長期間保持すると単一ディスクの容量を圧迫するため既定では選択しない
-- **クリーンアップ（決定: R2ライフサイクルルールに一任）**: `HOSTED_IMAGE_TTL_HOURS`を設定した場合、実体の削除はアプリ側の定期ジョブではなく**R2バケットのオブジェクトライフサイクルルール**（指定日数経過後に自動削除）に任せる。アプリ側はDB管理テーブル`hosted_images(id, storedAt, expiresAt)`を持ち、`expiresAt`が`null`（無期限）か過去日時かで`GET /api/images/:id`の404判定のみを行う（R2側の実削除タイミングとDB側の404判定に多少のズレがあっても、期限切れ後にAPIとして見えなくなっていれば実用上問題ない）。`STORAGE_DRIVER=local`選択時はR2のライフサイクル機能が使えないため、その場合のみアプリ側の削除ジョブ（`setInterval`または外部cron）にフォールバックする。
+- **クリーンアップ（決定: アプリ側の定期ジョブが実体を削除する）**: `hostedImageCleanupService.ts`の`startHostedImageCleanup()`が起動時（`index.ts`、`createApp()`自体ではない — テストが`createApp()`のたびにバックグラウンドタイマーを持たないようにするため、`generateSampleQuote`と同じ理由）と以後15分ごとに`hosted_images`テーブルを`expiresAt`が過去日時（かつ`null`ではない）の行についてスキャンし、各行につき`ImageStore.delete(id)`で実体を削除してからDB行自体も削除する。`ImageStore`インターフェースは元々`delete(id): Promise<void>`を持っていたが、以前はどこからも呼ばれておらず、`expiresAt`は`GET /api/images/:id`の404判定にしか使われていなかった（実体はR2バケット側のライフサイクルルールという外部設定に一任する想定だったが、ローカルストレージ選択時は削除される手段が存在しなかった）。このジョブにより`r2`/`local`どちらの`STORAGE_DRIVER`でも同じ一箇所のコードで確実に削除されるようになったため、R2側のライフサイクルルールは（設定してあっても害はないが）もう必須ではない。
+- **`POST /api/uploads`専用の短いTTL（`UPLOAD_TTL_HOURS`、既定1時間）**: アップロードは後続の`/api/quote`呼び出しで即座に参照される想定のステージングファイルであり、`hosted: true`の生成画像（恒久的とは謳わないが既定では無期限に保持される）とは性質が異なるため、`HOSTED_IMAGE_TTL_HOURS`（既定未設定＝無期限）を継承せず常に有効な独自のTTLを持つ（`uploads.ts`）。ファイルサイズ上限も`MAX_UPLOAD_BYTES = 5MB`（元は8MBだったが、ステージング用途に見合う値へ縮小）。
 
 ---
 
@@ -527,7 +528,8 @@ OpenMiQ-misskey の `## Configuration` 節に倣い、Markdownテーブル形式
 | `STORAGE_DRIVER` | `hosted: true`時の画像保存先。**既定 `r2`**（Cloudflare R2、§8.6）。`local`（ディスク保存）にも切替可能だが既定は前提としない |
 | `R2_ACCOUNT_ID` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_BUCKET` | `STORAGE_DRIVER=r2`（既定）時のCloudflare R2接続情報。`aws4fetch`の`AwsClient`に渡す |
 | `STORAGE_LOCAL_DIR` | `STORAGE_DRIVER=local`選択時のみ使用する保存先ディレクトリ（既定 `./data/images`） |
-| `HOSTED_IMAGE_TTL_HOURS` | hosted画像の保存期間。**既定は未設定＝無期限**（自動削除しない）。設定した場合、期限切れ後に`GET /api/images/:id`が404を返し、実体はR2バケットのライフサイクルルールにより自動削除される（`local`選択時のみアプリ側の削除ジョブにフォールバック、§8.6） |
+| `HOSTED_IMAGE_TTL_HOURS` | `hosted: true`生成画像の保存期間。**既定は未設定＝無期限**（自動削除しない）。設定した場合、期限切れ後は`hostedImageCleanupService.ts`の定期ジョブが実体（`ImageStore.delete()`）とDB行の両方を削除する（§8.6） |
+| `UPLOAD_TTL_HOURS` | `POST /api/uploads`でアップロードした画像の保存期間。**既定 `1`**（時間、`HOSTED_IMAGE_TTL_HOURS`と異なり無期限にはならない）。同じ`hostedImageCleanupService.ts`の定期ジョブが削除する（§8.6） |
 | `TERMS_VERSION` / `PRIVACY_VERSION` | 現在有効な利用規約・プライバシーポリシーのバージョン識別子（§16）。更新の都度インクリメントし、`USER.agreedTermsVersion`/`agreedPrivacyVersion`と不一致のユーザーは再同意するまでAPIキーが凍結される（§16.4） |
 | `DEFAULT_LOCALE` | Web UIの既定表示言語。**既定 `en`**（§17） |
 | `API_PORT` / `API_HOST` | `apps/api`（Hono/`@hono/node-server`）が待ち受けるポート/バインドアドレス（既定 `9413`/`0.0.0.0`）。素の`PORT`/`HOST`ではなく`API_`接頭辞付きなのは、同じ`.env`を共有する`apps/web`側で`@sveltejs/adapter-node`がその素の名前を予約しているため（§14.2） |
