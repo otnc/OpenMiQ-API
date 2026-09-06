@@ -117,6 +117,39 @@ interface Translations {
     confirmYes: string;
     confirmCancel: string;
   };
+  playground: {
+    title: string;
+    description: string;
+    apiKeyLabel: string;
+    apiKeyPlaceholder: string;
+    apiKeyHint: string;
+    textLabel: string;
+    usernameLabel: string;
+    avatarLabel: string;
+    themeLabel: string;
+    themePlaceholder: string;
+    fontLabel: string;
+    fontPlaceholder: string;
+    layoutLabel: string;
+    layoutDefault: string;
+    layoutSide: string;
+    layoutNew: string;
+    colorLabel: string;
+    boldLabel: string;
+    watermarkLabel: string;
+    watermarkPlaceholder: string;
+    fakeLabel: string;
+    hostedLabel: string;
+    send: string;
+    sending: string;
+    requestLabel: string;
+    curlLabel: string;
+    resultLabel: string;
+    resultImageAlt: string;
+    hostedUrlLabel: string;
+    errorLabel: string;
+    apiKeyRequired: string;
+  };
 }
 
 const en: Translations = {
@@ -229,6 +262,41 @@ const en: Translations = {
     confirmMessage: "This action cannot be undone.",
     confirmYes: "Yes",
     confirmCancel: "Cancel",
+  },
+  playground: {
+    title: "Playground",
+    description:
+      "Try generating a quote image right here, and see the exact request it sends — the same shape /api/quote and @makeitaquote/openmiq both expect.",
+    apiKeyLabel: "API key",
+    apiKeyPlaceholder: "openmiq_...",
+    apiKeyHint:
+      "Only sent to this instance's own /api/quote — never stored anywhere but your browser.",
+    textLabel: "Text",
+    usernameLabel: "Username",
+    avatarLabel: "Avatar URL",
+    themeLabel: "Theme",
+    themePlaceholder: "e.g. sunset, or any CSS color",
+    fontLabel: "Font",
+    fontPlaceholder: "e.g. pop",
+    layoutLabel: "Layout",
+    layoutDefault: "Server default",
+    layoutSide: "Side",
+    layoutNew: "New",
+    colorLabel: "Keep avatar in color",
+    boldLabel: "Bold text",
+    watermarkLabel: "Watermark override",
+    watermarkPlaceholder: "Leave blank for the server's default",
+    fakeLabel: "Mark as fake (POST /api/fakequote)",
+    hostedLabel: "Hosted (upload, return a URL instead of the image)",
+    send: "Send request",
+    sending: "Sending...",
+    requestLabel: "Request",
+    curlLabel: "As curl",
+    resultLabel: "Result",
+    resultImageAlt: "The generated quote image",
+    hostedUrlLabel: "Hosted at",
+    errorLabel: "Error",
+    apiKeyRequired: "An API key is required to send a request.",
   },
 };
 
@@ -345,6 +413,41 @@ const ja: Translations = {
     confirmMessage: "この操作は取り消せません。",
     confirmYes: "はい",
     confirmCancel: "キャンセル",
+  },
+  playground: {
+    title: "プレイグラウンド",
+    description:
+      "その場でクォート画像を生成して試せます。実際に送信されるリクエストの中身も確認できます — /api/quoteや@makeitaquote/openmiqが受け取るものと同じ形式です。",
+    apiKeyLabel: "APIキー",
+    apiKeyPlaceholder: "openmiq_...",
+    apiKeyHint:
+      "このインスタンス自身の/api/quoteにのみ送信されます — ブラウザ以外のどこにも保存されません。",
+    textLabel: "テキスト",
+    usernameLabel: "ユーザー名",
+    avatarLabel: "アバターURL",
+    themeLabel: "テーマ",
+    themePlaceholder: "例: sunset、または任意のCSS色",
+    fontLabel: "フォント",
+    fontPlaceholder: "例: pop",
+    layoutLabel: "レイアウト",
+    layoutDefault: "サーバーの既定値",
+    layoutSide: "サイド",
+    layoutNew: "新レイアウト",
+    colorLabel: "アバターをカラーのまま表示",
+    boldLabel: "太字",
+    watermarkLabel: "透かしの上書き",
+    watermarkPlaceholder: "空欄でサーバーの既定値を使用",
+    fakeLabel: "偽物として送信する（POST /api/fakequote）",
+    hostedLabel: "ホスト（アップロードして画像の代わりにURLを返す）",
+    send: "リクエスト送信",
+    sending: "送信中...",
+    requestLabel: "リクエスト",
+    curlLabel: "curlで見る",
+    resultLabel: "結果",
+    resultImageAlt: "生成されたクォート画像",
+    hostedUrlLabel: "アップロード先",
+    errorLabel: "エラー",
+    apiKeyRequired: "リクエストの送信にはAPIキーが必要です。",
   },
 };
 

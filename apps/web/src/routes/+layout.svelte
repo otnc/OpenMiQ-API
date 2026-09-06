@@ -90,6 +90,15 @@
         <a href="/legal/privacy" class="hover:text-foreground"
           >{tr.footer.privacy}</a
         >
+        <a href="/playground" class="hover:text-foreground"
+          >{tr.playground.title}</a
+        >
+        <a
+          href="/api/docs"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hover:text-foreground">{tr.common.apiDocs}</a
+        >
         <a
           href="https://github.com/otnc/OpenMiQ-API"
           target="_blank"
