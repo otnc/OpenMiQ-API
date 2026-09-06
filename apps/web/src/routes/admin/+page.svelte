@@ -10,6 +10,7 @@
   import ConfirmDialog from "$lib/components/ConfirmDialog.svelte";
   import { defaultDiscordAvatarUrl } from "$lib/discordAvatar.ts";
   import { formatDuration } from "$lib/duration.ts";
+  import { formatDateTime } from "$lib/formatDate.ts";
   import {
     Inbox,
     Users,
@@ -334,6 +335,7 @@
             <Table.Head>{tr.common.discord}</Table.Head>
             <Table.Head>{tr.apiKeys.nameLabel}</Table.Head>
             <Table.Head>{tr.common.prefix}</Table.Head>
+            <Table.Head>{tr.apiKeys.expiresAtLabel}</Table.Head>
             <Table.Head>{tr.common.requests}</Table.Head>
             <Table.Head>{tr.common.usage}</Table.Head>
             <Table.Head></Table.Head>
@@ -348,6 +350,13 @@
               <Table.Cell>{key.name}</Table.Cell>
               <Table.Cell class="font-mono text-xs">{key.keyPrefix}…</Table.Cell
               >
+              <Table.Cell>
+                {#if key.expiresAt}
+                  {formatDateTime(key.expiresAt, data.locale)}
+                {:else}
+                  <Badge variant="secondary">{tr.apiKeys.noExpiry}</Badge>
+                {/if}
+              </Table.Cell>
               <Table.Cell class="tabular-nums">{key.requestCount}</Table.Cell>
               <Table.Cell class="tabular-nums">
                 {#if key.revokedAt}

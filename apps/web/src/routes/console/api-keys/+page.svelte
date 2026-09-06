@@ -9,6 +9,7 @@
   import { Copy, Check, RefreshCw, Trash2 } from "@lucide/svelte";
   import DatePicker from "$lib/components/DatePicker.svelte";
   import { formatDuration } from "$lib/duration.ts";
+  import { formatDateTime } from "$lib/formatDate.ts";
   import type { PageData, ActionData } from "./$types.ts";
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -115,7 +116,7 @@
             <Table.Cell class="font-mono text-xs">{key.keyPrefix}…</Table.Cell>
             <Table.Cell>
               {#if key.expiresAt}
-                {key.expiresAt}
+                {formatDateTime(key.expiresAt, data.locale)}
               {:else}
                 <Badge variant="secondary">{tr.apiKeys.noExpiry}</Badge>
               {/if}
