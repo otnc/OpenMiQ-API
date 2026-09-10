@@ -15,10 +15,7 @@ function isNoteLike(value: unknown): value is NoteLike {
 /**
  * Derives a quote from a Misskey note.
  *
- * The Misskey counterpart to `fromMessage()`, and shaped by the same rule:
- * quote what a reader saw. That means the display name over the handle, the
- * author's own avatar, and — by default — the note with its MFM scaffolding
- * taken off.
+ * The Misskey counterpart to `fromMessage()`, and shaped by the same rule: quote what a reader saw. That means the display name over the handle, the author's own avatar, and — by default — the note with its MFM scaffolding taken off.
  */
 export function fromNote(
   note: unknown,

@@ -134,8 +134,7 @@ export function createQuoteApp(env: Env) {
       return c.json({ url: `${env.APP_BASE_URL}/api/images/${id}` }, 201);
     }
 
-    // c.body(), not `new Response(...)` — a fresh Response would discard
-    // the RateLimit-* headers apiKeyAuthMiddleware already set on `c`.
+    // c.body(), not `new Response(...)` — a fresh Response would discard the RateLimit-* headers apiKeyAuthMiddleware already set on `c`.
     return c.body(new Uint8Array(png), 200, { "Content-Type": "image/png" });
   }
 

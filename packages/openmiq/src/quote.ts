@@ -85,11 +85,7 @@ export interface NormalizedWatermark {
 }
 
 /**
- * `null`/`undefined` (the default) leaves the server's own default watermark
- * in place — its LOGO_PATH image, if the instance has one configured. A
- * plain string is drawn as text (`""` is a valid override: it asks for no
- * watermark at all); a URL or raw bytes (Uint8Array/Buffer) are drawn as an
- * image instead, the same rule makeitaquote's own `setWatermark()` follows.
+ * `null`/`undefined` (the default) leaves the server's own default watermark in place — its LOGO_PATH image, if the instance has one configured. A plain string is drawn as text (`""` is a valid override: it asks for no watermark at all); a URL or raw bytes (Uint8Array/Buffer) are drawn as an image instead, the same rule makeitaquote's own `setWatermark()` follows.
  */
 export function normalizeWatermarkValue(
   watermark: unknown,
@@ -136,8 +132,7 @@ export function normalizeFlag(value: unknown, field: string): boolean | null {
 /**
  * Applies a partial input onto a quote, validating each provided field.
  *
- * Absent keys are left untouched; `undefined` is treated as absent so that
- * spreading a partially-filled object behaves the way it reads.
+ * Absent keys are left untouched; `undefined` is treated as absent so that spreading a partially-filled object behaves the way it reads.
  */
 export function applyInput(target: QuoteData, input: QuoteInput): QuoteData {
   if (input === null || typeof input !== "object") {
@@ -181,9 +176,7 @@ export function applyInput(target: QuoteData, input: QuoteInput): QuoteData {
 /**
  * Final check before sending.
  *
- * `text` and `authorName` are both required by the API — anything missing
- * would fail server-side anyway, so it's rejected before the request goes
- * out.
+ * `text` and `authorName` are both required by the API — anything missing would fail server-side anyway, so it's rejected before the request goes out.
  */
 export function assertRenderable(data: QuoteData): void {
   if (data.text.trim().length === 0) {

@@ -72,8 +72,7 @@ export function createAdminApp(env: Env) {
           .from(applications)
           .where(eq(applications.status, status))
       : await db.select().from(applications);
-    // Same fields as the Discord review embed (reviewEmbed(), §6.1) — the
-    // Web UI shows the same applicant identity there does.
+    // Same fields as the Discord review embed (reviewEmbed(), §6.1) — the Web UI shows the same applicant identity there does.
     const withApplicant = await Promise.all(
       rows.map(async (application) => {
         const user = await findUserById(db, application.userId);

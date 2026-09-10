@@ -8,9 +8,7 @@ export function createDb(databaseUrl: string) {
   const path = databaseUrl.startsWith("file:")
     ? databaseUrl.slice("file:".length)
     : databaseUrl;
-  // better-sqlite3 won't create the parent directory itself — on a fresh
-  // clone/deploy, ./data doesn't exist yet, so `new Database()` throws
-  // before there's ever a chance to write anything.
+  // better-sqlite3 won't create the parent directory itself — on a fresh clone/deploy, ./data doesn't exist yet, so `new Database()` throws before there's ever a chance to write anything.
   if (path !== ":memory:") {
     mkdirSync(dirname(path), { recursive: true });
   }

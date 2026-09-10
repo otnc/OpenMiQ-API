@@ -10,8 +10,7 @@ export interface LegalDiffPart {
 export interface LegalDiffResult {
   fromVersion: string;
   toVersion: string;
-  // false when `fromVersion` has no stored text to diff against (e.g. it
-  // predates version history) — callers should fall back to full text.
+  // false when `fromVersion` has no stored text to diff against (e.g. it predates version history) — callers should fall back to full text.
   available: boolean;
   parts: LegalDiffPart[];
 }

@@ -46,10 +46,7 @@ export interface OpenMiQOptions {
   /** An API key issued from your OpenMiQ-API instance's Web Console. */
   apiKey: string;
   /**
-   * The base URL of the OpenMiQ-API instance to talk to, e.g.
-   * `"https://miq.example.com"` or `"http://localhost:9413"` for a local
-   * instance. Required — OpenMiQ-API is meant to be self-hosted, so this
-   * package has no single default host to fall back to.
+   * The base URL of the OpenMiQ-API instance to talk to, e.g. `"https://miq.example.com"` or `"http://localhost:9413"` for a local instance. Required — OpenMiQ-API is meant to be self-hosted, so this package has no single default host to fall back to.
    */
   baseUrl: string;
   /** Request timeout in ms, default 15000. */
@@ -72,8 +69,7 @@ export interface UsageResult {
 /**
  * The shape of a Discord message that `setFromMessage()` understands.
  *
- * Structural on purpose: discord.js v13, v14 and discord.js-selfbot-v13 all
- * satisfy it, so this package needs no dependency on any of them.
+ * Structural on purpose: discord.js v13, v14 and discord.js-selfbot-v13 all satisfy it, so this package needs no dependency on any of them.
  */
 export interface MessageLike {
   content: string;
@@ -90,9 +86,7 @@ export interface MessageLike {
     displayAvatarURL?(options?: unknown): string;
   } | null;
   /**
-   * discord.js's per-message mention Collections. Optional, and each
-   * Collection independently so — a `Message` always has all four in
-   * practice, but nothing here requires it.
+   * discord.js's per-message mention Collections. Optional, and each Collection independently so — a `Message` always has all four in practice, but nothing here requires it.
    */
   mentions?: {
     members?: {
@@ -125,8 +119,7 @@ export interface MentionOptions {
 /**
  * Which version of a Discord user's avatar and name to quote.
  *
- * Both default to the server's, since that is what a reader of that server
- * actually saw. Whichever you pick, the other is the fallback.
+ * Both default to the server's, since that is what a reader of that server actually saw. Whichever you pick, the other is the fallback.
  */
 export interface MessageSourceOptions {
   /** `'guild'` (default) prefers a per-server avatar; `'global'` the account's. */
@@ -136,10 +129,7 @@ export interface MessageSourceOptions {
   /** Runs `message.content` through `stripDiscordMarkdown()` before quoting it. Default false. */
   stripDiscordMarkdown?: boolean;
   /**
-   * Expands Discord's raw tokens into the text a reader saw: user, role and
-   * channel mentions, slash commands, `<t:…>` timestamps and guild
-   * navigation tabs. Default true. Pass an object to control timestamp
-   * rendering.
+   * Expands Discord's raw tokens into the text a reader saw: user, role and channel mentions, slash commands, `<t:…>` timestamps and guild navigation tabs. Default true. Pass an object to control timestamp rendering.
    */
   resolveMentions?: boolean | MentionOptions;
 }
@@ -147,8 +137,7 @@ export interface MessageSourceOptions {
 /**
  * The shape of a Misskey note that `setFromNote()` understands.
  *
- * Structural, like `MessageLike`: this is what the API actually returns for
- * a note, so a response passed straight through fits without adaptation.
+ * Structural, like `MessageLike`: this is what the API actually returns for a note, so a response passed straight through fits without adaptation.
  */
 export interface NoteLike {
   text?: string | null;
@@ -172,8 +161,7 @@ export interface NoteSourceOptions {
 /**
  * The shape of a tweet/post that `setFromTweet()` understands.
  *
- * Structural, like `MessageLike`. `fromTwitterApiV2Tweet()` and
- * `fromFxTwitterStatus()` adapt a real API response into this shape.
+ * Structural, like `MessageLike`. `fromTwitterApiV2Tweet()` and `fromFxTwitterStatus()` adapt a real API response into this shape.
  */
 export interface TweetLike {
   text: string;

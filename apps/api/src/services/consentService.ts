@@ -15,10 +15,7 @@ export function needsReconsent(
   );
 }
 
-// Re-agreeing just updates the "live" agreement on USER — it never touches
-// status, never requires an admin, and (unlike denied/revoked) carries no
-// cooldown: the API-key freeze it lifts was never a status change to begin
-// with (DESIGN.md §16.4).
+// Re-agreeing just updates the "live" agreement on USER — it never touches status, never requires an admin, and (unlike denied/revoked) carries no cooldown: the API-key freeze it lifts was never a status change to begin with (DESIGN.md §16.4).
 export async function recordConsent(
   db: Db,
   userId: string,

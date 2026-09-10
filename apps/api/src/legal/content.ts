@@ -4,13 +4,7 @@ import { join } from "node:path";
 export type Locale = "en" | "ja";
 export type LocalizedText = Record<Locale, string>;
 
-// The full text of every published version is kept (not just the current
-// one) so a user re-agreeing after a TERMS_VERSION/PRIVACY_VERSION bump can
-// be shown a diff against the version they last agreed to, not just the new
-// text on its own (DESIGN.md §16.4). Each version lives as its own set of
-// Markdown files under apps/api/legal/<doc>/<version>/, read relative to the
-// process working directory (apps/api, per ecosystem.config.cjs and the dev
-// script) rather than bundled, so new versions can be added without a build.
+// The full text of every published version is kept (not just the current one) so a user re-agreeing after a TERMS_VERSION/PRIVACY_VERSION bump can be shown a diff against the version they last agreed to, not just the new text on its own (DESIGN.md §16.4). Each version lives as its own set of Markdown files under apps/api/legal/<doc>/<version>/, read relative to the process working directory (apps/api, per ecosystem.config.cjs and the dev script) rather than bundled, so new versions can be added without a build.
 const LEGAL_DIR = join(process.cwd(), "legal");
 
 function loadVersions(

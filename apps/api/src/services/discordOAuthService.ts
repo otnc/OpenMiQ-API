@@ -13,9 +13,7 @@ export function createDiscordOAuthClient(env: Env): OAuth2Client {
     server: "https://discord.com",
     clientId: env.DISCORD_CLIENT_ID,
     clientSecret: env.DISCORD_CLIENT_SECRET,
-    // Discord's authorize endpoint has no /api prefix, but the token
-    // endpoint does — these are Discord's documented OAuth2 URLs, not
-    // interchangeable with its versioned /api/v10 REST endpoints.
+    // Discord's authorize endpoint has no /api prefix, but the token endpoint does — these are Discord's documented OAuth2 URLs, not interchangeable with its versioned /api/v10 REST endpoints.
     authorizationEndpoint: "/oauth2/authorize",
     tokenEndpoint: "/api/oauth2/token",
   });

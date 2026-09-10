@@ -15,10 +15,7 @@ interface DiscordApiUser {
 }
 
 function defaultAvatarUrl(user: DiscordApiUser): string {
-  // Pre-Pomelo accounts (discriminator !== "0") pick from Discord's original
-  // 5 default avatars by discriminator; migrated accounts pick from the
-  // newer 6 by a shift of their snowflake — see Discord's own docs on
-  // "Default Avatar" for both formulas.
+  // Pre-Pomelo accounts (discriminator !== "0") pick from Discord's original 5 default avatars by discriminator; migrated accounts pick from the newer 6 by a shift of their snowflake — see Discord's own docs on "Default Avatar" for both formulas.
   const index =
     user.discriminator === "0"
       ? Number((BigInt(user.id) >> 22n) % 6n)
@@ -27,9 +24,7 @@ function defaultAvatarUrl(user: DiscordApiUser): string {
 }
 
 /**
- * Fetches an arbitrary Discord user's public profile by id, using the bot
- * token — unlike the OAuth2 flow elsewhere in this app, this doesn't
- * require that user to have logged in themselves.
+ * Fetches an arbitrary Discord user's public profile by id, using the bot token — unlike the OAuth2 flow elsewhere in this app, this doesn't require that user to have logged in themselves.
  */
 export async function fetchDiscordUserById(
   botToken: string,

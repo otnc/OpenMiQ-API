@@ -1,11 +1,6 @@
-// Wipes every user record (and their applications/API keys) for a clean
-// re-test of the whole signup flow. Deliberately narrow: bans and the
-// admin_actions audit log are left alone, since those aren't "user" rows —
-// a ban can exist for an identity that never had one, and the audit log is
-// a historical record, not app state that blocks testing.
+// Wipes every user record (and their applications/API keys) for a clean re-test of the whole signup flow. Deliberately narrow: bans and the admin_actions audit log are left alone, since those aren't "user" rows — a ban can exist for an identity that never had one, and the audit log is a historical record, not app state that blocks testing.
 //
-// Run from apps/api (matches DATABASE_URL's own relative-path convention,
-// see packages/db/src/client.ts): `pnpm run reset-users -- --yes`
+// Run from apps/api (matches DATABASE_URL's own relative-path convention, see packages/db/src/client.ts): `pnpm run reset-users -- --yes`
 import { createDb, users, applications, apiKeys } from "@openmiq/db";
 
 if (!process.argv.includes("--yes")) {

@@ -8,8 +8,7 @@ export interface RateLimitResult {
   limit: number;
 }
 
-// Fixed-window counter persisted in SQLite so counts survive a restart
-// without an external store like Redis (DESIGN.md §5.4).
+// Fixed-window counter persisted in SQLite so counts survive a restart without an external store like Redis (DESIGN.md §5.4).
 export function checkAndIncrement(
   db: Db,
   key: string,
@@ -53,8 +52,7 @@ export function checkAndIncrement(
   };
 }
 
-// Read-only view of the current window, for usage-reporting endpoints that
-// must not themselves count as a consumed request (DESIGN.md §5.4).
+// Read-only view of the current window, for usage-reporting endpoints that must not themselves count as a consumed request (DESIGN.md §5.4).
 export function peek(
   db: Db,
   key: string,

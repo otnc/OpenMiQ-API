@@ -58,8 +58,7 @@ import type {
  *   .toBuffer();
  * ```
  *
- * `baseUrl` is required — OpenMiQ-API is meant to be self-hosted, so there is
- * no single official instance this package could default to.
+ * `baseUrl` is required — OpenMiQ-API is meant to be self-hosted, so there is no single official instance this package could default to.
  */
 export class OpenMiQ {
   #data: QuoteData = emptyQuote();
@@ -273,11 +272,7 @@ export class OpenMiQ {
   /**
    * Renders the quote and returns the image bytes.
    *
-   * One round trip by default. Pass `{ hosted: true }` to go through the
-   * hosted path instead — the image is uploaded to the API's storage first,
-   * then downloaded back, matching what `toURL()` does. Either way, a raw
-   * `setAvatar()`/`setWatermark()` adds one more round trip each, to POST
-   * /api/uploads first — see those methods.
+   * One round trip by default. Pass `{ hosted: true }` to go through the hosted path instead — the image is uploaded to the API's storage first, then downloaded back, matching what `toURL()` does. Either way, a raw `setAvatar()`/`setWatermark()` adds one more round trip each, to POST /api/uploads first — see those methods.
    */
   async toBuffer(options: { hosted?: boolean } = {}): Promise<Buffer> {
     assertRenderable(this.#data);
@@ -306,8 +301,7 @@ export class OpenMiQ {
   /**
    * Renders the quote and returns the URL the API hosts it at.
    *
-   * Forces the hosted path for this one call — it does not change what a
-   * later `toBuffer()` does.
+   * Forces the hosted path for this one call — it does not change what a later `toBuffer()` does.
    */
   async toURL(): Promise<string> {
     assertRenderable(this.#data);

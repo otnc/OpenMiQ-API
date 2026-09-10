@@ -77,8 +77,7 @@ export function createDiscordInteractionsApp(env: Env) {
         return c.json(ephemeral("This application no longer exists."));
       }
 
-      // Ack within Discord's 3s window first; the message edit (which can
-      // retry on 429, see discordWebhookService) happens after we respond.
+      // Ack within Discord's 3s window first; the message edit (which can retry on 429, see discordWebhookService) happens after we respond.
       if (!result.alreadyReviewed) {
         notifyReviewResult(env, result, action).catch((error: unknown) => {
           console.error("Failed to update Discord review message", error);

@@ -1,10 +1,6 @@
 import { z } from "zod";
 
-// Backticks and backslashes are rejected outright, not just escaped:
-// applicationService.ts posts this message into a Discord embed field
-// wrapped in a ``` code block (discordWebhookService.ts's reviewEmbed()) —
-// a backtick in the message could close that fence early and inject
-// arbitrary Markdown/mentions into the review embed.
+// Backticks and backslashes are rejected outright, not just escaped: applicationService.ts posts this message into a Discord embed field wrapped in a ``` code block (discordWebhookService.ts's reviewEmbed()) — a backtick in the message could close that fence early and inject arbitrary Markdown/mentions into the review embed.
 export const applicationMessageSchema = z
   .string()
   .min(20)

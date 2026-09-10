@@ -16,10 +16,7 @@ function isTweetLike(value: unknown): value is TweetLike {
 /**
  * Derives a quote from a tweet/post.
  *
- * The X/Twitter counterpart to `fromMessage()`/`fromNote()`: quote what a
- * reader saw, which is the text exactly as written by default — X does not
- * expand a tweet's `t.co` links or `@handle` mentions into anything else in
- * its own timeline either, so there is nothing here to resolve.
+ * The X/Twitter counterpart to `fromMessage()`/`fromNote()`: quote what a reader saw, which is the text exactly as written by default — X does not expand a tweet's `t.co` links or `@handle` mentions into anything else in its own timeline either, so there is nothing here to resolve.
  */
 export function fromTweet(
   tweet: unknown,

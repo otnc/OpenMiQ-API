@@ -11,11 +11,7 @@ const migrationsFolder = join(
   "../../../../drizzle/migrations",
 );
 
-// Route-level tests go through `getDb(env)`, which opens its own connection
-// from `env.DATABASE_URL` — so, unlike packages/db/src/testDb.ts's in-memory
-// helper, this needs a real file: migrations are applied here, then the same
-// path is handed to the app under test as DATABASE_URL, and getDb's own
-// `new Database(path)` sees the already-migrated schema.
+// Route-level tests go through `getDb(env)`, which opens its own connection from `env.DATABASE_URL` — so, unlike packages/db/src/testDb.ts's in-memory helper, this needs a real file: migrations are applied here, then the same path is handed to the app under test as DATABASE_URL, and getDb's own `new Database(path)` sees the already-migrated schema.
 export function createTestDbFile(): { url: string; cleanup: () => void } {
   const dir = mkdtempSync(join(tmpdir(), "openmiq-api-test-"));
   const path = join(dir, "test.sqlite");

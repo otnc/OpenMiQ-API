@@ -21,10 +21,7 @@ export interface UserV2Like {
 /**
  * Adapts an official API v2 response into `TweetLike`.
  *
- * v2 splits a tweet from its author — `tweet.author_id` names them, but the
- * author itself only comes back when the request asked for the `author_id`
- * expansion, arriving separately in `includes.users`. Fetch with that
- * expansion, then pass both halves here:
+ * v2 splits a tweet from its author — `tweet.author_id` names them, but the author itself only comes back when the request asked for the `author_id` expansion, arriving separately in `includes.users`. Fetch with that expansion, then pass both halves here:
  *
  * ```ts
  * const { data: tweet, includes } = await client.v2.singleTweet(id, {
@@ -66,8 +63,7 @@ export interface FxTwitterStatusLike {
 /**
  * Adapts an FxTwitter API response into `TweetLike`.
  *
- * FxTwitter needs no API key and returns the author inline, so this is the
- * whole thing:
+ * FxTwitter needs no API key and returns the author inline, so this is the whole thing:
  *
  * ```ts
  * const { status } = await new FxTwitterV2().getStatus(id)

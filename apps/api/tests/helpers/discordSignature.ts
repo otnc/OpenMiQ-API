@@ -2,10 +2,7 @@ import { webcrypto } from "node:crypto";
 
 const { subtle } = webcrypto;
 
-// Mirrors discord-interactions' own verifyKey(): a raw Ed25519 keypair,
-// signing over `timestamp + body` bytes with the private half so tests can
-// produce requests the real verifier accepts using only the public key hex
-// (the DISCORD_PUBLIC_KEY value).
+// Mirrors discord-interactions' own verifyKey(): a raw Ed25519 keypair, signing over `timestamp + body` bytes with the private half so tests can produce requests the real verifier accepts using only the public key hex (the DISCORD_PUBLIC_KEY value).
 export async function generateDiscordKeyPair(): Promise<{
   publicKeyHex: string;
   privateKey: CryptoKey;

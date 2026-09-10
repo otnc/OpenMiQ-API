@@ -85,16 +85,14 @@ export const adminActions = sqliteTable("admin_actions", {
     .$defaultFn(() => new Date()),
 });
 
-// Fixed-window counter backing hono-rate-limiter, kept in SQLite so counts
-// survive a restart without adding an external store (DESIGN.md §5.4).
+// Fixed-window counter backing hono-rate-limiter, kept in SQLite so counts survive a restart without adding an external store (DESIGN.md §5.4).
 export const rateLimitCounters = sqliteTable("rate_limit_counters", {
   key: text("key").primaryKey(),
   windowStart: integer("window_start", { mode: "timestamp" }).notNull(),
   count: integer("count").notNull().default(0),
 });
 
-// Tracks hosted: true image uploads so GET /api/images/:id can answer 404 without a round trip to R2; actual deletion is left to the bucket's lifecycle rule (DESIGN.md §8.6).
-// Also backs POST /api/uploads (an avatar/watermark image staged for a following /api/quote call) — same storage, expiry and 404-on-miss behavior, just not necessarily a rendered quote, hence contentType instead of assuming image/png.
+// Tracks hosted: true quote output and POST /api/uploads staging files alike (contentType instead of assuming image/png, since an upload isn't necessarily a rendered quote), so GET /api/images/:id can answer 404 without a round trip to storage; hostedImageCleanupService.ts periodically deletes both the row and the underlying file once expiresAt has passed (DESIGN.md §8.6).
 export const hostedImages = sqliteTable("hosted_images", {
   id: text("id").primaryKey(),
   contentType: text("content_type").notNull().default("image/png"),

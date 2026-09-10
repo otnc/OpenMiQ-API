@@ -1,12 +1,6 @@
 /**
- * The request/response shape of `/api/quote`, `/api/fakequote` and
- * `/api/usage` — see the OpenMiQ-API repo's docs/DESIGN.md §8. Everything
- * here is specific to that wire format (JSON body with these exact field
- * names; raw PNG bytes or `{ url }` JSON when `options.hosted` was set).
- * `client.ts` only relies on this module exporting `pathFor()`,
- * `buildPayload()`, `parseHostedResult()` and `parseUsageResult()` — kept
- * separate from `client.ts` so a future change to the server's own wire
- * format only touches this file.
+ * The request/response shape of `/api/quote`, `/api/fakequote` and `/api/usage` — see the OpenMiQ-API repo's docs/DESIGN.md §8. Everything here is specific to that wire format (JSON body with these exact field names; raw PNG bytes or `{ url }` JSON when `options.hosted` was set).
+ * `client.ts` only relies on this module exporting `pathFor()`, `buildPayload()`, `parseHostedResult()` and `parseUsageResult()` — kept separate from `client.ts` so a future change to the server's own wire format only touches this file.
  */
 import { FAKEQUOTE_PATH, QUOTE_PATH } from "./endpoints.ts";
 import { OpenMiQApiError } from "./errors.ts";

@@ -28,9 +28,7 @@ export const AUTH_ERROR_STATUS: Record<AuthError, 401 | 403> = {
   reconsent_required: 403,
 };
 
-// Identifies the API key without touching the rate-limit counter, for
-// endpoints like GET /api/usage that must not themselves count as a
-// consumed request (DESIGN.md §5.4).
+// Identifies the API key without touching the rate-limit counter, for endpoints like GET /api/usage that must not themselves count as a consumed request (DESIGN.md §5.4).
 export async function identifyApiKey(
   db: Db,
   env: Pick<Env, "TERMS_VERSION" | "PRIVACY_VERSION">,
@@ -61,9 +59,7 @@ export async function identifyApiKey(
     return { error: "account_not_approved" };
   }
 
-  // A version mismatch freezes the key without touching USER.status: no
-  // admin action, no cooldown, no re-application — just re-agree via
-  // POST /api/console/consent to unfreeze immediately (DESIGN.md §16.4).
+  // A version mismatch freezes the key without touching USER.status: no admin action, no cooldown, no re-application — just re-agree via POST /api/console/consent to unfreeze immediately (DESIGN.md §16.4).
   if (
     user.agreedTermsVersion !== env.TERMS_VERSION ||
     user.agreedPrivacyVersion !== env.PRIVACY_VERSION
@@ -76,9 +72,7 @@ export async function identifyApiKey(
 
 type Variables = { apiKey: AuthedApiKey };
 
-// Full authentication used by the billable/rate-limited endpoints (e.g.
-// POST /api/quote): identifies the key, consumes one request from its
-// rate-limit window, and records usage.
+// Full authentication used by the billable/rate-limited endpoints (e.g. POST /api/quote): identifies the key, consumes one request from its rate-limit window, and records usage.
 export function apiKeyAuthMiddleware(env: Env, db: Db) {
   return createMiddleware<{ Variables: Variables }>(async (c, next) => {
     const result = await identifyApiKey(db, env, c.req.header("X-API-Key"));

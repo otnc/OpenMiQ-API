@@ -1,7 +1,6 @@
 import type { Env } from "../../src/config/env.ts";
 
-// A fully-populated Env for tests, so each test only has to override the
-// fields it actually cares about instead of restating every required key.
+// A fully-populated Env for tests, so each test only has to override the fields it actually cares about instead of restating every required key.
 export function buildTestEnv(overrides: Partial<Env> = {}): Env {
   return {
     DATABASE_URL: "file::memory:",

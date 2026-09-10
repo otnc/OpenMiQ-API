@@ -23,9 +23,7 @@ import { createSampleQuoteApp } from "./routes/sampleQuote.ts";
 import { sessionMiddleware } from "./middleware/session.ts";
 import { getDb } from "./db.ts";
 
-// Assembles the full app from its route modules — factored out of index.ts
-// so tests can exercise the exact same wiring via `.request()` without
-// starting a real HTTP server (index.ts only adds `serve()` on top).
+// Assembles the full app from its route modules — factored out of index.ts so tests can exercise the exact same wiring via `.request()` without starting a real HTTP server (index.ts only adds `serve()` on top).
 export function createApp(env: Env) {
   const app = new OpenAPIHono();
 

@@ -28,9 +28,7 @@ export function createLegalApp(env: Env) {
     return c.json({ version: env.PRIVACY_VERSION, lang, content });
   });
 
-  // Diffs the version a user last agreed to against the current one, so
-  // the reconsent screen can show what actually changed instead of the
-  // full text again (DESIGN.md §16.4).
+  // Diffs the version a user last agreed to against the current one, so the reconsent screen can show what actually changed instead of the full text again (DESIGN.md §16.4).
   app.get("/api/legal/terms/diff", (c) => {
     const lang = resolveLocale(c.req.query("lang"));
     const from = c.req.query("from");

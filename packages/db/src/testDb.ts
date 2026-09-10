@@ -11,9 +11,7 @@ const migrationsFolder = join(
   "../../../drizzle/migrations",
 );
 
-// A fresh in-memory database with the real migrations applied, for tests
-// that need actual SQL semantics (constraints, transactions) rather than
-// mocking the ORM.
+// A fresh in-memory database with the real migrations applied, for tests that need actual SQL semantics (constraints, transactions) rather than mocking the ORM.
 export function createTestDb(): Db {
   const sqlite = new Database(":memory:");
   const db = drizzle(sqlite, { schema });
