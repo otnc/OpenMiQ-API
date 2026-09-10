@@ -1,6 +1,7 @@
 import type { Context } from "hono";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
+import { ValidationError } from "makeitaquote";
 import { quoteRequestSchema, type QuoteRequest } from "@openmiq/shared";
 import { hostedImages } from "@openmiq/db";
 import type { Env } from "../config/env.ts";
@@ -106,7 +107,22 @@ export function createQuoteApp(env: Env) {
       );
     }
 
-    const png = await render(parsed.data, env);
+    // theme/font/watermark are opaque strings validated by makeitaquote itself, not quoteRequestSchema — an unrecognized value (e.g. a named theme from OpenMiQ's own 39-color catalog, which this API's `theme` intentionally doesn't implement, see DESIGN.md §8.5) throws here instead of failing safeParse() above.
+    let png: Buffer;
+    try {
+      png = await render(parsed.data, env);
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        return c.json(
+          {
+            error: "invalid_request",
+            issues: [{ message: error.message, field: error.field }],
+          },
+          400,
+        );
+      }
+      throw error;
+    }
 
     if (parsed.data.options?.hosted) {
       const id = newSecretToken();
